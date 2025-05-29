@@ -9,6 +9,7 @@ import AppSidebar from "@/components/layout/AppSidebar";
 import Header from "@/components/layout/Header";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth, usePersistedAuth } from "@/hooks/useAuth";
+import { useState } from "react";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -46,12 +47,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const handleMenuClick = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
-        <AppSidebar />
+        <AppSidebar isOpen={sidebarOpen} />
         <div className="flex-1 flex flex-col">
-          <Header />
+          <Header onMenuClick={handleMenuClick} />
           <main className="flex-1 p-6 overflow-auto">
             {children}
           </main>
