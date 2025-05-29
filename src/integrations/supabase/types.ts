@@ -9,7 +9,344 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      configuracoes: {
+        Row: {
+          cor_primaria: string | null
+          cor_secundaria: string | null
+          created_at: string
+          dominio_proprio: string | null
+          fonte: string | null
+          fuso_horario: string | null
+          id: string
+          idioma: string | null
+          logo_url: string | null
+          nome_agencia: string | null
+          notificacoes: Json | null
+          updated_at: string
+        }
+        Insert: {
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
+          created_at?: string
+          dominio_proprio?: string | null
+          fonte?: string | null
+          fuso_horario?: string | null
+          id?: string
+          idioma?: string | null
+          logo_url?: string | null
+          nome_agencia?: string | null
+          notificacoes?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          cor_primaria?: string | null
+          cor_secundaria?: string | null
+          created_at?: string
+          dominio_proprio?: string | null
+          fonte?: string | null
+          fuso_horario?: string | null
+          id?: string
+          idioma?: string | null
+          logo_url?: string | null
+          nome_agencia?: string | null
+          notificacoes?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      diagnosticos: {
+        Row: {
+          created_at: string
+          empresa_id: string
+          id: string
+          nivel: string
+          pdf_url: string | null
+          pontos_atencao: Json | null
+          pontos_fortes: Json | null
+          recomendacoes: Json | null
+          score_estrategia: number
+          score_marketing: number
+          score_total: number
+          score_vendas: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          empresa_id: string
+          id?: string
+          nivel: string
+          pdf_url?: string | null
+          pontos_atencao?: Json | null
+          pontos_fortes?: Json | null
+          recomendacoes?: Json | null
+          score_estrategia?: number
+          score_marketing?: number
+          score_total?: number
+          score_vendas?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          empresa_id?: string
+          id?: string
+          nivel?: string
+          pdf_url?: string | null
+          pontos_atencao?: Json | null
+          pontos_fortes?: Json | null
+          recomendacoes?: Json | null
+          score_estrategia?: number
+          score_marketing?: number
+          score_total?: number
+          score_vendas?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnosticos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      empresas: {
+        Row: {
+          created_at: string
+          faturamento: string | null
+          funcionarios: string | null
+          id: string
+          nome: string
+          setor: string | null
+          site_instagram: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string
+          faturamento?: string | null
+          funcionarios?: string | null
+          id?: string
+          nome: string
+          setor?: string | null
+          site_instagram?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string
+          faturamento?: string | null
+          funcionarios?: string | null
+          id?: string
+          nome?: string
+          setor?: string | null
+          site_instagram?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      integracoes: {
+        Row: {
+          ativa: boolean
+          configuracao: Json
+          created_at: string
+          id: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          ativa?: boolean
+          configuracao: Json
+          created_at?: string
+          id?: string
+          tipo: string
+          updated_at?: string
+        }
+        Update: {
+          ativa?: boolean
+          configuracao?: Json
+          created_at?: string
+          id?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      perguntas: {
+        Row: {
+          ativa: boolean
+          categoria: string
+          created_at: string
+          id: string
+          obrigatoria: boolean
+          opcoes: Json | null
+          pergunta: string
+          tipo: string
+          updated_at: string
+        }
+        Insert: {
+          ativa?: boolean
+          categoria: string
+          created_at?: string
+          id?: string
+          obrigatoria?: boolean
+          opcoes?: Json | null
+          pergunta: string
+          tipo?: string
+          updated_at?: string
+        }
+        Update: {
+          ativa?: boolean
+          categoria?: string
+          created_at?: string
+          id?: string
+          obrigatoria?: boolean
+          opcoes?: Json | null
+          pergunta?: string
+          tipo?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      planos: {
+        Row: {
+          ativo: boolean
+          categoria: string | null
+          created_at: string
+          id: string
+          nome: string
+          objetivo: string
+          tarefas: Json
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          id?: string
+          nome: string
+          objetivo: string
+          tarefas: Json
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          ativo?: boolean
+          categoria?: string | null
+          created_at?: string
+          id?: string
+          nome?: string
+          objetivo?: string
+          tarefas?: Json
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      propostas: {
+        Row: {
+          acoes_sugeridas: Json
+          created_at: string
+          diagnostico_id: string
+          id: string
+          objetivo: string
+          pdf_url: string | null
+          plano_id: string | null
+          prazo: string | null
+          status: string
+          updated_at: string
+          valor: number
+        }
+        Insert: {
+          acoes_sugeridas: Json
+          created_at?: string
+          diagnostico_id: string
+          id?: string
+          objetivo: string
+          pdf_url?: string | null
+          plano_id?: string | null
+          prazo?: string | null
+          status?: string
+          updated_at?: string
+          valor: number
+        }
+        Update: {
+          acoes_sugeridas?: Json
+          created_at?: string
+          diagnostico_id?: string
+          id?: string
+          objetivo?: string
+          pdf_url?: string | null
+          plano_id?: string | null
+          prazo?: string | null
+          status?: string
+          updated_at?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propostas_diagnostico_id_fkey"
+            columns: ["diagnostico_id"]
+            isOneToOne: false
+            referencedRelation: "diagnosticos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propostas_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      respostas: {
+        Row: {
+          created_at: string
+          diagnostico_id: string
+          id: string
+          pergunta_id: string
+          resposta: string | null
+          score: number
+        }
+        Insert: {
+          created_at?: string
+          diagnostico_id: string
+          id?: string
+          pergunta_id: string
+          resposta?: string | null
+          score?: number
+        }
+        Update: {
+          created_at?: string
+          diagnostico_id?: string
+          id?: string
+          pergunta_id?: string
+          resposta?: string | null
+          score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "respostas_diagnostico_id_fkey"
+            columns: ["diagnostico_id"]
+            isOneToOne: false
+            referencedRelation: "diagnosticos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "respostas_pergunta_id_fkey"
+            columns: ["pergunta_id"]
+            isOneToOne: false
+            referencedRelation: "perguntas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
