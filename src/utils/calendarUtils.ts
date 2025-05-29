@@ -36,27 +36,3 @@ export const scheduleProposalMeeting = (companyName: string, clientName: string)
   
   createCalendarEvent(title, date, details);
 };
-
-export const createGoogleCalendarLink = (title: string, details: string, companyName: string) => {
-  const eventTitle = `${title} - ${companyName}`;
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() + 1);
-  startDate.setHours(14, 0, 0, 0);
-  
-  const endDate = new Date(startDate);
-  endDate.setHours(15, 0, 0, 0);
-  
-  const formatDate = (date: Date) => {
-    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-  };
-  
-  const params = new URLSearchParams({
-    action: 'TEMPLATE',
-    text: eventTitle,
-    dates: `${formatDate(startDate)}/${formatDate(endDate)}`,
-    details: details,
-    location: 'Reunião Online'
-  });
-  
-  return `https://calendar.google.com/calendar/render?${params.toString()}`;
-};

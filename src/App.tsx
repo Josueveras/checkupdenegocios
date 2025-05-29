@@ -5,8 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/layout/AppSidebar";
-import Header from "@/components/layout/Header";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { Header } from "@/components/layout/Header";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth, usePersistedAuth } from "@/hooks/useAuth";
 

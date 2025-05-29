@@ -1,80 +1,24 @@
 
-export const createWhatsAppLink = (phone: string, message: string) => {
-  // Remove todos os caracteres não numéricos do telefone
+export const sendWhatsAppMessage = (phone: string, message: string) => {
+  // Remover caracteres especiais do telefone
   const cleanPhone = phone.replace(/\D/g, '');
   
-  // Adiciona código do país se não tiver
+  // Garantir que tenha código do país (55 para Brasil)
   const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
   
-  // Encode da mensagem para URL
-  const encodedMessage = encodeURIComponent(message);
+  // Criar URL do WhatsApp
+  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
   
-  return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+  // Abrir em nova aba
+  window.open(whatsappUrl, '_blank');
 };
 
-export const sendDiagnosticWhatsApp = (clientName: string, companyName: string, phone: string, pdfUrl?: string) => {
-  const message = `Olá ${clientName}! 👋
-
-Seu diagnóstico empresarial da ${companyName} foi finalizado!
-
-📊 Acesse seu relatório completo aqui: ${pdfUrl || 'Em breve você receberá o link'}
-
-Qualquer dúvida, estamos à disposição!
-
-Atenciosamente,
-Equipe CheckUp de Negócios`;
-
-  const whatsappUrl = createWhatsAppLink(phone, message);
-  window.open(whatsappUrl, '_blank');
-  
-  return whatsappUrl;
+export const sendDiagnosticWhatsApp = (phone: string, pdfUrl: string, companyName: string) => {
+  const message = `Olá! Segue seu diagnóstico empresarial da ${companyName}. Clique aqui para visualizar: ${pdfUrl}`;
+  sendWhatsAppMessage(phone, message);
 };
 
-export const sendProposalWhatsApp = (clientName: string, companyName: string, phone: string, value: number, objective: string, pdfUrl?: string) => {
-  const message = `Olá ${clientName}! 👋
-
-Segue a proposta comercial personalizada para ${companyName}.
-
-💼 Valor: ${value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-🎯 Objetivo: ${objective}
-
-📄 Acesse a proposta completa aqui: ${pdfUrl || 'Em breve você receberá o link'}
-
-Estamos à disposição para esclarecimentos!
-
-Atenciosamente,
-Equipe CheckUp de Negócios`;
-
-  const whatsappUrl = createWhatsAppLink(phone, message);
-  window.open(whatsappUrl, '_blank');
-  
-  return whatsappUrl;
-};
-
-export const sendWhatsAppMessage = ({ phone, clientName, companyName, score, level, pdfUrl }: {
-  phone: string;
-  clientName: string;
-  companyName: string;
-  score: number;
-  level: string;
-  pdfUrl?: string;
-}) => {
-  const message = `Olá ${clientName}! 👋
-
-Seu diagnóstico empresarial da ${companyName} foi finalizado!
-
-📊 Score: ${score}%
-📈 Nível: ${level}
-
-📄 Acesse seu relatório completo aqui: ${pdfUrl || 'Em breve você receberá o link'}
-
-Qualquer dúvida, estamos à disposição!
-
-Atenciosamente,
-Equipe CheckUp de Negócios`;
-
-  const whatsappUrl = createWhatsAppLink(phone, message);
-  window.open(whatsappUrl, '_blank');
-  
-  return whatsappUrl;
+export const sendProposalWhatsApp = (phone: string, pdfUrl: string, companyName: string) => {
+  const message = `Olá! Segue a proposta comercial personalizada para ${companyName}. Clique aqui para visualizar: ${pdfUrl}`;
+  sendWhatsAppMessage(phone, message);
 };

@@ -1,18 +1,28 @@
 
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
 
 export const useAuth = () => {
-  const context = useAuthContext();
-  
-  return {
-    user: context.user,
-    isAuthenticated: context.isAuthenticated,
-    loading: context.loading,
-    login: context.login,
-    logout: context.logout
-  };
+  return useAuthContext();
 };
 
 export const usePersistedAuth = () => {
-  return useAuth(); // Agora a persistência está no contexto principal
+  const { user, login, logout } = useAuthContext();
+  const [persistedUser, setPersistedUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Verificar se existe usuário no localStorage
+    const savedUser = localStorage.getItem('user');
+    if (savedUser && !user) {
+      const parsedUser = JSON.parse(savedUser);
+      setPersistedUser(parsedUser);
+    }
+  }, [user]);
+
+  return {
+    user: user || persistedUser,
+    isAuthenticated: !!(user || persistedUser),
+    login,
+    logout
+  };
 };

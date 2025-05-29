@@ -65,7 +65,6 @@ export type Database = {
           pontos_fortes: Json | null
           recomendacoes: Json | null
           score_estrategia: number
-          score_gestao: number | null
           score_marketing: number
           score_total: number
           score_vendas: number
@@ -82,7 +81,6 @@ export type Database = {
           pontos_fortes?: Json | null
           recomendacoes?: Json | null
           score_estrategia?: number
-          score_gestao?: number | null
           score_marketing?: number
           score_total?: number
           score_vendas?: number
@@ -99,7 +97,6 @@ export type Database = {
           pontos_fortes?: Json | null
           recomendacoes?: Json | null
           score_estrategia?: number
-          score_gestao?: number | null
           score_marketing?: number
           score_total?: number
           score_vendas?: number
@@ -118,9 +115,6 @@ export type Database = {
       }
       empresas: {
         Row: {
-          cliente_email: string | null
-          cliente_nome: string | null
-          cliente_telefone: string | null
           created_at: string
           faturamento: string | null
           funcionarios: string | null
@@ -132,9 +126,6 @@ export type Database = {
           whatsapp: string | null
         }
         Insert: {
-          cliente_email?: string | null
-          cliente_nome?: string | null
-          cliente_telefone?: string | null
           created_at?: string
           faturamento?: string | null
           funcionarios?: string | null
@@ -146,9 +137,6 @@ export type Database = {
           whatsapp?: string | null
         }
         Update: {
-          cliente_email?: string | null
-          cliente_nome?: string | null
-          cliente_telefone?: string | null
           created_at?: string
           faturamento?: string | null
           funcionarios?: string | null
@@ -358,78 +346,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      user_notifications: {
-        Row: {
-          created_at: string | null
-          diagnostic_notifications: boolean | null
-          email_enabled: boolean | null
-          id: string
-          proposal_notifications: boolean | null
-          reports_enabled: boolean | null
-          subscription_notifications: boolean | null
-          updated_at: string | null
-          user_id: string | null
-          whatsapp_enabled: boolean | null
-        }
-        Insert: {
-          created_at?: string | null
-          diagnostic_notifications?: boolean | null
-          email_enabled?: boolean | null
-          id?: string
-          proposal_notifications?: boolean | null
-          reports_enabled?: boolean | null
-          subscription_notifications?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-          whatsapp_enabled?: boolean | null
-        }
-        Update: {
-          created_at?: string | null
-          diagnostic_notifications?: boolean | null
-          email_enabled?: boolean | null
-          id?: string
-          proposal_notifications?: boolean | null
-          reports_enabled?: boolean | null
-          subscription_notifications?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-          whatsapp_enabled?: boolean | null
-        }
-        Relationships: []
-      }
-      user_profiles: {
-        Row: {
-          cargo: string | null
-          created_at: string | null
-          empresa: string | null
-          id: string
-          nome: string | null
-          telefone: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          cargo?: string | null
-          created_at?: string | null
-          empresa?: string | null
-          id?: string
-          nome?: string | null
-          telefone?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          cargo?: string | null
-          created_at?: string | null
-          empresa?: string | null
-          id?: string
-          nome?: string | null
-          telefone?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {

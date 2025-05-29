@@ -1,93 +1,100 @@
 
-import { Link, useLocation } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
 import { 
-  Home, 
+  BarChart, 
   FileText, 
-  BarChart3, 
-  Settings, 
-  Users, 
-  Presentation,
-  HelpCircle,
-  Calendar,
-  CreditCard,
-  Building2
-} from 'lucide-react';
+  Calendar, 
+  Settings,
+  Edit,
+  File
+} from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
 
-interface SidebarProps {
-  isOpen: boolean;
-}
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
-const AppSidebar = ({ isOpen }: SidebarProps) => {
+const menuItems = [
+  { title: "Dashboard", url: "/dashboard", icon: BarChart },
+  { title: "Novo Diagnóstico", url: "/novo-diagnostico", icon: FileText },
+  { title: "Diagnósticos", url: "/diagnosticos", icon: File },
+  { title: "Acompanhamento", url: "/acompanhamento", icon: Calendar },
+  { title: "Propostas", url: "/propostas", icon: FileText },
+  { title: "Perguntas", url: "/perguntas", icon: Edit },
+  { title: "Métricas", url: "/metricas", icon: BarChart },
+  { title: "Onboarding", url: "/onboarding", icon: Calendar },
+  { title: "Configurações", url: "/configuracoes", icon: Settings },
+  { title: "Conta", url: "/conta", icon: Settings },
+];
+
+export function AppSidebar() {
+  const { state } = useSidebar();
   const location = useLocation();
+  const currentPath = location.pathname;
+  const collapsed = state === "collapsed";
 
-  const menuItems = [
-    { icon: Home, label: 'Dashboard', href: '/dashboard' },
-    { icon: FileText, label: 'Diagnósticos', href: '/diagnosticos' },
-    { icon: Presentation, label: 'Propostas', href: '/propostas' },
-    { icon: BarChart3, label: 'Métricas', href: '/metricas' },
-    { icon: Calendar, label: 'Acompanhamento', href: '/acompanhamento' },
-    { icon: HelpCircle, label: 'Perguntas', href: '/perguntas' },
-    { icon: Building2, label: 'Identidade Visual', href: '/configuracoes' },
-    { icon: Settings, label: 'Integrações', href: '/configuracoes' },
-    { icon: CreditCard, label: 'Planos', href: '/planos' },
-    { icon: Users, label: 'Minha Conta', href: '/conta' }
-  ];
-
-  const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return location.pathname === '/dashboard';
-    }
-    return location.pathname.startsWith(href);
-  };
+  const isActive = (path: string) => currentPath === path;
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+      isActive 
+        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+        : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+    }`;
 
   return (
-    <aside className={cn(
-      "fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-30",
-      isOpen ? "w-64" : "w-0 overflow-hidden"
-    )}>
-      <div className="p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Menu</h2>
-        <nav className="space-y-2">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const active = isActive(item.href);
-            
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200",
-                  "hover:bg-gray-100 hover:text-petrol hover:translate-x-1",
-                  active 
-                    ? "bg-petrol/10 text-petrol border-r-2 border-petrol" 
-                    : "text-gray-700"
-                )}
-              >
-                <Icon className={cn(
-                  "h-5 w-5 transition-colors",
-                  active ? "text-petrol" : "text-gray-500"
-                )} />
-                <span>{item.label}</span>
-                {active && (
-                  <div className="ml-auto w-2 h-2 bg-petrol rounded-full"></div>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
-      </div>
-      
-      {/* Footer */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-200 bg-gray-50">
-        <div className="text-center">
-          <p className="text-xs text-gray-500 mb-2">CheckUp de Negócios</p>
-          <p className="text-xs text-gray-400">Versão 1.0.0</p>
+    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r border-sidebar-border bg-sidebar transition-all duration-300`}>
+      <div className="p-4 border-b border-sidebar-border">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
+            <BarChart className="h-5 w-5 text-sidebar-primary-foreground" />
+          </div>
+          {!collapsed && (
+            <div>
+              <h2 className="font-semibold text-sidebar-foreground">CheckUp</h2>
+              <p className="text-xs text-sidebar-foreground/70">de Negócios</p>
+            </div>
+          )}
         </div>
       </div>
-    </aside>
-  );
-};
 
-export default AppSidebar;
+      <SidebarContent className="p-4">
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-sidebar-foreground/70 mb-2">
+            {!collapsed && "Menu Principal"}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink 
+                      to={item.url} 
+                      className={getNavCls}
+                      title={collapsed ? item.title : undefined}
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && <span className="truncate">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+
+      <div className="p-4 border-t border-sidebar-border">
+        <SidebarTrigger className="w-full bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-accent-foreground" />
+      </div>
+    </Sidebar>
+  );
+}

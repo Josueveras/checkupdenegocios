@@ -7,15 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { useConfirmation } from '@/hooks/useConfirmation';
-import { generateProposalPDF, downloadPDF } from '@/utils/pdfGenerator';
-import { scheduleProposalMeeting } from '@/utils/calendarUtils';
 
 const Propostas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const { confirmation, confirm } = useConfirmation();
 
   const mockProposals = [
     {
@@ -89,8 +84,8 @@ const Propostas = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const handleDownloadPDF = (proposal: any) => {
-    if (!proposal.pdfUrl && proposal.status === 'Rascunho') {
+  const handleDownloadPDF = (pdfUrl: string, company: string) => {
+    if (!pdfUrl) {
       toast({
         title: "PDF não disponível",
         description: "A proposta ainda não foi finalizada.",
@@ -98,49 +93,11 @@ const Propostas = () => {
       });
       return;
     }
-
-    try {
-      // Generate PDF if not exists
-      if (!proposal.pdfUrl) {
-        const doc = generateProposalPDF({
-          diagnosticos: {
-            empresas: {
-              nome: proposal.company,
-              cliente_nome: proposal.client,
-              cliente_email: `${proposal.client.toLowerCase().replace(' ', '.')}@${proposal.company.toLowerCase().replace(/\s+/g, '')}.com`
-            }
-          },
-          created_at: proposal.date,
-          valor: proposal.value,
-          prazo: '30 dias',
-          objetivo: proposal.objective,
-          acoes_sugeridas: proposal.actions
-        });
-        
-        downloadPDF(doc, `proposta-${proposal.company.toLowerCase().replace(/\s+/g, '-')}.pdf`);
-        
-        toast({
-          title: "PDF gerado",
-          description: `Proposta de ${proposal.company} baixada com sucesso!`
-        });
-      } else {
-        window.open(proposal.pdfUrl, '_blank');
-        toast({
-          title: "PDF baixado",
-          description: `Proposta de ${proposal.company} baixada com sucesso!`
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro ao gerar PDF",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive"
-      });
-    }
+    window.open(pdfUrl, '_blank');
   };
 
   const handleSendWhatsApp = (proposal: any) => {
-    if (proposal.status === 'Rascunho') {
+    if (!proposal.pdfUrl) {
       toast({
         title: "Proposta não finalizada",
         description: "Complete a proposta antes de enviá-la.",
@@ -149,68 +106,14 @@ const Propostas = () => {
       return;
     }
     
-    try {
-      const message = `Olá! 👋\n\nSegue a proposta comercial personalizada para ${proposal.company}.\n\n💼 Valor: ${proposal.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n🎯 Objetivo: ${proposal.objective}\n\nClique aqui para visualizar: ${proposal.pdfUrl || 'Link será enviado em breve'}\n\nEstamos à disposição para esclarecimentos!`;
-      
-      const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
-      
-      toast({
-        title: "WhatsApp enviado",
-        description: `Proposta preparada para envio para ${proposal.company}`
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao enviar WhatsApp",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleScheduleMeeting = (proposal: any) => {
-    try {
-      scheduleProposalMeeting(proposal.company, proposal.client);
-      
-      toast({
-        title: "Reunião agendada",
-        description: `Calendário aberto para reunião comercial com ${proposal.company}`
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao agendar",
-        description: "Tente novamente em alguns instantes.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDeleteProposal = async (proposalId: number) => {
-    const confirmed = await confirm({
-      title: "Confirmar Exclusão",
-      message: "Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita.",
-      confirmText: "Excluir",
-      cancelText: "Cancelar",
-      variant: "destructive"
+    const message = `Olá, segue a proposta comercial personalizada para ${proposal.company}. Clique aqui: ${proposal.pdfUrl}`;
+    const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    toast({
+      title: "WhatsApp aberto",
+      description: `Proposta preparada para envio`
     });
-
-    if (confirmed) {
-      toast({
-        title: "Proposta excluída",
-        description: "A proposta foi removida com sucesso.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSendProposal = (proposal: any) => {
-    if (proposal.status === 'Rascunho') {
-      // Update status to "Enviada"
-      toast({
-        title: "Proposta enviada",
-        description: `Proposta de ${proposal.company} enviada com sucesso!`
-      });
-    }
   };
 
   const totalValue = filteredProposals.reduce((sum, proposal) => sum + proposal.value, 0);
@@ -224,7 +127,7 @@ const Propostas = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Propostas Comerciais</h1>
-          <p className="text-gray-600 mt-1">Gerencie suas propostas baseados nos diagnósticos</p>
+          <p className="text-gray-600 mt-1">Gerencie suas propostas baseadas nos diagnósticos</p>
         </div>
         <Button className="bg-petrol hover:bg-petrol/90 text-white">
           <FileText className="mr-2 h-4 w-4" />
@@ -329,7 +232,7 @@ const Propostas = () => {
       {/* Proposals List */}
       <div className="grid gap-6">
         {filteredProposals.map((proposal) => (
-          <Card key={proposal.id} className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
+          <Card key={proposal.id} className="hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                 <div className="flex-1">
@@ -370,8 +273,8 @@ const Propostas = () => {
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
                 <Button
                   variant="outline"
-                  onClick={() => handleDownloadPDF(proposal)}
-                  className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                  onClick={() => handleDownloadPDF(proposal.pdfUrl, proposal.company)}
+                  className="flex items-center gap-2"
                 >
                   <Download className="h-4 w-4" />
                   Baixar PDF
@@ -379,30 +282,16 @@ const Propostas = () => {
                 <Button
                   variant="outline"
                   onClick={() => handleSendWhatsApp(proposal)}
-                  className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-50 hover:border-green-700 transition-colors"
+                  className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
                 >
                   📤 Enviar WhatsApp
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => handleScheduleMeeting(proposal)}
-                  className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-50 hover:border-blue-700 transition-colors"
-                >
-                  📅 Agendar Reunião
-                </Button>
-                <Button
-                  onClick={() => handleSendProposal(proposal)}
-                  className="flex items-center gap-2 bg-petrol hover:bg-petrol/90 text-white transition-colors"
+                  className="flex items-center gap-2"
                 >
                   <FileText className="h-4 w-4" />
-                  {proposal.status === 'Rascunho' ? 'Enviar Proposta' : 'Reenviar'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleDeleteProposal(proposal.id)}
-                  className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-50 hover:border-red-700 transition-colors"
-                >
-                  🗑️ Excluir
+                  Editar Proposta
                 </Button>
               </div>
             </CardContent>
@@ -427,19 +316,6 @@ const Propostas = () => {
           </CardContent>
         </Card>
       )}
-
-      {/* Confirmation Dialog */}
-      <ConfirmationDialog
-        open={confirmation.isOpen}
-        onOpenChange={(open) => !open && confirmation.onCancel()}
-        title={confirmation.title}
-        message={confirmation.message}
-        confirmText={confirmation.confirmText}
-        cancelText={confirmation.cancelText}
-        variant={confirmation.variant}
-        onConfirm={confirmation.onConfirm}
-        onCancel={confirmation.onCancel}
-      />
     </div>
   );
 };

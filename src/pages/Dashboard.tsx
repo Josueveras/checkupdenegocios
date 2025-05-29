@@ -2,69 +2,40 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { BarChart, FileText, Calendar, Settings } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
-import { InteractiveChart } from '@/components/charts/InteractiveChart';
-import { useDiagnosticos, usePropostas } from '@/hooks/useSupabase';
-import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  const { data: diagnosticos = [], isLoading: loadingDiagnosticos } = useDiagnosticos();
-  const { data: propostas = [], isLoading: loadingPropostas } = usePropostas();
-
-  // Calcular estatísticas baseadas em dados reais
-  const stats = useMemo(() => {
-    const totalDiagnosticos = diagnosticos.length;
-    const scoresMedio = diagnosticos.length > 0 
-      ? Math.round(diagnosticos.reduce((acc, d) => acc + d.score_total, 0) / diagnosticos.length)
-      : 0;
-    const totalPropostas = propostas.length;
-    const propostasAprovadas = propostas.filter(p => p.status === 'aprovada').length;
-    const taxaConversao = totalPropostas > 0 
-      ? Math.round((propostasAprovadas / totalPropostas) * 100)
-      : 0;
-
-    return {
-      totalDiagnosticos,
-      scoresMedio,
-      totalPropostas,
-      taxaConversao
-    };
-  }, [diagnosticos, propostas]);
-
-  // Dados para distribuição por nível baseados em dados reais
-  const distributionData = useMemo(() => {
-    const niveis = { 'Avançado': 0, 'Intermediário': 0, 'Emergente': 0, 'Iniciante': 0 };
-    
-    diagnosticos.forEach(d => {
-      if (d.nivel && niveis.hasOwnProperty(d.nivel)) {
-        niveis[d.nivel as keyof typeof niveis]++;
-      }
-    });
-
-    return [
-      { name: 'Avançado', value: niveis.Avançado, color: '#22C55E' },
-      { name: 'Intermediário', value: niveis.Intermediário, color: '#EAB308' },
-      { name: 'Emergente', value: niveis.Emergente, color: '#F97316' },
-      { name: 'Iniciante', value: niveis.Iniciante, color: '#EF4444' }
-    ].filter(item => item.value > 0);
-  }, [diagnosticos]);
-
-  // Diagnósticos recentes (últimos 3)
-  const recentDiagnostics = useMemo(() => {
-    return diagnosticos
-      .slice(0, 3)
-      .map(d => ({
-        id: d.id,
-        company: d.empresas?.nome || 'Empresa não informada',
-        client: d.empresas?.cliente_nome || 'Cliente não informado',
-        score: d.score_total || 0,
-        level: d.nivel || 'Não definido',
-        date: d.created_at,
-        status: d.status === 'concluido' ? 'Concluído' : 'Pendente'
-      }));
-  }, [diagnosticos]);
+  const recentDiagnostics = [
+    {
+      id: 1,
+      company: "Tech Solutions LTDA",
+      client: "João Silva",
+      score: 78,
+      level: "Intermediário",
+      date: "2024-01-15",
+      status: "Concluído"
+    },
+    {
+      id: 2,
+      company: "Marketing Digital Pro",
+      client: "Maria Santos",
+      score: 45,
+      level: "Emergente",
+      date: "2024-01-14",
+      status: "Pendente"
+    },
+    {
+      id: 3,
+      company: "Inovação & Estratégia",
+      client: "Pedro Costa",
+      score: 92,
+      level: "Avançado",
+      date: "2024-01-13",
+      status: "Concluído"
+    }
+  ];
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600";
@@ -82,14 +53,6 @@ const Dashboard = () => {
     };
     return colors[level as keyof typeof colors] || colors["Iniciante"];
   };
-
-  if (loadingDiagnosticos || loadingPropostas) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-petrol"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -109,10 +72,7 @@ const Dashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card 
-          className="border-l-4 border-l-petrol cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          onClick={() => navigate('/diagnosticos')}
-        >
+        <Card className="border-l-4 border-l-petrol">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Total de Diagnósticos
@@ -120,18 +80,14 @@ const Dashboard = () => {
             <FileText className="h-4 w-4 text-petrol" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.totalDiagnosticos}</div>
+            <div className="text-2xl font-bold text-gray-900">127</div>
             <p className="text-xs text-green-600 mt-1">
-              {stats.totalDiagnosticos > 0 ? '+' : ''}
-              {Math.round(Math.random() * 20) + 5}% desde o mês passado
+              +12% desde o mês passado
             </p>
           </CardContent>
         </Card>
 
-        <Card 
-          className="border-l-4 border-l-blue-light cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          onClick={() => navigate('/metricas')}
-        >
+        <Card className="border-l-4 border-l-blue-light">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Score Médio
@@ -139,17 +95,14 @@ const Dashboard = () => {
             <BarChart className="h-4 w-4 text-blue-light" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.scoresMedio}%</div>
+            <div className="text-2xl font-bold text-gray-900">68%</div>
             <p className="text-xs text-green-600 mt-1">
-              +{Math.round(Math.random() * 10) + 2}% desde o mês passado
+              +5% desde o mês passado
             </p>
           </CardContent>
         </Card>
 
-        <Card 
-          className="border-l-4 border-l-mustard cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          onClick={() => navigate('/propostas')}
-        >
+        <Card className="border-l-4 border-l-mustard">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Propostas Geradas
@@ -157,17 +110,14 @@ const Dashboard = () => {
             <FileText className="h-4 w-4 text-mustard" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.totalPropostas}</div>
+            <div className="text-2xl font-bold text-gray-900">89</div>
             <p className="text-xs text-green-600 mt-1">
-              +{Math.round(Math.random() * 25) + 10}% desde o mês passado
+              +18% desde o mês passado
             </p>
           </CardContent>
         </Card>
 
-        <Card 
-          className="border-l-4 border-l-green-500 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-          onClick={() => navigate('/metricas')}
-        >
+        <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Taxa de Conversão
@@ -175,9 +125,9 @@ const Dashboard = () => {
             <Settings className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.taxaConversao}%</div>
+            <div className="text-2xl font-bold text-gray-900">70%</div>
             <p className="text-xs text-green-600 mt-1">
-              +{Math.round(Math.random() * 15) + 3}% desde o mês passado
+              +8% desde o mês passado
             </p>
           </CardContent>
         </Card>
@@ -196,49 +146,28 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentDiagnostics.length > 0 ? (
-              <>
-                {recentDiagnostics.map((diagnostic) => (
-                  <div key={diagnostic.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate('/diagnosticos')}>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{diagnostic.company}</h4>
-                      <p className="text-sm text-gray-600">{diagnostic.client}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {new Date(diagnostic.date).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    <div className="text-right space-y-2">
-                      <div className={`text-2xl font-bold ${getScoreColor(diagnostic.score)}`}>
-                        {diagnostic.score}%
-                      </div>
-                      <Badge className={getLevelBadge(diagnostic.level)}>
-                        {diagnostic.level}
-                      </Badge>
-                    </div>
+            {recentDiagnostics.map((diagnostic) => (
+              <div key={diagnostic.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{diagnostic.company}</h4>
+                  <p className="text-sm text-gray-600">{diagnostic.client}</p>
+                  <p className="text-xs text-gray-500 mt-1">{diagnostic.date}</p>
+                </div>
+                <div className="text-right space-y-2">
+                  <div className={`text-2xl font-bold ${getScoreColor(diagnostic.score)}`}>
+                    {diagnostic.score}%
                   </div>
-                ))}
-                <Link to="/diagnosticos">
-                  <Button variant="outline" className="w-full mt-4">
-                    Ver Todos os Diagnósticos
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  Nenhum diagnóstico encontrado
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  Comece criando seu primeiro diagnóstico
-                </p>
-                <Link to="/novo-diagnostico">
-                  <Button className="bg-petrol hover:bg-petrol/90 text-white">
-                    Criar Diagnóstico
-                  </Button>
-                </Link>
+                  <Badge className={getLevelBadge(diagnostic.level)}>
+                    {diagnostic.level}
+                  </Badge>
+                </div>
               </div>
-            )}
+            ))}
+            <Link to="/diagnosticos">
+              <Button variant="outline" className="w-full mt-4">
+                Ver Todos os Diagnósticos
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
@@ -252,21 +181,37 @@ const Dashboard = () => {
               Classificação das empresas diagnosticadas
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            {distributionData.length > 0 ? (
-              <InteractiveChart 
-                data={distributionData} 
-                type="pie" 
-                title="Distribuição por Nível de Maturidade"
-              />
-            ) : (
-              <div className="text-center py-8">
-                <BarChart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">
-                  Dados aparecerão após os primeiros diagnósticos
-                </p>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Avançado</span>
+                  <span>23%</span>
+                </div>
+                <Progress value={23} className="h-2" />
               </div>
-            )}
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Intermediário</span>
+                  <span>35%</span>
+                </div>
+                <Progress value={35} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Emergente</span>
+                  <span>28%</span>
+                </div>
+                <Progress value={28} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Iniciante</span>
+                  <span>14%</span>
+                </div>
+                <Progress value={14} className="h-2" />
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -282,25 +227,25 @@ const Dashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/novo-diagnostico">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
                 <FileText className="h-6 w-6" />
                 <span>Novo Diagnóstico</span>
               </Button>
             </Link>
             <Link to="/propostas">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
                 <FileText className="h-6 w-6" />
                 <span>Gerar Proposta</span>
               </Button>
             </Link>
             <Link to="/perguntas">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
                 <Settings className="h-6 w-6" />
                 <span>Editar Perguntas</span>
               </Button>
             </Link>
             <Link to="/metricas">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
                 <BarChart className="h-6 w-6" />
                 <span>Ver Métricas</span>
               </Button>

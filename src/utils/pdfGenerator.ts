@@ -90,8 +90,3 @@ export const downloadPDF = (doc: jsPDF, filename: string) => {
 export const getPDFDataURL = (doc: jsPDF) => {
   return doc.output('dataurlstring');
 };
-
-export const openPDFInNewTab = (doc: jsPDF) => {
-  const pdfUrl = doc.output('dataurlstring');
-  window.open(pdfUrl, '_blank');
-};

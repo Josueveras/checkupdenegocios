@@ -18,7 +18,7 @@ export const useEmpresas = () => {
   });
 };
 
-// Hook para diagnósticos com dados completos
+// Hook para diagnósticos
 export const useDiagnosticos = () => {
   return useQuery({
     queryKey: ['diagnosticos'],
@@ -69,7 +69,6 @@ export const usePropostas = () => {
         .select(`
           *,
           diagnosticos (
-            *,
             empresas (
               nome,
               cliente_nome,
@@ -82,54 +81,6 @@ export const usePropostas = () => {
       
       if (error) throw error;
       return data || [];
-    }
-  });
-};
-
-// Hook para perfil do usuário
-export const useUserProfile = () => {
-  return useQuery({
-    queryKey: ['user_profile'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-};
-
-// Hook para notificações do usuário
-export const useUserNotifications = () => {
-  return useQuery({
-    queryKey: ['user_notifications'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('user_notifications')
-        .select('*')
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-};
-
-// Hook para configurações
-export const useConfiguracoes = () => {
-  return useQuery({
-    queryKey: ['configuracoes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('configuracoes')
-        .select('*')
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data;
     }
   });
 };
@@ -176,47 +127,6 @@ export const useSaveDiagnostico = () => {
   });
 };
 
-// Hook para atualizar diagnóstico
-export const useUpdateDiagnostico = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
-      const { data, error } = await supabase
-        .from('diagnosticos')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
-    }
-  });
-};
-
-// Hook para excluir diagnóstico
-export const useDeleteDiagnostico = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('diagnosticos')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
-    }
-  });
-};
-
 // Hook para salvar respostas
 export const useSaveRespostas = () => {
   return useMutation({
@@ -228,152 +138,6 @@ export const useSaveRespostas = () => {
       
       if (error) throw error;
       return data;
-    }
-  });
-};
-
-// Hook para salvar proposta
-export const useSaveProposta = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (proposta: any) => {
-      const { data, error } = await supabase
-        .from('propostas')
-        .insert(proposta)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['propostas'] });
-    }
-  });
-};
-
-// Hook para salvar perfil do usuário
-export const useSaveUserProfile = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (profile: any) => {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .upsert(profile)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user_profile'] });
-    }
-  });
-};
-
-// Hook para salvar notificações do usuário
-export const useSaveUserNotifications = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (notifications: any) => {
-      const { data, error } = await supabase
-        .from('user_notifications')
-        .upsert(notifications)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user_notifications'] });
-    }
-  });
-};
-
-// Hook para salvar configurações
-export const useSaveConfiguracoes = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (config: any) => {
-      const { data, error } = await supabase
-        .from('configuracoes')
-        .upsert(config)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['configuracoes'] });
-    }
-  });
-};
-
-// Hook para adicionar pergunta
-export const useSavePergunta = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (pergunta: any) => {
-      const { data, error } = await supabase
-        .from('perguntas')
-        .insert(pergunta)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['perguntas'] });
-    }
-  });
-};
-
-// Hook para atualizar pergunta
-export const useUpdatePergunta = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ id, ...updates }: any) => {
-      const { data, error } = await supabase
-        .from('perguntas')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['perguntas'] });
-    }
-  });
-};
-
-// Hook para excluir pergunta
-export const useDeletePergunta = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('perguntas')
-        .update({ ativa: false })
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['perguntas'] });
     }
   });
 };
