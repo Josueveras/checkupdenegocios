@@ -5,84 +5,304 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Calendar, BarChart, ArrowUp, ArrowDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Calendar, BarChart } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 const Acompanhamento = () => {
-  const [selectedCompany, setSelectedCompany] = useState('tech-solutions');
+  const [selectedCompany, setSelectedCompany] = useState('');
+  const [selectedDiagnostics, setSelectedDiagnostics] = useState<string[]>([]);
 
-  const companies = [
-    { id: 'tech-solutions', name: 'Tech Solutions LTDA' },
-    { id: 'marketing-pro', name: 'Marketing Digital Pro' },
-    { id: 'consultoria', name: 'Consultoria Business' }
+  const mockCompanies = [
+    { id: '1', name: 'Tech Solutions LTDA' },
+    { id: '2', name: 'Marketing Digital Pro' },
+    { id: '3', name: 'Inovação & Estratégia' },
+    { id: '4', name: 'Consultoria Business' }
   ];
 
-  const timelineData = [
+  const mockDiagnosticHistory = [
     {
-      id: 1,
+      id: '1',
       date: '2024-01-15',
-      type: 'Diagnóstico Inicial',
-      score: 78,
-      level: 'Intermediário',
-      categories: {
+      type: 'Diagnóstico Completo',
+      overallScore: 78,
+      categoryScores: {
         Marketing: 85,
         Vendas: 70,
-        Estratégia: 80
+        Estratégia: 75,
+        Gestão: 82
       }
     },
     {
-      id: 2,
-      date: '2023-12-15',
-      type: 'Diagnóstico',
-      score: 65,
-      level: 'Emergente',
-      categories: {
-        Marketing: 70,
-        Vendas: 60,
-        Estratégia: 65
+      id: '2',
+      date: '2023-10-20',
+      type: 'Diagnóstico Inicial',
+      overallScore: 65,
+      categoryScores: {
+        Marketing: 60,
+        Vendas: 55,
+        Estratégia: 70,
+        Gestão: 75
       }
     },
     {
-      id: 3,
-      date: '2023-11-15',
-      type: 'Diagnóstico',
-      score: 52,
-      level: 'Emergente',
-      categories: {
-        Marketing: 55,
+      id: '3',
+      date: '2023-07-10',
+      type: 'Avaliação Básica',
+      overallScore: 52,
+      categoryScores: {
+        Marketing: 45,
         Vendas: 50,
-        Estratégia: 50
+        Estratégia: 60,
+        Gestão: 55
       }
     }
   ];
 
   const getScoreVariation = (current: number, previous: number) => {
     const diff = current - previous;
-    if (diff > 0) return { icon: ArrowUp, color: 'text-green-600', value: `+${diff}%` };
-    if (diff < 0) return { icon: ArrowDown, color: 'text-red-600', value: `${diff}%` };
-    return { icon: Minus, color: 'text-gray-600', value: '0%' };
+    if (diff > 0) return { icon: TrendingUp, color: 'text-green-600', text: `+${diff}%`, bg: 'bg-green-50' };
+    if (diff < 0) return { icon: TrendingDown, color: 'text-red-600', text: `${diff}%`, bg: 'bg-red-50' };
+    return { icon: Minus, color: 'text-gray-600', text: '0%', bg: 'bg-gray-50' };
   };
 
-  const getLevelBadge = (level: string) => {
-    const colors = {
-      "Avançado": "bg-green-100 text-green-800",
-      "Intermediário": "bg-yellow-100 text-yellow-800",
-      "Emergente": "bg-orange-100 text-orange-800",
-      "Iniciante": "bg-red-100 text-red-800"
-    };
-    return colors[level as keyof typeof colors] || colors["Iniciante"];
+  const handleCompareSelected = () => {
+    if (selectedDiagnostics.length !== 2) {
+      toast({
+        title: "Seleção incompleta",
+        description: "Selecione exatamente 2 diagnósticos para comparar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    toast({
+      title: "Comparativo gerado",
+      description: "PDF de comparação foi gerado com sucesso!"
+    });
   };
 
-  const latestDiagnostic = timelineData[0];
-  const previousDiagnostic = timelineData[1];
+  const renderTimeline = () => {
+    if (!selectedCompany) return null;
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-petrol" />
+            Linha do Tempo - {mockCompanies.find(c => c.id === selectedCompany)?.name}
+          </CardTitle>
+          <CardDescription>
+            Histórico de diagnósticos realizados
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {mockDiagnosticHistory.map((diagnostic, index) => (
+              <div key={diagnostic.id} className="relative">
+                {/* Timeline line */}
+                {index < mockDiagnosticHistory.length - 1 && (
+                  <div className="absolute left-4 top-12 w-0.5 h-16 bg-gray-200"></div>
+                )}
+                
+                <div className="flex items-start gap-4">
+                  {/* Timeline dot */}
+                  <div className="w-8 h-8 rounded-full bg-petrol flex items-center justify-center text-white text-sm font-medium">
+                    {index + 1}
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="font-medium text-gray-900">{diagnostic.type}</h4>
+                        <p className="text-sm text-gray-600">{new Date(diagnostic.date).toLocaleDateString('pt-BR')}</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-petrol">{diagnostic.overallScore}%</div>
+                        {index > 0 && (
+                          <div className="text-sm text-gray-600">
+                            vs anterior: {getScoreVariation(diagnostic.overallScore, mockDiagnosticHistory[index - 1].overallScore).text}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Category scores */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                      {Object.entries(diagnostic.categoryScores).map(([category, score]) => {
+                        const previousScore = index > 0 ? mockDiagnosticHistory[index - 1].categoryScores[category as keyof typeof mockDiagnosticHistory[0]['categoryScores']] : score;
+                        const variation = getScoreVariation(score, previousScore);
+                        const VariationIcon = variation.icon;
+                        
+                        return (
+                          <div key={category} className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium">{category}</span>
+                              <div className={`flex items-center gap-1 px-2 py-1 rounded ${variation.bg}`}>
+                                <VariationIcon className={`h-3 w-3 ${variation.color}`} />
+                                <span className={`text-xs ${variation.color}`}>{variation.text}</span>
+                              </div>
+                            </div>
+                            <Progress value={score} className="h-2" />
+                            <span className="text-xs text-gray-600">{score}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Select for comparison */}
+                    <div className="mt-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedDiagnostics.includes(diagnostic.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              if (selectedDiagnostics.length < 2) {
+                                setSelectedDiagnostics([...selectedDiagnostics, diagnostic.id]);
+                              } else {
+                                toast({
+                                  title: "Limite atingido",
+                                  description: "Você pode selecionar no máximo 2 diagnósticos.",
+                                  variant: "destructive"
+                                });
+                              }
+                            } else {
+                              setSelectedDiagnostics(selectedDiagnostics.filter(id => id !== diagnostic.id));
+                            }
+                          }}
+                          className="rounded"
+                        />
+                        <span className="text-sm text-gray-600">Selecionar para comparação</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderComparison = () => {
+    if (selectedDiagnostics.length !== 2) return null;
+
+    const diagnostic1 = mockDiagnosticHistory.find(d => d.id === selectedDiagnostics[0]);
+    const diagnostic2 = mockDiagnosticHistory.find(d => d.id === selectedDiagnostics[1]);
+
+    if (!diagnostic1 || !diagnostic2) return null;
+
+    // Ensure we're comparing with the newer one first
+    const [newer, older] = diagnostic1.date > diagnostic2.date ? [diagnostic1, diagnostic2] : [diagnostic2, diagnostic1];
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart className="h-5 w-5 text-petrol" />
+            Comparativo Detalhado
+          </CardTitle>
+          <CardDescription>
+            Comparação entre {new Date(older.date).toLocaleDateString('pt-BR')} e {new Date(newer.date).toLocaleDateString('pt-BR')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Overall Score Comparison */}
+          <div className="text-center">
+            <h4 className="font-medium text-gray-900 mb-4">Score Geral</h4>
+            <div className="flex justify-center items-center gap-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-gray-600">{older.overallScore}%</div>
+                <div className="text-sm text-gray-500">Anterior</div>
+              </div>
+              <div className="text-center">
+                <div className="text-lg text-gray-400">→</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-petrol">{newer.overallScore}%</div>
+                <div className="text-sm text-gray-500">Atual</div>
+              </div>
+            </div>
+            <div className="mt-4">
+              {(() => {
+                const variation = getScoreVariation(newer.overallScore, older.overallScore);
+                const VariationIcon = variation.icon;
+                return (
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg ${variation.bg}`}>
+                    <VariationIcon className={`h-5 w-5 ${variation.color}`} />
+                    <span className={`font-medium ${variation.color}`}>
+                      Variação: {variation.text}
+                    </span>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          {/* Category Comparison */}
+          <div>
+            <h4 className="font-medium text-gray-900 mb-4">Comparação por Categoria</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {Object.keys(newer.categoryScores).map(category => {
+                const olderScore = older.categoryScores[category as keyof typeof older.categoryScores];
+                const newerScore = newer.categoryScores[category as keyof typeof newer.categoryScores];
+                const variation = getScoreVariation(newerScore, olderScore);
+                const VariationIcon = variation.icon;
+
+                return (
+                  <div key={category} className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h5 className="font-medium">{category}</h5>
+                      <div className={`flex items-center gap-1 px-2 py-1 rounded ${variation.bg}`}>
+                        <VariationIcon className={`h-3 w-3 ${variation.color}`} />
+                        <span className={`text-xs ${variation.color}`}>{variation.text}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Anterior: {olderScore}%</span>
+                        <span>Atual: {newerScore}%</span>
+                      </div>
+                      <div className="relative">
+                        <Progress value={Math.max(olderScore, newerScore)} className="h-3" />
+                        <div 
+                          className="absolute top-0 h-3 bg-gray-300 rounded-full opacity-50"
+                          style={{ width: `${Math.min(olderScore, newerScore)}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-4 border-t">
+            <Button 
+              onClick={handleCompareSelected}
+              className="bg-petrol hover:bg-petrol/90 text-white"
+            >
+              📄 Gerar PDF Comparativo
+            </Button>
+            <Button variant="outline">
+              📤 Enviar por WhatsApp
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Acompanhamento</h1>
-          <p className="text-gray-600 mt-1">Monitore a evolução das empresas ao longo do tempo</p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Acompanhamento</h1>
+        <p className="text-gray-600 mt-1">Monitore a evolução das empresas ao longo do tempo</p>
       </div>
 
       {/* Company Selection */}
@@ -90,16 +310,16 @@ const Acompanhamento = () => {
         <CardHeader>
           <CardTitle>Selecionar Empresa</CardTitle>
           <CardDescription>
-            Escolha a empresa para visualizar seu histórico de evolução
+            Escolha uma empresa para visualizar seu histórico de diagnósticos
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-            <SelectTrigger className="w-full max-w-md">
-              <SelectValue placeholder="Selecione uma empresa" />
+            <SelectTrigger className="w-full md:w-80">
+              <SelectValue placeholder="Selecione uma empresa..." />
             </SelectTrigger>
             <SelectContent>
-              {companies.map(company => (
+              {mockCompanies.map(company => (
                 <SelectItem key={company.id} value={company.id}>
                   {company.name}
                 </SelectItem>
@@ -109,244 +329,47 @@ const Acompanhamento = () => {
         </CardContent>
       </Card>
 
-      {/* Evolution Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart className="h-5 w-5 text-petrol" />
-              Evolução Geral
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-petrol mb-2">
-                {latestDiagnostic.score}%
-              </div>
-              <Badge className={getLevelBadge(latestDiagnostic.level)}>
-                {latestDiagnostic.level}
-              </Badge>
-            </div>
-
-            {previousDiagnostic && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Variação desde último diagnóstico:</span>
-                  {(() => {
-                    const variation = getScoreVariation(latestDiagnostic.score, previousDiagnostic.score);
-                    return (
-                      <div className={`flex items-center gap-1 ${variation.color}`}>
-                        <variation.icon className="h-4 w-4" />
-                        <span className="font-medium">{variation.value}</span>
-                      </div>
-                    );
-                  })()}
-                </div>
-                <Progress 
-                  value={latestDiagnostic.score} 
-                  className="h-3"
-                />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Evolução por Categoria</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(latestDiagnostic.categories).map(([category, score]) => {
-              const previousScore = previousDiagnostic?.categories[category as keyof typeof previousDiagnostic.categories] || 0;
-              const variation = getScoreVariation(score, previousScore);
-              
-              return (
-                <div key={category} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">{category}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium">{score}%</span>
-                      <div className={`flex items-center gap-1 ${variation.color}`}>
-                        <variation.icon className="h-3 w-3" />
-                        <span className="text-xs">{variation.value}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <Progress value={score} className="h-2" />
-                </div>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Timeline */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-petrol" />
-            Linha do Tempo
-          </CardTitle>
-          <CardDescription>
-            Histórico completo de diagnósticos realizados
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {timelineData.map((item, index) => (
-              <div key={item.id} className="relative">
-                {/* Timeline Line */}
-                {index < timelineData.length - 1 && (
-                  <div className="absolute left-6 top-12 w-0.5 h-16 bg-gray-200"></div>
-                )}
-                
-                <div className="flex gap-4">
-                  {/* Timeline Dot */}
-                  <div className="flex-shrink-0">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      index === 0 ? 'bg-petrol text-white' : 'bg-gray-100 text-gray-600'
-                    }`}>
-                      <Calendar className="h-5 w-5" />
-                    </div>
-                  </div>
-                  
-                  {/* Content */}
-                  <div className="flex-1">
-                    <Card className={index === 0 ? 'border-petrol border-2' : ''}>
-                      <CardContent className="p-4">
-                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                              <h4 className="font-semibold">{item.type}</h4>
-                              <Badge className={getLevelBadge(item.level)}>
-                                {item.level}
-                              </Badge>
-                              {index === 0 && (
-                                <Badge className="bg-blue-100 text-blue-800">
-                                  Mais Recente
-                                </Badge>
-                              )}
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              {new Date(item.date).toLocaleDateString('pt-BR', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                          
-                          <div className="flex items-center gap-6">
-                            <div className="text-center">
-                              <div className="text-2xl font-bold text-petrol">
-                                {item.score}%
-                              </div>
-                              <p className="text-xs text-gray-600">Score Geral</p>
-                            </div>
-                            
-                            <div className="grid grid-cols-3 gap-4 text-center">
-                              {Object.entries(item.categories).map(([category, score]) => (
-                                <div key={category} className="space-y-1">
-                                  <div className="text-sm font-medium">{score}%</div>
-                                  <p className="text-xs text-gray-600">{category}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
+      {renderTimeline()}
+
+      {/* Comparison */}
+      {renderComparison()}
+
+      {/* Action Panel */}
+      {selectedDiagnostics.length > 0 && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-blue-900">
+                  {selectedDiagnostics.length} diagnóstico(s) selecionado(s)
+                </h4>
+                <p className="text-sm text-blue-700">
+                  {selectedDiagnostics.length === 2 
+                    ? "Clique em 'Comparar' para gerar o relatório" 
+                    : "Selecione mais um diagnóstico para comparar"
+                  }
+                </p>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Comparison and Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Comparativo Detalhado</CardTitle>
-            <CardDescription>
-              Última evolução registrada
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {previousDiagnostic && (
-              <>
-                <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-gray-600">
-                      {previousDiagnostic.score}%
-                    </div>
-                    <p className="text-xs text-gray-500">Anterior</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(previousDiagnostic.date).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-petrol">
-                      {latestDiagnostic.score}%
-                    </div>
-                    <p className="text-xs text-gray-500">Atual</p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(latestDiagnostic.date).toLocaleDateString('pt-BR')}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <h5 className="font-medium">Evolução por Área:</h5>
-                  {Object.entries(latestDiagnostic.categories).map(([category, currentScore]) => {
-                    const previousScore = previousDiagnostic.categories[category as keyof typeof previousDiagnostic.categories];
-                    const variation = getScoreVariation(currentScore, previousScore);
-                    
-                    return (
-                      <div key={category} className="flex items-center justify-between">
-                        <span className="text-sm">{category}</span>
-                        <div className={`flex items-center gap-2 ${variation.color}`}>
-                          <span className="text-sm font-medium">
-                            {previousScore}% → {currentScore}%
-                          </span>
-                          <variation.icon className="h-4 w-4" />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedDiagnostics([])}
+                >
+                  Limpar Seleção
+                </Button>
+                <Button
+                  onClick={handleCompareSelected}
+                  disabled={selectedDiagnostics.length !== 2}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Comparar Selecionados
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Ações Disponíveis</CardTitle>
-            <CardDescription>
-              Próximos passos para esta empresa
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button className="w-full bg-petrol hover:bg-petrol/90">
-              📊 Novo Diagnóstico
-            </Button>
-            <Button variant="outline" className="w-full">
-              📄 Baixar Comparativo PDF
-            </Button>
-            <Button variant="outline" className="w-full">
-              📤 Enviar Evolução por WhatsApp
-            </Button>
-            <Button variant="outline" className="w-full">
-              📅 Agendar Reunião de Follow-up
-            </Button>
-            <Button variant="outline" className="w-full">
-              📋 Gerar Nova Proposta
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      )}
     </div>
   );
 };

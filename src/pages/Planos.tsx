@@ -1,309 +1,425 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Check, Star } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Edit, Trash2, Plus, Package } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+
+interface Plan {
+  id: number;
+  name: string;
+  objective: string;
+  tasks: string[];
+  suggestedValue: number;
+  category: string;
+}
 
 const Planos = () => {
-  const plans = [
+  const [plans, setPlans] = useState<Plan[]>([
     {
-      name: "Starter",
-      price: "R$ 97",
-      period: "/mês",
-      description: "Ideal para agências iniciantes",
-      popular: false,
-      features: [
-        "Até 20 diagnósticos/mês",
-        "3 templates de perguntas",
-        "Relatórios em PDF",
-        "WhatsApp básico",
-        "Suporte por email",
-        "1 usuário"
+      id: 1,
+      name: "Plano Marketing Digital Completo",
+      objective: "Estruturar presença digital da empresa e gerar leads qualificados",
+      tasks: [
+        "Criação de site institucional responsivo",
+        "Configuração de Google Ads e Facebook Ads",
+        "Gestão de redes sociais (Instagram, LinkedIn)",
+        "Implementação de CRM e automação de marketing",
+        "Criação de conteúdo e blog",
+        "Configuração de Google Analytics e relatórios"
       ],
-      limitations: [
-        "Marca CheckUp nos PDFs",
-        "Sem personalização avançada",
-        "Sem integrações premium"
-      ]
+      suggestedValue: 15000,
+      category: "Marketing"
     },
     {
-      name: "Professional",
-      price: "R$ 197",
-      period: "/mês",
-      description: "Para agências em crescimento",
-      popular: true,
-      features: [
-        "Até 100 diagnósticos/mês",
-        "Templates ilimitados",
-        "Relatórios personalizados",
-        "WhatsApp Business API",
-        "Calendly integrado",
-        "Comparativos automáticos",
-        "Suporte prioritário",
-        "Até 3 usuários",
-        "Analytics avançado"
+      id: 2,
+      name: "Consultoria em Vendas",
+      objective: "Otimizar processo comercial e aumentar taxa de conversão",
+      tasks: [
+        "Mapeamento do funil de vendas atual",
+        "Treinamento da equipe comercial",
+        "Implementação de CRM de vendas",
+        "Criação de script e material de apoio",
+        "Definição de metas e KPIs",
+        "Acompanhamento mensal de resultados"
       ],
-      limitations: [
-        "Marca CheckUp removível",
-        "Personalização básica"
-      ]
+      suggestedValue: 8500,
+      category: "Vendas"
     },
     {
-      name: "Agency",
-      price: "R$ 397",
-      period: "/mês",
-      description: "Solução completa para grandes agências",
-      popular: false,
-      features: [
-        "Diagnósticos ilimitados",
-        "White label completo",
-        "Domínio personalizado",
-        "API completa",
-        "Integrações CRM",
-        "Zapier/Make",
-        "Múltiplas marcas",
-        "Usuários ilimitados",
-        "Gerente dedicado",
-        "Treinamento personalizado",
-        "SLA 99.9%"
+      id: 3,
+      name: "Planejamento Estratégico",
+      objective: "Definir direcionamento estratégico e plano de crescimento",
+      tasks: [
+        "Análise SWOT da empresa",
+        "Definição de missão, visão e valores",
+        "Planejamento estratégico 12 meses",
+        "Definição de OKRs e metas",
+        "Plano de ação detalhado",
+        "Workshop de alinhamento com equipe"
       ],
-      limitations: []
+      suggestedValue: 12000,
+      category: "Estratégia"
     }
-  ];
+  ]);
 
-  const addons = [
-    {
-      name: "Diagnósticos Extras",
-      description: "Pacotes adicionais de diagnósticos",
-      options: [
-        { quantity: "50 diagnósticos", price: "R$ 47" },
-        { quantity: "100 diagnósticos", price: "R$ 87" },
-        { quantity: "200 diagnósticos", price: "R$ 147" }
-      ]
-    },
-    {
-      name: "Setup e Treinamento",
-      description: "Configuração completa + treinamento da equipe",
-      options: [
-        { quantity: "Setup básico", price: "R$ 297" },
-        { quantity: "Setup + 2h treinamento", price: "R$ 497" },
-        { quantity: "Setup + treinamento completo", price: "R$ 797" }
-      ]
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
+  const [isNewPlan, setIsNewPlan] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleEditPlan = (plan: Plan) => {
+    setEditingPlan({ ...plan });
+    setIsNewPlan(false);
+    setDialogOpen(true);
+  };
+
+  const handleNewPlan = () => {
+    setEditingPlan({
+      id: Date.now(),
+      name: "",
+      objective: "",
+      tasks: [""],
+      suggestedValue: 0,
+      category: "Marketing"
+    });
+    setIsNewPlan(true);
+    setDialogOpen(true);
+  };
+
+  const handleSavePlan = () => {
+    if (!editingPlan) return;
+
+    // Validação básica
+    if (!editingPlan.name.trim() || !editingPlan.objective.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "Nome e objetivo são obrigatórios.",
+        variant: "destructive"
+      });
+      return;
     }
-  ];
+
+    if (editingPlan.tasks.some(task => !task.trim())) {
+      toast({
+        title: "Erro de validação",
+        description: "Todas as tarefas devem ser preenchidas.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isNewPlan) {
+      setPlans(prev => [...prev, editingPlan]);
+      toast({
+        title: "Plano criado",
+        description: "Novo plano adicionado com sucesso!"
+      });
+    } else {
+      setPlans(prev => prev.map(p => p.id === editingPlan.id ? editingPlan : p));
+      toast({
+        title: "Plano atualizado",
+        description: "Plano editado com sucesso!"
+      });
+    }
+
+    setDialogOpen(false);
+    setEditingPlan(null);
+  };
+
+  const handleDeletePlan = (id: number) => {
+    setPlans(prev => prev.filter(p => p.id !== id));
+    toast({
+      title: "Plano removido",
+      description: "Plano excluído com sucesso!"
+    });
+  };
+
+  const addTask = () => {
+    if (!editingPlan) return;
+    setEditingPlan({ ...editingPlan, tasks: [...editingPlan.tasks, ""] });
+  };
+
+  const updateTask = (index: number, value: string) => {
+    if (!editingPlan) return;
+    const newTasks = [...editingPlan.tasks];
+    newTasks[index] = value;
+    setEditingPlan({ ...editingPlan, tasks: newTasks });
+  };
+
+  const removeTask = (index: number) => {
+    if (!editingPlan || editingPlan.tasks.length <= 1) return;
+    const newTasks = editingPlan.tasks.filter((_, i) => i !== index);
+    setEditingPlan({ ...editingPlan, tasks: newTasks });
+  };
+
+  const getCategoryColor = (category: string) => {
+    const colors = {
+      "Marketing": "bg-blue-100 text-blue-800",
+      "Vendas": "bg-green-100 text-green-800",
+      "Estratégia": "bg-purple-100 text-purple-800",
+      "Gestão": "bg-orange-100 text-orange-800"
+    };
+    return colors[category as keyof typeof colors] || colors["Marketing"];
+  };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">Planos e Preços</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Escolha o plano ideal para sua agência e comece a gerar diagnósticos profissionais hoje mesmo
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Planos Comerciais</h1>
+          <p className="text-gray-600 mt-1">Gerencie pacotes de serviços para propostas comerciais</p>
+        </div>
+        <Button onClick={handleNewPlan} className="bg-petrol hover:bg-petrol/90 text-white">
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Plano
+        </Button>
       </div>
 
-      {/* Current Plan Status */}
-      <Card className="bg-gradient-petrol text-white">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-semibold mb-2">Plano Atual: Professional</h3>
-              <p className="text-blue-100">
-                Renovação automática em 23 dias • 47 de 100 diagnósticos utilizados este mês
-              </p>
+      {/* Statistics */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total de Planos</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{plans.length}</div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Médio</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {plans.length > 0 
+                ? (plans.reduce((sum, plan) => sum + plan.suggestedValue, 0) / plans.length).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                : 'R$ 0'
+              }
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" className="bg-white text-petrol border-white hover:bg-gray-100">
-                Gerenciar Assinatura
-              </Button>
-              <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
-                Histórico de Pagamentos
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Plans Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {plans.map((plan, index) => (
-          <Card 
-            key={plan.name} 
-            className={`relative ${plan.popular ? 'border-petrol border-2 shadow-lg scale-105' : ''}`}
-          >
-            {plan.popular && (
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-petrol text-white px-4 py-1 flex items-center gap-2">
-                  <Star className="h-4 w-4" />
-                  Mais Popular
-                </Badge>
-              </div>
-            )}
-            
-            <CardHeader className="text-center pb-8">
-              <CardTitle className="text-2xl font-bold">{plan.name}</CardTitle>
-              <CardDescription className="text-base">{plan.description}</CardDescription>
-              <div className="pt-4">
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-4xl font-bold text-gray-900">{plan.price}</span>
-                  <span className="text-gray-600">{plan.period}</span>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Marketing</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {plans.filter(p => p.category === 'Marketing').length}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Vendas</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {plans.filter(p => p.category === 'Vendas').length}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Plans List */}
+      <div className="grid gap-6">
+        {plans.map((plan) => (
+          <Card key={plan.id} className="hover:shadow-md transition-shadow">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <CardTitle className="text-xl">{plan.name}</CardTitle>
+                    <Badge className={getCategoryColor(plan.category)}>
+                      {plan.category}
+                    </Badge>
+                  </div>
+                  <CardDescription className="text-base">
+                    {plan.objective}
+                  </CardDescription>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="text-right sm:text-left">
+                    <div className="text-2xl font-bold text-green-600">
+                      {plan.suggestedValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </div>
+                    <div className="text-sm text-gray-500">Valor sugerido</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditPlan(plan)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeletePlan(plan.id)}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardHeader>
-            
-            <CardContent className="space-y-6">
-              <div className="space-y-3">
-                <h5 className="font-semibold text-sm text-gray-900 uppercase tracking-wide">
-                  Funcionalidades Incluídas
-                </h5>
-                {plan.features.map((feature, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              
-              {plan.limitations.length > 0 && (
-                <div className="space-y-3 pt-4 border-t">
-                  <h5 className="font-semibold text-sm text-gray-600 uppercase tracking-wide">
-                    Limitações
-                  </h5>
-                  {plan.limitations.map((limitation, idx) => (
-                    <div key={idx} className="flex items-start gap-3">
-                      <div className="w-5 h-5 mt-0.5 flex-shrink-0 text-gray-400">•</div>
-                      <span className="text-sm text-gray-600">{limitation}</span>
+            <CardContent>
+              <div>
+                <h5 className="font-medium text-sm text-gray-700 mb-3">Tarefas incluídas:</h5>
+                <div className="grid gap-2">
+                  {plan.tasks.map((task, index) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-petrol rounded-full"></div>
+                      <span className="text-gray-700">{task}</span>
                     </div>
                   ))}
                 </div>
-              )}
-              
-              <div className="pt-6">
-                <Button 
-                  className={`w-full ${
-                    plan.popular 
-                      ? 'bg-petrol hover:bg-petrol/90 text-white' 
-                      : 'bg-gray-100 hover:bg-gray-200 text-gray-900'
-                  }`}
-                >
-                  {plan.name === "Professional" ? "Plano Atual" : 
-                   index > 1 ? "Fazer Upgrade" : "Fazer Downgrade"}
-                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Add-ons */}
-      <div className="space-y-6">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Complementos Disponíveis</h2>
-          <p className="text-gray-600">Potencialize ainda mais sua operação com nossos add-ons</p>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {addons.map((addon) => (
-            <Card key={addon.name}>
-              <CardHeader>
-                <CardTitle className="text-xl">{addon.name}</CardTitle>
-                <CardDescription>{addon.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {addon.options.map((option, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
-                    <span className="font-medium">{option.quantity}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-petrol">{option.price}</span>
-                      <Button size="sm" variant="outline">
-                        Adicionar
+      {/* Edit/New Plan Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {isNewPlan ? "Novo Plano" : "Editar Plano"}
+            </DialogTitle>
+            <DialogDescription>
+              {isNewPlan 
+                ? "Crie um novo plano comercial"
+                : "Edite os detalhes do plano selecionado"
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editingPlan && (
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome do Plano *</Label>
+                <Input
+                  id="name"
+                  value={editingPlan.name}
+                  onChange={(e) => setEditingPlan({ ...editingPlan, name: e.target.value })}
+                  placeholder="Nome do plano..."
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="objective">Objetivo *</Label>
+                <Textarea
+                  id="objective"
+                  value={editingPlan.objective}
+                  onChange={(e) => setEditingPlan({ ...editingPlan, objective: e.target.value })}
+                  placeholder="Objetivo principal do plano..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="category">Categoria</Label>
+                  <select 
+                    id="category"
+                    value={editingPlan.category}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, category: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-petrol focus:border-transparent"
+                  >
+                    <option value="Marketing">Marketing</option>
+                    <option value="Vendas">Vendas</option>
+                    <option value="Estratégia">Estratégia</option>
+                    <option value="Gestão">Gestão</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="value">Valor Sugerido (R$)</Label>
+                  <Input
+                    id="value"
+                    type="number"
+                    min="0"
+                    step="100"
+                    value={editingPlan.suggestedValue}
+                    onChange={(e) => setEditingPlan({ ...editingPlan, suggestedValue: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Tarefas *</Label>
+                  <Button type="button" onClick={addTask} size="sm" variant="outline">
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
+                {editingPlan.tasks.map((task, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={task}
+                      onChange={(e) => updateTask(index, e.target.value)}
+                      placeholder={`Tarefa ${index + 1}...`}
+                      className="flex-1"
+                    />
+                    {editingPlan.tasks.length > 1 && (
+                      <Button
+                        type="button"
+                        onClick={() => removeTask(index)}
+                        size="sm"
+                        variant="outline"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    </div>
+                    )}
                   </div>
                 ))}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      {/* FAQ */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Perguntas Frequentes</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <h5 className="font-semibold mb-2">Posso mudar de plano a qualquer momento?</h5>
-                <p className="text-sm text-gray-600">
-                  Sim! Você pode fazer upgrade ou downgrade do seu plano a qualquer momento. 
-                  As mudanças são aplicadas no próximo ciclo de cobrança.
-                </p>
-              </div>
-              <div>
-                <h5 className="font-semibold mb-2">Os diagnósticos não utilizados acumulam?</h5>
-                <p className="text-sm text-gray-600">
-                  Não, os diagnósticos são renovados mensalmente e não acumulam. 
-                  Recomendamos monitorar seu uso pelos relatórios.
-                </p>
-              </div>
-              <div>
-                <h5 className="font-semibold mb-2">Há desconto para pagamento anual?</h5>
-                <p className="text-sm text-gray-600">
-                  Sim! Oferecemos 2 meses grátis para assinaturas anuais. 
-                  Entre em contato para mais detalhes.
-                </p>
               </div>
             </div>
-            <div className="space-y-4">
-              <div>
-                <h5 className="font-semibold mb-2">Posso cancelar a qualquer momento?</h5>
-                <p className="text-sm text-gray-600">
-                  Sim, sem fidelidade! Você pode cancelar a qualquer momento e 
-                  continuar usando até o final do período pago.
-                </p>
-              </div>
-              <div>
-                <h5 className="font-semibold mb-2">Como funciona o suporte?</h5>
-                <p className="text-sm text-gray-600">
-                  Todos os planos incluem suporte. Professional e Agency têm 
-                  prioridade e SLA diferenciado.
-                </p>
-              </div>
-              <div>
-                <h5 className="font-semibold mb-2">Há período de teste?</h5>
-                <p className="text-sm text-gray-600">
-                  Sim! Oferecemos 14 dias grátis para testar todas as funcionalidades 
-                  do plano Professional.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          )}
 
-      {/* CTA */}
-      <Card className="bg-gradient-petrol text-white text-center">
-        <CardContent className="p-8">
-          <h3 className="text-2xl font-bold mb-4">
-            Precisa de um plano personalizado?
-          </h3>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Para agências com necessidades específicas, criamos soluções sob medida. 
-            Fale com nossa equipe comercial e descubra como podemos ajudar.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" className="bg-white text-petrol border-white hover:bg-gray-100">
-              📞 Falar com Vendas
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+              Cancelar
             </Button>
-            <Button variant="outline" className="bg-transparent border-white text-white hover:bg-white/10">
-              📧 Solicitar Proposta
+            <Button onClick={handleSavePlan} className="bg-petrol hover:bg-petrol/90">
+              {isNewPlan ? "Criar Plano" : "Salvar Alterações"}
             </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {plans.length === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum plano cadastrado</h3>
+            <p className="text-gray-600 mb-6">
+              Comece criando o primeiro plano comercial.
+            </p>
+            <Button onClick={handleNewPlan} className="bg-petrol hover:bg-petrol/90">
+              <Plus className="mr-2 h-4 w-4" />
+              Criar Primeiro Plano
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

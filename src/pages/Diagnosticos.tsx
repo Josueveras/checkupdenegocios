@@ -205,7 +205,7 @@ const Diagnosticos = () => {
                   <SelectItem value="todos">Todos</SelectItem>
                   <SelectItem value="alto">Alto (80%+)</SelectItem>
                   <SelectItem value="medio">Médio (40-79%)</SelectItem>
-                  <SelectItem value="baixo">Baixo (<40%)</SelectItem>
+                  <SelectItem value="baixo">Baixo (&lt;40%)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
