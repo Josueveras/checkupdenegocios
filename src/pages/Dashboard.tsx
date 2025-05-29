@@ -4,9 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { BarChart, FileText, Calendar, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { InteractiveChart } from '@/components/charts/InteractiveChart';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   const recentDiagnostics = [
     {
       id: 1,
@@ -35,6 +38,13 @@ const Dashboard = () => {
       date: "2024-01-13",
       status: "Concluído"
     }
+  ];
+
+  const distributionData = [
+    { name: 'Avançado', value: 23, color: '#22C55E' },
+    { name: 'Intermediário', value: 35, color: '#EAB308' },
+    { name: 'Emergente', value: 28, color: '#F97316' },
+    { name: 'Iniciante', value: 14, color: '#EF4444' }
   ];
 
   const getScoreColor = (score: number) => {
@@ -72,7 +82,10 @@ const Dashboard = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-petrol">
+        <Card 
+          className="border-l-4 border-l-petrol cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+          onClick={() => navigate('/diagnosticos')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Total de Diagnósticos
@@ -87,7 +100,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-blue-light">
+        <Card 
+          className="border-l-4 border-l-blue-light cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+          onClick={() => navigate('/metricas')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Score Médio
@@ -102,7 +118,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-mustard">
+        <Card 
+          className="border-l-4 border-l-mustard cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+          onClick={() => navigate('/propostas')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Propostas Geradas
@@ -117,7 +136,10 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-green-500">
+        <Card 
+          className="border-l-4 border-l-green-500 cursor-pointer hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+          onClick={() => navigate('/metricas')}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Taxa de Conversão
@@ -147,7 +169,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {recentDiagnostics.map((diagnostic) => (
-              <div key={diagnostic.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+              <div key={diagnostic.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate('/diagnosticos')}>
                 <div className="flex-1">
                   <h4 className="font-medium text-gray-900">{diagnostic.company}</h4>
                   <p className="text-sm text-gray-600">{diagnostic.client}</p>
@@ -181,37 +203,8 @@ const Dashboard = () => {
               Classificação das empresas diagnosticadas
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Avançado</span>
-                  <span>23%</span>
-                </div>
-                <Progress value={23} className="h-2" />
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Intermediário</span>
-                  <span>35%</span>
-                </div>
-                <Progress value={35} className="h-2" />
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Emergente</span>
-                  <span>28%</span>
-                </div>
-                <Progress value={28} className="h-2" />
-              </div>
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Iniciante</span>
-                  <span>14%</span>
-                </div>
-                <Progress value={14} className="h-2" />
-              </div>
-            </div>
+          <CardContent>
+            <InteractiveChart data={distributionData} type="pie" />
           </CardContent>
         </Card>
       </div>
@@ -227,25 +220,25 @@ const Dashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link to="/novo-diagnostico">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
                 <FileText className="h-6 w-6" />
                 <span>Novo Diagnóstico</span>
               </Button>
             </Link>
             <Link to="/propostas">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
                 <FileText className="h-6 w-6" />
                 <span>Gerar Proposta</span>
               </Button>
             </Link>
             <Link to="/perguntas">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
                 <Settings className="h-6 w-6" />
                 <span>Editar Perguntas</span>
               </Button>
             </Link>
             <Link to="/metricas">
-              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2 hover:bg-gray-50 transition-colors">
                 <BarChart className="h-6 w-6" />
                 <span>Ver Métricas</span>
               </Button>

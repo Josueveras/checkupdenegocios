@@ -1,24 +1,52 @@
 
-export const sendWhatsAppMessage = (phone: string, message: string) => {
-  // Remover caracteres especiais do telefone
+export const createWhatsAppLink = (phone: string, message: string) => {
+  // Remove todos os caracteres não numéricos do telefone
   const cleanPhone = phone.replace(/\D/g, '');
   
-  // Garantir que tenha código do país (55 para Brasil)
+  // Adiciona código do país se não tiver
   const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
   
-  // Criar URL do WhatsApp
-  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+  // Encode da mensagem para URL
+  const encodedMessage = encodeURIComponent(message);
   
-  // Abrir em nova aba
+  return `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
+};
+
+export const sendDiagnosticWhatsApp = (clientName: string, companyName: string, phone: string, pdfUrl?: string) => {
+  const message = `Olá ${clientName}! 👋
+
+Seu diagnóstico empresarial da ${companyName} foi finalizado!
+
+📊 Acesse seu relatório completo aqui: ${pdfUrl || 'Em breve você receberá o link'}
+
+Qualquer dúvida, estamos à disposição!
+
+Atenciosamente,
+Equipe CheckUp de Negócios`;
+
+  const whatsappUrl = createWhatsAppLink(phone, message);
   window.open(whatsappUrl, '_blank');
+  
+  return whatsappUrl;
 };
 
-export const sendDiagnosticWhatsApp = (phone: string, pdfUrl: string, companyName: string) => {
-  const message = `Olá! Segue seu diagnóstico empresarial da ${companyName}. Clique aqui para visualizar: ${pdfUrl}`;
-  sendWhatsAppMessage(phone, message);
-};
+export const sendProposalWhatsApp = (clientName: string, companyName: string, phone: string, value: number, objective: string, pdfUrl?: string) => {
+  const message = `Olá ${clientName}! 👋
 
-export const sendProposalWhatsApp = (phone: string, pdfUrl: string, companyName: string) => {
-  const message = `Olá! Segue a proposta comercial personalizada para ${companyName}. Clique aqui para visualizar: ${pdfUrl}`;
-  sendWhatsAppMessage(phone, message);
+Segue a proposta comercial personalizada para ${companyName}.
+
+💼 Valor: ${value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+🎯 Objetivo: ${objective}
+
+📄 Acesse a proposta completa aqui: ${pdfUrl || 'Em breve você receberá o link'}
+
+Estamos à disposição para esclarecimentos!
+
+Atenciosamente,
+Equipe CheckUp de Negócios`;
+
+  const whatsappUrl = createWhatsAppLink(phone, message);
+  window.open(whatsappUrl, '_blank');
+  
+  return whatsappUrl;
 };

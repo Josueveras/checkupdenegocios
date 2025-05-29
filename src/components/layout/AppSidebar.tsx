@@ -43,12 +43,6 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
 
   const isActive = (path: string) => currentPath === path;
-  const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-      isActive 
-        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
-        : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-    }`;
 
   return (
     <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r border-sidebar-border bg-sidebar transition-all duration-300`}>
@@ -78,7 +72,13 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={getNavCls}
+                      className={({ isActive }) => 
+                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
+                          isActive 
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+                            : "text-sidebar-foreground"
+                        }`
+                      }
                       title={collapsed ? item.title : undefined}
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
