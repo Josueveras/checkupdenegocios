@@ -8,8 +8,8 @@ interface AuthContextType {
   session: Session | null;
   isAuthenticated: boolean;
   loading: boolean;
-  login: (email: string, password: string) => Promise<{ user: User; session: Session; weakPassword?: any } | { user: null; session: null; weakPassword?: null }>;
-  logout: () => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,20 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
 
-    // Retornar os dados conforme esperado pela tipagem
-    if (data.user && data.session) {
-      return {
-        user: data.user,
-        session: data.session,
-        weakPassword: data.weakPassword
-      };
-    } else {
-      return {
-        user: null,
-        session: null,
-        weakPassword: null
-      };
-    }
+    // O onAuthStateChange já vai atualizar o estado
+    return data;
   };
 
   const logout = async () => {
