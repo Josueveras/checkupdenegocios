@@ -11,6 +11,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Edit, Trash2, Package, DollarSign } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Tables } from '@/integrations/supabase/types';
+
+type PlanooDB = Tables<'planos'>;
 
 interface Plano {
   id: string;
@@ -18,7 +21,7 @@ interface Plano {
   objetivo: string;
   tarefas: string[];
   valor: number;
-  categoria: string;
+  categoria: string | null;
   ativo: boolean;
   created_at: string;
 }
@@ -59,7 +62,20 @@ export default function MeusPlanos() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setPlanos(data || []);
+      
+      // Convert database format to component format
+      const planosFormatted: Plano[] = (data || []).map((item: PlanooDB) => ({
+        id: item.id,
+        nome: item.nome,
+        objetivo: item.objetivo,
+        tarefas: Array.isArray(item.tarefas) ? item.tarefas as string[] : [],
+        valor: Number(item.valor),
+        categoria: item.categoria,
+        ativo: item.ativo,
+        created_at: item.created_at
+      }));
+      
+      setPlanos(planosFormatted);
     } catch (error) {
       console.error('Erro ao carregar planos:', error);
       toast.error('Erro ao carregar planos');

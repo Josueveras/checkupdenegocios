@@ -13,6 +13,9 @@ import { ArrowLeft, ArrowRight, Download, Send, Save, FileText } from 'lucide-re
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { Tables } from '@/integrations/supabase/types';
+
+type PerguntaDB = Tables<'perguntas'>;
 
 interface EmpresaData {
   nome: string;
@@ -28,7 +31,7 @@ interface Pergunta {
   pergunta: string;
   categoria: string;
   tipo: string;
-  opcoes: any[];
+  opcoes: Array<{ texto: string; score: number }>;
   obrigatoria: boolean;
 }
 
@@ -81,7 +84,18 @@ export default function NovoDiagnostico() {
         .order('categoria');
 
       if (error) throw error;
-      setPerguntas(data || []);
+      
+      // Convert database format to component format
+      const perguntasFormatted: Pergunta[] = (data || []).map((item: PerguntaDB) => ({
+        id: item.id,
+        pergunta: item.pergunta,
+        categoria: item.categoria,
+        tipo: item.tipo,
+        opcoes: Array.isArray(item.opcoes) ? item.opcoes as Array<{ texto: string; score: number }> : [],
+        obrigatoria: item.obrigatoria
+      }));
+      
+      setPerguntas(perguntasFormatted);
     } catch (error) {
       console.error('Erro ao carregar perguntas:', error);
       toast.error('Erro ao carregar perguntas');

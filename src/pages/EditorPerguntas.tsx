@@ -11,13 +11,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, Edit, Trash2, HelpCircle, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Tables } from '@/integrations/supabase/types';
+
+type PerguntaDB = Tables<'perguntas'>;
 
 interface Pergunta {
   id: string;
   pergunta: string;
   categoria: string;
   tipo: string;
-  opcoes: any[];
+  opcoes: Array<{ texto: string; score: number }>;
   obrigatoria: boolean;
   ativa: boolean;
   created_at: string;
@@ -60,7 +63,20 @@ export default function EditorPerguntas() {
         .order('categoria, created_at');
 
       if (error) throw error;
-      setPerguntas(data || []);
+      
+      // Convert database format to component format
+      const perguntasFormatted: Pergunta[] = (data || []).map((item: PerguntaDB) => ({
+        id: item.id,
+        pergunta: item.pergunta,
+        categoria: item.categoria,
+        tipo: item.tipo,
+        opcoes: Array.isArray(item.opcoes) ? item.opcoes as Array<{ texto: string; score: number }> : [],
+        obrigatoria: item.obrigatoria,
+        ativa: item.ativa,
+        created_at: item.created_at
+      }));
+      
+      setPerguntas(perguntasFormatted);
     } catch (error) {
       console.error('Erro ao carregar perguntas:', error);
       toast.error('Erro ao carregar perguntas');
