@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -395,7 +394,7 @@ const NovoDiagnostico = () => {
             <div key={category} className="space-y-2">
               <div className="flex justify-between">
                 <span className="font-medium">{category}</span>
-                <span className="text-sm text-gray-600">{score}%</span>
+                <span className="text-sm text-gray-600">{score as number}%</span>
               </div>
               <Progress value={score as number} className="h-2" />
             </div>
