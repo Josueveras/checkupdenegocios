@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,14 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { User, CreditCard, FileText, Settings, Upload, Save } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
 const Conta = () => {
-  const { user, logout } = useAuth();
   const [profileData, setProfileData] = useState({
-    name: user?.name || 'João Silva',
-    email: user?.email || 'joao@agenciadigital.com',
+    name: 'João Silva',
+    email: 'joao@agenciadigital.com',
     phone: '(11) 99999-9999',
     company: 'Agência Digital Pro',
     position: 'CEO',
