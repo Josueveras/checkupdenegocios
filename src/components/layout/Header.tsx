@@ -24,7 +24,7 @@ export function Header() {
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <SidebarTrigger className="lg:hidden" />
+        <SidebarTrigger />
         {showBackButton && <BackButton />}
         <div className="hidden lg:block">
           <h1 className="text-xl font-semibold text-gray-900">
