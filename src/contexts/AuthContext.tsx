@@ -28,6 +28,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Verificar sessão existente primeiro
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
     // Configurar listener de alterações de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
@@ -37,32 +44,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Verificar sessão existente
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
     return () => subscription.unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Implementar login real quando houver autenticação
-    // Por enquanto, simular login para demonstração
-    const mockUser = {
-      id: '1',
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-    } as User;
-    
-    setUser(mockUser);
-    localStorage.setItem('user', JSON.stringify(mockUser));
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    // O onAuthStateChange já vai atualizar o estado
+    return data;
   };
 
-  const logout = () => {
-    setUser(null);
-    setSession(null);
-    localStorage.removeItem('user');
+  const logout = async () => {
+    await supabase.auth.signOut();
+    // O onAuthStateChange já vai limpar o estado
   };
 
   const value = {
