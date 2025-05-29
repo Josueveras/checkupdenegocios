@@ -7,7 +7,7 @@ export const useAuth = () => {
 };
 
 export const usePersistedAuth = () => {
-  const { user, login, logout } = useAuthContext();
+  const { user, login, logout, loading } = useAuthContext();
   const [persistedUser, setPersistedUser] = useState<any>(null);
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export const usePersistedAuth = () => {
   return {
     user: user || persistedUser,
     isAuthenticated: !!(user || persistedUser),
+    loading,
     login,
     logout
   };
