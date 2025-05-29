@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,11 +7,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { FileText, Download, Calendar, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '@/components/ui/dialog';
+import { generateDiagnosticPDF, downloadPDF } from '@/utils/pdfGenerator';
+import { scheduleDiagnosticMeeting } from '@/utils/calendarUtils';
 
 const Diagnosticos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [scoreFilter, setScoreFilter] = useState('todos');
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; diagnosticId?: number }>({ open: false });
 
   const mockDiagnostics = [
     {
@@ -104,48 +114,118 @@ const Diagnosticos = () => {
     return matchesSearch && matchesStatus && matchesScore;
   });
 
-  const handleViewPDF = (pdfUrl: string, company: string) => {
-    if (!pdfUrl) {
+  const handleViewPDF = (diagnostic: any) => {
+    if (!diagnostic.pdfUrl && diagnostic.status === 'Pendente') {
       toast({
         title: "PDF não disponível",
-        description: "O PDF ainda não foi gerado para este diagnóstico.",
+        description: "O diagnóstico ainda não foi finalizado.",
         variant: "destructive"
       });
       return;
     }
-    window.open(pdfUrl, '_blank');
+
+    try {
+      // Generate PDF if not exists
+      if (!diagnostic.pdfUrl) {
+        const doc = generateDiagnosticPDF({
+          empresa: {
+            nome: diagnostic.company,
+            cliente_nome: diagnostic.client,
+            cliente_email: diagnostic.email
+          },
+          created_at: diagnostic.date,
+          score_total: diagnostic.score,
+          nivel: diagnostic.level,
+          score_marketing: Math.floor(diagnostic.score * 0.9),
+          score_vendas: Math.floor(diagnostic.score * 1.1),
+          score_estrategia: Math.floor(diagnostic.score * 0.95),
+          score_gestao: Math.floor(diagnostic.score * 1.05),
+          pontos_fortes: ['Boa presença digital', 'Equipe qualificada'],
+          pontos_atencao: ['Melhorar processo de vendas', 'Otimizar marketing']
+        });
+        
+        downloadPDF(doc, `diagnostico-${diagnostic.company.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+        
+        toast({
+          title: "PDF gerado",
+          description: `Diagnóstico de ${diagnostic.company} baixado com sucesso!`
+        });
+      } else {
+        window.open(diagnostic.pdfUrl, '_blank');
+        toast({
+          title: "PDF aberto",
+          description: `Visualizando diagnóstico de ${diagnostic.company}`
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleSendWhatsApp = (phone: string, pdfUrl: string, company: string) => {
-    if (!pdfUrl) {
+  const handleSendWhatsApp = (diagnostic: any) => {
+    if (!diagnostic.phone) {
       toast({
-        title: "PDF não disponível",
-        description: "Não é possível enviar por WhatsApp sem o PDF gerado.",
+        title: "Telefone não informado",
+        description: "Não é possível enviar WhatsApp sem o número de telefone.",
         variant: "destructive"
       });
       return;
     }
-    
-    const message = `Olá, segue seu diagnóstico gerado. Clique aqui: ${pdfUrl}`;
-    const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    
+
+    try {
+      const message = `Olá ${diagnostic.client}! 👋\n\nSeu diagnóstico empresarial da ${diagnostic.company} foi finalizado!\n\n📊 Score: ${diagnostic.score}%\n📈 Nível: ${diagnostic.level}\n\nClique aqui para visualizar: ${diagnostic.pdfUrl || 'Em breve você receberá o link'}\n\nQualquer dúvida, estamos à disposição!`;
+      
+      const cleanPhone = diagnostic.phone.replace(/\D/g, '');
+      const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
+      
+      window.open(whatsappUrl, '_blank');
+      
+      toast({
+        title: "WhatsApp enviado",
+        description: `Mensagem preparada para ${diagnostic.client} (${diagnostic.company})`
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao enviar WhatsApp",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleScheduleMeeting = (diagnostic: any) => {
+    try {
+      scheduleDiagnosticMeeting(diagnostic.company, diagnostic.client);
+      
+      toast({
+        title: "Reunião agendada",
+        description: `Calendário aberto para agendar reunião com ${diagnostic.company}`
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao agendar",
+        description: "Tente novamente em alguns instantes.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteDiagnostic = (diagnosticId: number) => {
+    setDeleteDialog({ open: true, diagnosticId });
+  };
+
+  const confirmDelete = () => {
+    // Simulate delete action
     toast({
-      title: "WhatsApp aberto",
-      description: `Mensagem preparada para ${company}`
+      title: "Diagnóstico excluído",
+      description: "O diagnóstico foi removido com sucesso.",
+      variant: "destructive"
     });
-  };
-
-  const handleScheduleMeeting = (calendarUrl: string, company: string) => {
-    if (!calendarUrl) {
-      toast({
-        title: "Link não disponível",
-        description: "Nenhum link de agendamento disponível.",
-        variant: "destructive"
-      });
-      return;
-    }
-    window.open(calendarUrl, '_blank');
+    setDeleteDialog({ open: false });
   };
 
   return (
@@ -237,7 +317,7 @@ const Diagnosticos = () => {
       {/* Diagnostics List */}
       <div className="grid gap-4">
         {filteredDiagnostics.map((diagnostic) => (
-          <Card key={diagnostic.id} className="hover:shadow-md transition-shadow">
+          <Card key={diagnostic.id} className="hover:shadow-lg transition-all duration-200 hover:scale-[1.01]">
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 {/* Company Info */}
@@ -273,8 +353,8 @@ const Diagnosticos = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleViewPDF(diagnostic.pdfUrl, diagnostic.company)}
-                    className="flex items-center gap-2"
+                    onClick={() => handleViewPDF(diagnostic)}
+                    className="flex items-center gap-2 hover:bg-blue-50 hover:border-blue-300 transition-colors"
                   >
                     <FileText className="h-4 w-4" />
                     Ver PDF
@@ -282,19 +362,28 @@ const Diagnosticos = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleSendWhatsApp(diagnostic.phone, diagnostic.pdfUrl, diagnostic.company)}
-                    className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
+                    onClick={() => handleSendWhatsApp(diagnostic)}
+                    className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-50 hover:border-green-700 transition-colors"
                   >
                     📤 WhatsApp
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleScheduleMeeting(diagnostic.calendarUrl, diagnostic.company)}
-                    className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
+                    onClick={() => handleScheduleMeeting(diagnostic)}
+                    className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-50 hover:border-blue-700 transition-colors"
                   >
                     <Calendar className="h-4 w-4" />
                     Agendar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteDiagnostic(diagnostic.id)}
+                    className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-50 hover:border-red-700 transition-colors"
+                  >
+                    <Settings className="h-4 w-4" />
+                    Excluir
                   </Button>
                 </div>
               </div>
@@ -321,6 +410,26 @@ const Diagnosticos = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open })}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este diagnóstico? Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialog({ open: false })}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
