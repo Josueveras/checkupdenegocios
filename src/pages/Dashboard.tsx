@@ -204,7 +204,11 @@ const Dashboard = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <InteractiveChart data={distributionData} type="pie" />
+            <InteractiveChart 
+              data={distributionData} 
+              type="pie" 
+              title="Distribuição por Nível de Maturidade"
+            />
           </CardContent>
         </Card>
       </div>
