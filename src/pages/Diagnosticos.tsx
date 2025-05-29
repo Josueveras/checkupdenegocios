@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, Settings } from 'lucide-react';
+import { FileText, Download, Calendar, Settings, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { 
@@ -17,67 +18,17 @@ import {
 } from '@/components/ui/dialog';
 import { generateDiagnosticPDF, downloadPDF } from '@/utils/pdfGenerator';
 import { scheduleDiagnosticMeeting } from '@/utils/calendarUtils';
+import { sendWhatsAppMessage } from '@/utils/whatsappUtils';
+import { useDiagnosticos, useDeleteDiagnostico } from '@/hooks/useSupabase';
 
 const Diagnosticos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [scoreFilter, setScoreFilter] = useState('todos');
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; diagnosticId?: number }>({ open: false });
+  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; diagnosticId?: string }>({ open: false });
 
-  const mockDiagnostics = [
-    {
-      id: 1,
-      company: "Tech Solutions LTDA",
-      client: "João Silva",
-      email: "joao@techsolutions.com",
-      phone: "11999999999",
-      score: 78,
-      level: "Intermediário",
-      date: "2024-01-15",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic1.pdf",
-      calendarUrl: "https://calendly.com/agencia"
-    },
-    {
-      id: 2,
-      company: "Marketing Digital Pro",
-      client: "Maria Santos",
-      email: "maria@marketingpro.com",
-      phone: "11888888888",
-      score: 45,
-      level: "Emergente",
-      date: "2024-01-14",
-      status: "Pendente",
-      pdfUrl: "",
-      calendarUrl: "https://calendly.com/agencia"
-    },
-    {
-      id: 3,
-      company: "Inovação & Estratégia",
-      client: "Pedro Costa",
-      email: "pedro@inovacao.com",
-      phone: "11777777777",
-      score: 92,
-      level: "Avançado",
-      date: "2024-01-13",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic3.pdf",
-      calendarUrl: ""
-    },
-    {
-      id: 4,
-      company: "Consultoria Business",
-      client: "Ana Lima",
-      email: "ana@consultoria.com",
-      phone: "11666666666",
-      score: 28,
-      level: "Iniciante",
-      date: "2024-01-12",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic4.pdf",
-      calendarUrl: "https://calendly.com/agencia"
-    }
-  ];
+  const { data: diagnostics = [], isLoading } = useDiagnosticos();
+  const deleteCompanyMutation = useDeleteDiagnostico();
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 bg-green-50";
@@ -97,67 +48,78 @@ const Diagnosticos = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    return status === "Concluído" 
+    return status === "concluido" || status === "Concluído"
       ? "bg-blue-100 text-blue-800" 
       : "bg-gray-100 text-gray-800";
   };
 
-  const filteredDiagnostics = mockDiagnostics.filter(diagnostic => {
-    const matchesSearch = diagnostic.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         diagnostic.client.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || diagnostic.status === statusFilter;
+  const filteredDiagnostics = diagnostics.filter(diagnostic => {
+    const company = diagnostic.empresas?.nome || '';
+    const client = diagnostic.empresas?.cliente_nome || '';
+    const matchesSearch = company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         client.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const status = diagnostic.status === 'concluido' ? 'Concluído' : 'Pendente';
+    const matchesStatus = statusFilter === 'todos' || status === statusFilter;
+    
+    const score = diagnostic.score_total || 0;
     const matchesScore = scoreFilter === 'todos' || 
-                        (scoreFilter === 'alto' && diagnostic.score >= 80) ||
-                        (scoreFilter === 'medio' && diagnostic.score >= 40 && diagnostic.score < 80) ||
-                        (scoreFilter === 'baixo' && diagnostic.score < 40);
+                        (scoreFilter === 'alto' && score >= 80) ||
+                        (scoreFilter === 'medio' && score >= 40 && score < 80) ||
+                        (scoreFilter === 'baixo' && score < 40);
     
     return matchesSearch && matchesStatus && matchesScore;
   });
 
-  const handleViewPDF = (diagnostic: any) => {
-    if (!diagnostic.pdfUrl && diagnostic.status === 'Pendente') {
-      toast({
-        title: "PDF não disponível",
-        description: "O diagnóstico ainda não foi finalizado.",
-        variant: "destructive"
-      });
-      return;
-    }
-
+  const handleViewPDF = async (diagnostic: any) => {
     try {
-      // Generate PDF if not exists
-      if (!diagnostic.pdfUrl) {
-        const doc = generateDiagnosticPDF({
-          empresa: {
-            nome: diagnostic.company,
-            cliente_nome: diagnostic.client,
-            cliente_email: diagnostic.email
-          },
-          created_at: diagnostic.date,
-          score_total: diagnostic.score,
-          nivel: diagnostic.level,
-          score_marketing: Math.floor(diagnostic.score * 0.9),
-          score_vendas: Math.floor(diagnostic.score * 1.1),
-          score_estrategia: Math.floor(diagnostic.score * 0.95),
-          score_gestao: Math.floor(diagnostic.score * 1.05),
-          pontos_fortes: ['Boa presença digital', 'Equipe qualificada'],
-          pontos_atencao: ['Melhorar processo de vendas', 'Otimizar marketing']
-        });
-        
-        downloadPDF(doc, `diagnostico-${diagnostic.company.toLowerCase().replace(/\s+/g, '-')}.pdf`);
-        
+      // Verificar se o diagnóstico está pendente
+      if (diagnostic.status === 'pendente') {
         toast({
-          title: "PDF gerado",
-          description: `Diagnóstico de ${diagnostic.company} baixado com sucesso!`
+          title: "PDF não disponível",
+          description: "O diagnóstico ainda não foi finalizado.",
+          variant: "destructive"
         });
-      } else {
-        window.open(diagnostic.pdfUrl, '_blank');
+        return;
+      }
+
+      // Se já existe um PDF URL, abrir
+      if (diagnostic.pdf_url) {
+        window.open(diagnostic.pdf_url, '_blank');
         toast({
           title: "PDF aberto",
-          description: `Visualizando diagnóstico de ${diagnostic.company}`
+          description: `Visualizando diagnóstico de ${diagnostic.empresas?.nome}`
         });
+        return;
       }
+
+      // Gerar PDF se não existir
+      const doc = generateDiagnosticPDF({
+        empresa: {
+          nome: diagnostic.empresas?.nome || 'Empresa não informada',
+          cliente_nome: diagnostic.empresas?.cliente_nome || 'Cliente não informado',
+          cliente_email: diagnostic.empresas?.cliente_email || ''
+        },
+        created_at: diagnostic.created_at,
+        score_total: diagnostic.score_total || 0,
+        nivel: diagnostic.nivel || 'Não definido',
+        score_marketing: diagnostic.score_marketing || 0,
+        score_vendas: diagnostic.score_vendas || 0,
+        score_estrategia: diagnostic.score_estrategia || 0,
+        score_gestao: diagnostic.score_gestao || 0,
+        pontos_fortes: diagnostic.pontos_fortes || ['Análise em progresso'],
+        pontos_atencao: diagnostic.pontos_atencao || ['Análise em progresso']
+      });
+      
+      const fileName = `diagnostico-${(diagnostic.empresas?.nome || 'empresa').toLowerCase().replace(/\s+/g, '-')}.pdf`;
+      downloadPDF(doc, fileName);
+      
+      toast({
+        title: "PDF gerado com sucesso",
+        description: `Diagnóstico de ${diagnostic.empresas?.nome} baixado!`
+      });
     } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
       toast({
         title: "Erro ao gerar PDF",
         description: "Tente novamente em alguns instantes.",
@@ -167,7 +129,13 @@ const Diagnosticos = () => {
   };
 
   const handleSendWhatsApp = (diagnostic: any) => {
-    if (!diagnostic.phone) {
+    const phone = diagnostic.empresas?.cliente_telefone;
+    const clientName = diagnostic.empresas?.cliente_nome || 'Cliente';
+    const companyName = diagnostic.empresas?.nome || 'Empresa';
+    const score = diagnostic.score_total || 0;
+    const level = diagnostic.nivel || 'Não definido';
+
+    if (!phone) {
       toast({
         title: "Telefone não informado",
         description: "Não é possível enviar WhatsApp sem o número de telefone.",
@@ -177,16 +145,18 @@ const Diagnosticos = () => {
     }
 
     try {
-      const message = `Olá ${diagnostic.client}! 👋\n\nSeu diagnóstico empresarial da ${diagnostic.company} foi finalizado!\n\n📊 Score: ${diagnostic.score}%\n📈 Nível: ${diagnostic.level}\n\nClique aqui para visualizar: ${diagnostic.pdfUrl || 'Em breve você receberá o link'}\n\nQualquer dúvida, estamos à disposição!`;
-      
-      const cleanPhone = diagnostic.phone.replace(/\D/g, '');
-      const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
-      
-      window.open(whatsappUrl, '_blank');
+      sendWhatsAppMessage({
+        phone,
+        clientName,
+        companyName,
+        score,
+        level,
+        pdfUrl: diagnostic.pdf_url || ''
+      });
       
       toast({
         title: "WhatsApp enviado",
-        description: `Mensagem preparada para ${diagnostic.client} (${diagnostic.company})`
+        description: `Mensagem preparada para ${clientName} (${companyName})`
       });
     } catch (error) {
       toast({
@@ -199,11 +169,14 @@ const Diagnosticos = () => {
 
   const handleScheduleMeeting = (diagnostic: any) => {
     try {
-      scheduleDiagnosticMeeting(diagnostic.company, diagnostic.client);
+      const companyName = diagnostic.empresas?.nome || 'Empresa';
+      const clientName = diagnostic.empresas?.cliente_nome || 'Cliente';
+      
+      scheduleDiagnosticMeeting(companyName, clientName);
       
       toast({
         title: "Reunião agendada",
-        description: `Calendário aberto para agendar reunião com ${diagnostic.company}`
+        description: `Google Agenda aberto para agendar reunião com ${companyName}`
       });
     } catch (error) {
       toast({
@@ -214,19 +187,37 @@ const Diagnosticos = () => {
     }
   };
 
-  const handleDeleteDiagnostic = (diagnosticId: number) => {
+  const handleDeleteDiagnostic = (diagnosticId: string) => {
     setDeleteDialog({ open: true, diagnosticId });
   };
 
-  const confirmDelete = () => {
-    // Simulate delete action
-    toast({
-      title: "Diagnóstico excluído",
-      description: "O diagnóstico foi removido com sucesso.",
-      variant: "destructive"
-    });
-    setDeleteDialog({ open: false });
+  const confirmDelete = async () => {
+    if (!deleteDialog.diagnosticId) return;
+    
+    try {
+      await deleteCompanyMutation.mutateAsync(deleteDialog.diagnosticId);
+      toast({
+        title: "Diagnóstico excluído",
+        description: "O diagnóstico foi removido com sucesso.",
+        variant: "destructive"
+      });
+      setDeleteDialog({ open: false });
+    } catch (error) {
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir o diagnóstico.",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-petrol"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -310,7 +301,7 @@ const Diagnosticos = () => {
       {/* Results Count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Mostrando {filteredDiagnostics.length} de {mockDiagnostics.length} diagnósticos
+          Mostrando {filteredDiagnostics.length} de {diagnostics.length} diagnósticos
         </p>
       </div>
 
@@ -323,28 +314,30 @@ const Diagnosticos = () => {
                 {/* Company Info */}
                 <div className="flex-1 space-y-2">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <h3 className="font-semibold text-lg text-gray-900">{diagnostic.company}</h3>
+                    <h3 className="font-semibold text-lg text-gray-900">
+                      {diagnostic.empresas?.nome || 'Empresa não informada'}
+                    </h3>
                     <div className="flex flex-wrap gap-2">
                       <Badge className={getStatusBadge(diagnostic.status)}>
-                        {diagnostic.status}
+                        {diagnostic.status === 'concluido' ? 'Concluído' : 'Pendente'}
                       </Badge>
-                      <Badge className={getLevelBadge(diagnostic.level)}>
-                        {diagnostic.level}
+                      <Badge className={getLevelBadge(diagnostic.nivel || 'Iniciante')}>
+                        {diagnostic.nivel || 'Não definido'}
                       </Badge>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-                    <p><strong>Cliente:</strong> {diagnostic.client}</p>
-                    <p><strong>Data:</strong> {new Date(diagnostic.date).toLocaleDateString('pt-BR')}</p>
-                    <p><strong>E-mail:</strong> {diagnostic.email}</p>
-                    <p><strong>WhatsApp:</strong> {diagnostic.phone}</p>
+                    <p><strong>Cliente:</strong> {diagnostic.empresas?.cliente_nome || 'Não informado'}</p>
+                    <p><strong>Data:</strong> {new Date(diagnostic.created_at).toLocaleDateString('pt-BR')}</p>
+                    <p><strong>E-mail:</strong> {diagnostic.empresas?.cliente_email || 'Não informado'}</p>
+                    <p><strong>WhatsApp:</strong> {diagnostic.empresas?.cliente_telefone || 'Não informado'}</p>
                   </div>
                 </div>
 
                 {/* Score */}
                 <div className="text-center">
-                  <div className={`text-3xl font-bold p-4 rounded-lg ${getScoreColor(diagnostic.score)}`}>
-                    {diagnostic.score}%
+                  <div className={`text-3xl font-bold p-4 rounded-lg ${getScoreColor(diagnostic.score_total || 0)}`}>
+                    {diagnostic.score_total || 0}%
                   </div>
                 </div>
 
@@ -382,7 +375,7 @@ const Diagnosticos = () => {
                     onClick={() => handleDeleteDiagnostic(diagnostic.id)}
                     className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-50 hover:border-red-700 transition-colors"
                   >
-                    <Settings className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                     Excluir
                   </Button>
                 </div>
@@ -396,17 +389,30 @@ const Diagnosticos = () => {
         <Card>
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum diagnóstico encontrado</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {diagnostics.length === 0 ? 'Nenhum diagnóstico encontrado' : 'Nenhum resultado encontrado'}
+            </h3>
             <p className="text-gray-600 mb-6">
-              Não há diagnósticos que correspondam aos filtros selecionados.
+              {diagnostics.length === 0 
+                ? 'Comece criando seu primeiro diagnóstico.' 
+                : 'Não há diagnósticos que correspondam aos filtros selecionados.'
+              }
             </p>
-            <Button variant="outline" onClick={() => {
-              setSearchTerm('');
-              setStatusFilter('todos');
-              setScoreFilter('todos');
-            }}>
-              Limpar Filtros
-            </Button>
+            {diagnostics.length === 0 ? (
+              <Link to="/novo-diagnostico">
+                <Button className="bg-petrol hover:bg-petrol/90 text-white">
+                  Criar Diagnóstico
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" onClick={() => {
+                setSearchTerm('');
+                setStatusFilter('todos');
+                setScoreFilter('todos');
+              }}>
+                Limpar Filtros
+              </Button>
+            )}
           </CardContent>
         </Card>
       )}
@@ -424,8 +430,12 @@ const Diagnosticos = () => {
             <Button variant="outline" onClick={() => setDeleteDialog({ open: false })}>
               Cancelar
             </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Excluir
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={deleteCompanyMutation.isPending}
+            >
+              {deleteCompanyMutation.isPending ? 'Excluindo...' : 'Excluir'}
             </Button>
           </DialogFooter>
         </DialogContent>
