@@ -6,12 +6,7 @@ import {
   Calendar, 
   Settings,
   Edit,
-  File,
-  TrendingUp,
-  Package,
-  Palette,
-  Plug,
-  User
+  File
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -34,13 +29,11 @@ const menuItems = [
   { title: "Diagnósticos", url: "/diagnosticos", icon: File },
   { title: "Acompanhamento", url: "/acompanhamento", icon: Calendar },
   { title: "Propostas", url: "/propostas", icon: FileText },
-  { title: "Meus Planos", url: "/meus-planos", icon: Package },
-  { title: "Editor de Perguntas", url: "/editor-perguntas", icon: Edit },
-  { title: "Métricas", url: "/metricas", icon: TrendingUp },
-  { title: "Personalização", url: "/personalizacao", icon: Palette },
-  { title: "Integrações", url: "/integracoes", icon: Plug },
+  { title: "Perguntas", url: "/perguntas", icon: Edit },
+  { title: "Métricas", url: "/metricas", icon: BarChart },
+  { title: "Onboarding", url: "/onboarding", icon: Calendar },
   { title: "Configurações", url: "/configuracoes", icon: Settings },
-  { title: "Conta", url: "/conta", icon: User },
+  { title: "Conta", url: "/conta", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -50,18 +43,24 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
 
   const isActive = (path: string) => currentPath === path;
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
+      isActive 
+        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+        : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+    }`;
 
   return (
-    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r border-gray-200 bg-white transition-all duration-300`}>
-      <div className="p-4 border-b border-gray-200">
+    <Sidebar className={`${collapsed ? "w-16" : "w-64"} border-r border-sidebar-border bg-sidebar transition-all duration-300`}>
+      <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-[#0F3244] rounded-lg flex items-center justify-center">
-            <BarChart className="h-5 w-5 text-white" />
+          <div className="w-8 h-8 bg-sidebar-primary rounded-lg flex items-center justify-center">
+            <BarChart className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
           {!collapsed && (
             <div>
-              <h2 className="font-semibold text-[#0F3244]">CheckUp</h2>
-              <p className="text-xs text-gray-600">de Negócios</p>
+              <h2 className="font-semibold text-sidebar-foreground">CheckUp</h2>
+              <p className="text-xs text-sidebar-foreground/70">de Negócios</p>
             </div>
           )}
         </div>
@@ -69,7 +68,7 @@ export function AppSidebar() {
 
       <SidebarContent className="p-4">
         <SidebarGroup>
-          <SidebarGroupLabel className="text-gray-600 mb-2">
+          <SidebarGroupLabel className="text-sidebar-foreground/70 mb-2">
             {!collapsed && "Menu Principal"}
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -79,13 +78,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink 
                       to={item.url} 
-                      className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 ${
-                          isActive 
-                            ? "bg-[#0F3244] text-white font-medium" 
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`
-                      }
+                      className={getNavCls}
                       title={collapsed ? item.title : undefined}
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
@@ -99,8 +92,8 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <div className="p-4 border-t border-gray-200">
-        <SidebarTrigger className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700" />
+      <div className="p-4 border-t border-sidebar-border">
+        <SidebarTrigger className="w-full bg-sidebar-accent hover:bg-sidebar-accent/80 text-sidebar-accent-foreground" />
       </div>
     </Sidebar>
   );

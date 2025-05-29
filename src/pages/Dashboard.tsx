@@ -1,351 +1,260 @@
 
-import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Plus, FileText, TrendingUp, Send, Clock, ExternalLink, MessageCircle, Calendar } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { BarChart, FileText, Calendar, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-interface DashboardStats {
-  totalDiagnosticos: number;
-  mediaMaturidade: number;
-  propostasEnviadas: number;
-  propostasPendentes: number;
-}
-
-interface DiagnosticoCompleto {
-  id: string;
-  empresa_nome: string;
-  score_total: number;
-  nivel: string;
-  status: string;
-  created_at: string;
-  pdf_url?: string;
-  empresa_whatsapp?: string;
-}
-
-export default function Dashboard() {
-  const navigate = useNavigate();
-  const [stats, setStats] = useState<DashboardStats>({
-    totalDiagnosticos: 0,
-    mediaMaturidade: 0,
-    propostasEnviadas: 0,
-    propostasPendentes: 0
-  });
-  const [ultimosDiagnosticos, setUltimosDiagnosticos] = useState<DiagnosticoCompleto[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
-    try {
-      // Carregar estatísticas
-      const [diagnosticosRes, propostasRes] = await Promise.all([
-        supabase.from('diagnosticos').select('score_total'),
-        supabase.from('propostas').select('status')
-      ]);
-
-      const diagnosticos = diagnosticosRes.data || [];
-      const propostas = propostasRes.data || [];
-
-      const totalDiagnosticos = diagnosticos.length;
-      const mediaMaturidade = totalDiagnosticos > 0 
-        ? Math.round(diagnosticos.reduce((acc, d) => acc + d.score_total, 0) / totalDiagnosticos)
-        : 0;
-      const propostasEnviadas = propostas.filter(p => p.status === 'enviada').length;
-      const propostasPendentes = propostas.filter(p => p.status === 'pendente' || p.status === 'rascunho').length;
-
-      setStats({
-        totalDiagnosticos,
-        mediaMaturidade,
-        propostasEnviadas,
-        propostasPendentes
-      });
-
-      // Carregar últimos diagnósticos
-      const { data: ultimosDiag } = await supabase
-        .from('diagnosticos')
-        .select(`
-          id,
-          score_total,
-          nivel,
-          status,
-          created_at,
-          pdf_url,
-          empresas (nome, whatsapp)
-        `)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (ultimosDiag) {
-        const diagnosticosFormatados = ultimosDiag.map(d => ({
-          id: d.id,
-          empresa_nome: (d.empresas as any)?.nome || 'N/A',
-          score_total: d.score_total,
-          nivel: d.nivel,
-          status: d.status,
-          created_at: d.created_at,
-          pdf_url: d.pdf_url,
-          empresa_whatsapp: (d.empresas as any)?.whatsapp
-        }));
-        setUltimosDiagnosticos(diagnosticosFormatados);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados do dashboard:', error);
-      toast.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
+const Dashboard = () => {
+  const recentDiagnostics = [
+    {
+      id: 1,
+      company: "Tech Solutions LTDA",
+      client: "João Silva",
+      score: 78,
+      level: "Intermediário",
+      date: "2024-01-15",
+      status: "Concluído"
+    },
+    {
+      id: 2,
+      company: "Marketing Digital Pro",
+      client: "Maria Santos",
+      score: 45,
+      level: "Emergente",
+      date: "2024-01-14",
+      status: "Pendente"
+    },
+    {
+      id: 3,
+      company: "Inovação & Estratégia",
+      client: "Pedro Costa",
+      score: 92,
+      level: "Avançado",
+      date: "2024-01-13",
+      status: "Concluído"
     }
+  ];
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    if (score >= 40) return "text-orange-600";
+    return "text-red-600";
   };
 
-  const handleWhatsAppSend = (whatsapp: string, pdfUrl?: string) => {
-    if (!whatsapp) {
-      toast.error('WhatsApp não cadastrado para esta empresa');
-      return;
-    }
-    
-    const cleanPhone = whatsapp.replace(/\D/g, '');
-    const message = pdfUrl 
-      ? `Olá, segue seu diagnóstico: ${pdfUrl}`
-      : 'Olá, seu diagnóstico foi finalizado!';
-    
-    const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  const handleSchedule = () => {
-    // Template básico do Google Calendar
-    const title = 'Reunião - Apresentação de Diagnóstico';
-    const details = 'Reunião para apresentar os resultados do diagnóstico empresarial';
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() + 1);
-    startDate.setHours(14, 0, 0, 0);
-    
-    const endDate = new Date(startDate);
-    endDate.setHours(15, 0, 0, 0);
-    
-    const formatDate = (date: Date) => date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    
-    const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${formatDate(startDate)}/${formatDate(endDate)}&details=${encodeURIComponent(details)}`;
-    
-    window.open(googleCalendarUrl, '_blank');
-  };
-
-  const getStatusColor = (status: string) => {
+  const getLevelBadge = (level: string) => {
     const colors = {
-      'concluido': 'bg-green-100 text-green-800',
-      'pendente': 'bg-yellow-100 text-yellow-800',
-      'em_andamento': 'bg-blue-100 text-blue-800'
+      "Avançado": "bg-green-100 text-green-800",
+      "Intermediário": "bg-yellow-100 text-yellow-800",
+      "Emergente": "bg-orange-100 text-orange-800",
+      "Iniciante": "bg-red-100 text-red-800"
     };
-    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    return colors[level as keyof typeof colors] || colors["Iniciante"];
   };
-
-  const getNivelColor = (nivel: string) => {
-    const colors = {
-      'Iniciante': 'text-red-600',
-      'Emergente': 'text-orange-600',
-      'Intermediário': 'text-blue-600',
-      'Avançado': 'text-green-600'
-    };
-    return colors[nivel as keyof typeof colors] || 'text-gray-600';
-  };
-
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1,2,3,4].map(i => (
-              <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-            ))}
-          </div>
-          <div className="h-96 bg-gray-200 rounded-lg"></div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-[#0F3244]">Dashboard</h1>
-          <p className="text-gray-600">Visão geral dos seus diagnósticos e métricas</p>
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Visão geral dos seus diagnósticos e métricas</p>
         </div>
-        <Button 
-          onClick={() => navigate('/novo-diagnostico')}
-          className="bg-[#3C9CD6] hover:bg-[#3C9CD6]/90 text-white"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Novo Diagnóstico
-        </Button>
+        <Link to="/novo-diagnostico">
+          <Button className="bg-petrol hover:bg-petrol/90 text-white">
+            <FileText className="mr-2 h-4 w-4" />
+            Novo Diagnóstico
+          </Button>
+        </Link>
       </div>
 
-      {/* Cards de Estatísticas */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/diagnosticos')}
-        >
+        <Card className="border-l-4 border-l-petrol">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Diagnósticos</CardTitle>
-            <FileText className="h-4 w-4 text-[#3C9CD6]" />
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Total de Diagnósticos
+            </CardTitle>
+            <FileText className="h-4 w-4 text-petrol" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#0F3244]">{stats.totalDiagnosticos}</div>
-            <p className="text-xs text-gray-600">Diagnósticos realizados</p>
+            <div className="text-2xl font-bold text-gray-900">127</div>
+            <p className="text-xs text-green-600 mt-1">
+              +12% desde o mês passado
+            </p>
           </CardContent>
         </Card>
 
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/metricas')}
-        >
+        <Card className="border-l-4 border-l-blue-light">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Média de Maturidade</CardTitle>
-            <TrendingUp className="h-4 w-4 text-[#FBB03B]" />
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Score Médio
+            </CardTitle>
+            <BarChart className="h-4 w-4 text-blue-light" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#0F3244]">{stats.mediaMaturidade}%</div>
-            <p className="text-xs text-gray-600">Score médio das empresas</p>
+            <div className="text-2xl font-bold text-gray-900">68%</div>
+            <p className="text-xs text-green-600 mt-1">
+              +5% desde o mês passado
+            </p>
           </CardContent>
         </Card>
 
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/propostas')}
-        >
+        <Card className="border-l-4 border-l-mustard">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Propostas Enviadas</CardTitle>
-            <Send className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Propostas Geradas
+            </CardTitle>
+            <FileText className="h-4 w-4 text-mustard" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#0F3244]">{stats.propostasEnviadas}</div>
-            <p className="text-xs text-gray-600">Propostas já enviadas</p>
+            <div className="text-2xl font-bold text-gray-900">89</div>
+            <p className="text-xs text-green-600 mt-1">
+              +18% desde o mês passado
+            </p>
           </CardContent>
         </Card>
 
-        <Card 
-          className="cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/propostas')}
-        >
+        <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-orange-600" />
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Taxa de Conversão
+            </CardTitle>
+            <Settings className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-[#0F3244]">{stats.propostasPendentes}</div>
-            <p className="text-xs text-gray-600">Aguardando envio</p>
+            <div className="text-2xl font-bold text-gray-900">70%</div>
+            <p className="text-xs text-green-600 mt-1">
+              +8% desde o mês passado
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabela de Últimos Diagnósticos */}
+      {/* Recent Diagnostics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-petrol" />
+              Diagnósticos Recentes
+            </CardTitle>
+            <CardDescription>
+              Últimos diagnósticos realizados
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {recentDiagnostics.map((diagnostic) => (
+              <div key={diagnostic.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                <div className="flex-1">
+                  <h4 className="font-medium text-gray-900">{diagnostic.company}</h4>
+                  <p className="text-sm text-gray-600">{diagnostic.client}</p>
+                  <p className="text-xs text-gray-500 mt-1">{diagnostic.date}</p>
+                </div>
+                <div className="text-right space-y-2">
+                  <div className={`text-2xl font-bold ${getScoreColor(diagnostic.score)}`}>
+                    {diagnostic.score}%
+                  </div>
+                  <Badge className={getLevelBadge(diagnostic.level)}>
+                    {diagnostic.level}
+                  </Badge>
+                </div>
+              </div>
+            ))}
+            <Link to="/diagnosticos">
+              <Button variant="outline" className="w-full mt-4">
+                Ver Todos os Diagnósticos
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart className="h-5 w-5 text-petrol" />
+              Distribuição por Nível
+            </CardTitle>
+            <CardDescription>
+              Classificação das empresas diagnosticadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Avançado</span>
+                  <span>23%</span>
+                </div>
+                <Progress value={23} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Intermediário</span>
+                  <span>35%</span>
+                </div>
+                <Progress value={35} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Emergente</span>
+                  <span>28%</span>
+                </div>
+                <Progress value={28} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Iniciante</span>
+                  <span>14%</span>
+                </div>
+                <Progress value={14} className="h-2" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-[#0F3244]">Últimos Diagnósticos</CardTitle>
+          <CardTitle>Ações Rápidas</CardTitle>
+          <CardDescription>
+            Acesso rápido às principais funcionalidades
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {ultimosDiagnosticos.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Nenhum diagnóstico encontrado</p>
-              <Button 
-                onClick={() => navigate('/novo-diagnostico')}
-                className="mt-4 bg-[#3C9CD6] hover:bg-[#3C9CD6]/90"
-              >
-                Criar Primeiro Diagnóstico
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link to="/novo-diagnostico">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <FileText className="h-6 w-6" />
+                <span>Novo Diagnóstico</span>
               </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-3 font-medium text-gray-700">Empresa</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Score</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Nível</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Status</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Data</th>
-                    <th className="text-left p-3 font-medium text-gray-700">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ultimosDiagnosticos.map((diagnostico) => (
-                    <tr key={diagnostico.id} className="border-b hover:bg-gray-50">
-                      <td className="p-3 font-medium">{diagnostico.empresa_nome}</td>
-                      <td className="p-3">
-                        <span className="font-semibold text-[#0F3244]">
-                          {diagnostico.score_total}%
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className={`font-medium ${getNivelColor(diagnostico.nivel)}`}>
-                          {diagnostico.nivel}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <Badge className={getStatusColor(diagnostico.status)}>
-                          {diagnostico.status.replace('_', ' ')}
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-gray-600">
-                        {new Date(diagnostico.created_at).toLocaleDateString('pt-BR')}
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-2">
-                          {diagnostico.pdf_url && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => window.open(diagnostico.pdf_url, '_blank')}
-                              title="Ver PDF"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleWhatsAppSend(diagnostico.empresa_whatsapp || '', diagnostico.pdf_url)}
-                            title="Enviar WhatsApp"
-                            className="text-green-600 hover:text-green-700"
-                          >
-                            <MessageCircle className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleSchedule}
-                            title="Agendar"
-                            className="text-blue-600 hover:text-blue-700"
-                          >
-                            <Calendar className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            </Link>
+            <Link to="/propostas">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <FileText className="h-6 w-6" />
+                <span>Gerar Proposta</span>
+              </Button>
+            </Link>
+            <Link to="/perguntas">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <Settings className="h-6 w-6" />
+                <span>Editar Perguntas</span>
+              </Button>
+            </Link>
+            <Link to="/metricas">
+              <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
+                <BarChart className="h-6 w-6" />
+                <span>Ver Métricas</span>
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
-
-      {/* Botão Flutuante */}
-      <Button
-        onClick={() => navigate('/novo-diagnostico')}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full bg-[#FBB03B] hover:bg-[#FBB03B]/90 shadow-lg"
-        size="icon"
-      >
-        <Plus className="h-6 w-6" />
-      </Button>
     </div>
   );
-}
+};
+
+export default Dashboard;
