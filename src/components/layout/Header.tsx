@@ -10,21 +10,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { BackButton } from "@/components/ui/back-button";
 import { useLocation } from "react-router-dom";
 
 export function Header() {
   const location = useLocation();
+  const { state } = useSidebar();
   
   // Mostrar botão voltar em páginas que não sejam o dashboard
   const showBackButton = location.pathname !== '/dashboard';
+  
+  // Mostrar o trigger apenas quando o sidebar estiver recolhido
+  const showSidebarTrigger = state === "collapsed";
 
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
-        <SidebarTrigger />
+        {showSidebarTrigger && <SidebarTrigger />}
         {showBackButton && <BackButton />}
         <div className="hidden lg:block">
           <h1 className="text-xl font-semibold text-gray-900">
