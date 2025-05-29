@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Header } from "@/components/layout/Header";
+import { AuthProvider } from "@/contexts/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import NovoDiagnostico from "./pages/NovoDiagnostico";
 import Diagnosticos from "./pages/Diagnosticos";
@@ -29,37 +30,39 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full bg-gray-50">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col">
-              <Header />
-              <main className="flex-1 overflow-auto">
-                <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/novo-diagnostico" element={<NovoDiagnostico />} />
-                  <Route path="/diagnosticos" element={<Diagnosticos />} />
-                  <Route path="/acompanhamento" element={<Acompanhamento />} />
-                  <Route path="/propostas" element={<Propostas />} />
-                  <Route path="/meus-planos" element={<MeusPlanos />} />
-                  <Route path="/editor-perguntas" element={<EditorPerguntas />} />
-                  <Route path="/metricas" element={<Metricas />} />
-                  <Route path="/personalizacao" element={<Personalizacao />} />
-                  <Route path="/integracoes" element={<Integracoes />} />
-                  <Route path="/configuracoes" element={<Configuracoes />} />
-                  <Route path="/conta" element={<Conta />} />
-                  <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/perguntas" element={<Perguntas />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
+      <AuthProvider>
+        <Toaster />
+        <BrowserRouter>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full bg-gray-50">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col">
+                <Header />
+                <main className="flex-1 overflow-auto">
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/novo-diagnostico" element={<NovoDiagnostico />} />
+                    <Route path="/diagnosticos" element={<Diagnosticos />} />
+                    <Route path="/acompanhamento" element={<Acompanhamento />} />
+                    <Route path="/propostas" element={<Propostas />} />
+                    <Route path="/meus-planos" element={<MeusPlanos />} />
+                    <Route path="/editor-perguntas" element={<EditorPerguntas />} />
+                    <Route path="/metricas" element={<Metricas />} />
+                    <Route path="/personalizacao" element={<Personalizacao />} />
+                    <Route path="/integracoes" element={<Integracoes />} />
+                    <Route path="/configuracoes" element={<Configuracoes />} />
+                    <Route path="/conta" element={<Conta />} />
+                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/perguntas" element={<Perguntas />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+              </div>
             </div>
-          </div>
-        </SidebarProvider>
-      </BrowserRouter>
+          </SidebarProvider>
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
