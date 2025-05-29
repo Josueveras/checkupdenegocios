@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ import { toast } from '@/hooks/use-toast';
 const Conta = () => {
   const { user, logout } = useAuth();
   const [profileData, setProfileData] = useState({
-    name: user?.name || 'João Silva',
+    name: user?.user_metadata?.name || user?.email?.split('@')[0] || 'João Silva',
     email: user?.email || 'joao@agenciadigital.com',
     phone: '(11) 99999-9999',
     company: 'Agência Digital Pro',
