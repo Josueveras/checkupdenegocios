@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,21 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogDescription, 
-  DialogFooter, 
-  DialogHeader, 
-  DialogTitle 
-} from '@/components/ui/dialog';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { useConfirmation } from '@/hooks/useConfirmation';
 import { generateProposalPDF, downloadPDF } from '@/utils/pdfGenerator';
 import { scheduleProposalMeeting } from '@/utils/calendarUtils';
 
 const Propostas = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; proposalId?: number }>({ open: false });
+  const { confirmation, confirm } = useConfirmation();
 
   const mockProposals = [
     {
@@ -190,17 +185,22 @@ const Propostas = () => {
     }
   };
 
-  const handleDeleteProposal = (proposalId: number) => {
-    setDeleteDialog({ open: true, proposalId });
-  };
-
-  const confirmDelete = () => {
-    toast({
-      title: "Proposta excluída",
-      description: "A proposta foi removida com sucesso.",
+  const handleDeleteProposal = async (proposalId: number) => {
+    const confirmed = await confirm({
+      title: "Confirmar Exclusão",
+      message: "Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita.",
+      confirmText: "Excluir",
+      cancelText: "Cancelar",
       variant: "destructive"
     });
-    setDeleteDialog({ open: false });
+
+    if (confirmed) {
+      toast({
+        title: "Proposta excluída",
+        description: "A proposta foi removida com sucesso.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSendProposal = (proposal: any) => {
@@ -428,25 +428,18 @@ const Propostas = () => {
         </Card>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialog.open} onOpenChange={(open) => setDeleteDialog({ open })}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmar Exclusão</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialog({ open: false })}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Excluir
-            </Button>
-          </DialogFooter>
-        </DialogFooter>
-      </Dialog>
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        open={confirmation.isOpen}
+        onOpenChange={(open) => !open && confirmation.onCancel()}
+        title={confirmation.title}
+        message={confirmation.message}
+        confirmText={confirmation.confirmText}
+        cancelText={confirmation.cancelText}
+        variant={confirmation.variant}
+        onConfirm={confirmation.onConfirm}
+        onCancel={confirmation.onCancel}
+      />
     </div>
   );
 };
