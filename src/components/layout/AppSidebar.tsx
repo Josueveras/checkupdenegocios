@@ -7,7 +7,7 @@ import {
   BarChart3, 
   Settings, 
   Users, 
-  PresentationChart,
+  Presentation,
   HelpCircle,
   Calendar,
   CreditCard,
@@ -24,7 +24,7 @@ const AppSidebar = ({ isOpen }: SidebarProps) => {
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '/dashboard' },
     { icon: FileText, label: 'Diagnósticos', href: '/diagnosticos' },
-    { icon: PresentationChart, label: 'Propostas', href: '/propostas' },
+    { icon: Presentation, label: 'Propostas', href: '/propostas' },
     { icon: BarChart3, label: 'Métricas', href: '/metricas' },
     { icon: Calendar, label: 'Acompanhamento', href: '/acompanhamento' },
     { icon: HelpCircle, label: 'Perguntas', href: '/perguntas' },

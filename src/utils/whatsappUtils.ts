@@ -50,3 +50,31 @@ Equipe CheckUp de Negócios`;
   
   return whatsappUrl;
 };
+
+export const sendWhatsAppMessage = ({ phone, clientName, companyName, score, level, pdfUrl }: {
+  phone: string;
+  clientName: string;
+  companyName: string;
+  score: number;
+  level: string;
+  pdfUrl?: string;
+}) => {
+  const message = `Olá ${clientName}! 👋
+
+Seu diagnóstico empresarial da ${companyName} foi finalizado!
+
+📊 Score: ${score}%
+📈 Nível: ${level}
+
+📄 Acesse seu relatório completo aqui: ${pdfUrl || 'Em breve você receberá o link'}
+
+Qualquer dúvida, estamos à disposição!
+
+Atenciosamente,
+Equipe CheckUp de Negócios`;
+
+  const whatsappUrl = createWhatsAppLink(phone, message);
+  window.open(whatsappUrl, '_blank');
+  
+  return whatsappUrl;
+};
