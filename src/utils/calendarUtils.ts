@@ -12,16 +12,17 @@ export const createGoogleCalendarEvent = (empresa: string, clienteEmail?: string
     dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
     details: `Reunião para apresentação do diagnóstico empresarial da ${empresa}`,
     location: 'Reunião Online',
-    sf: true,
+    sf: 'true', // Convert boolean to string
     output: 'xml'
   };
   
   const params = new URLSearchParams(eventDetails);
-  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&${params.toString()}`;
   
   if (clienteEmail) {
     params.append('add', clienteEmail);
   }
+  
+  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&${params.toString()}`;
   
   window.open(googleCalendarUrl, '_blank');
 };
