@@ -1,328 +1,351 @@
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, Settings } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { Eye, Edit, RefreshCw, BarChart, Download, Plus, Search, Filter } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
-const Diagnosticos = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [scoreFilter, setScoreFilter] = useState('todos');
+interface DiagnosticoItem {
+  id: string;
+  empresa_nome: string;
+  score_total: number;
+  nivel: string;
+  status: string;
+  created_at: string;
+  pdf_url?: string;
+}
 
-  const mockDiagnostics = [
-    {
-      id: 1,
-      company: "Tech Solutions LTDA",
-      client: "João Silva",
-      email: "joao@techsolutions.com",
-      phone: "11999999999",
-      score: 78,
-      level: "Intermediário",
-      date: "2024-01-15",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic1.pdf",
-      calendarUrl: "https://calendly.com/agencia"
-    },
-    {
-      id: 2,
-      company: "Marketing Digital Pro",
-      client: "Maria Santos",
-      email: "maria@marketingpro.com",
-      phone: "11888888888",
-      score: 45,
-      level: "Emergente",
-      date: "2024-01-14",
-      status: "Pendente",
-      pdfUrl: "",
-      calendarUrl: "https://calendly.com/agencia"
-    },
-    {
-      id: 3,
-      company: "Inovação & Estratégia",
-      client: "Pedro Costa",
-      email: "pedro@inovacao.com",
-      phone: "11777777777",
-      score: 92,
-      level: "Avançado",
-      date: "2024-01-13",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic3.pdf",
-      calendarUrl: ""
-    },
-    {
-      id: 4,
-      company: "Consultoria Business",
-      client: "Ana Lima",
-      email: "ana@consultoria.com",
-      phone: "11666666666",
-      score: 28,
-      level: "Iniciante",
-      date: "2024-01-12",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic4.pdf",
-      calendarUrl: "https://calendly.com/agencia"
-    }
-  ];
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-50";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50";
-    if (score >= 40) return "text-orange-600 bg-orange-50";
-    return "text-red-600 bg-red-50";
-  };
-
-  const getLevelBadge = (level: string) => {
-    const colors = {
-      "Avançado": "bg-green-100 text-green-800",
-      "Intermediário": "bg-yellow-100 text-yellow-800",
-      "Emergente": "bg-orange-100 text-orange-800",
-      "Iniciante": "bg-red-100 text-red-800"
-    };
-    return colors[level as keyof typeof colors] || colors["Iniciante"];
-  };
-
-  const getStatusBadge = (status: string) => {
-    return status === "Concluído" 
-      ? "bg-blue-100 text-blue-800" 
-      : "bg-gray-100 text-gray-800";
-  };
-
-  const filteredDiagnostics = mockDiagnostics.filter(diagnostic => {
-    const matchesSearch = diagnostic.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         diagnostic.client.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || diagnostic.status === statusFilter;
-    const matchesScore = scoreFilter === 'todos' || 
-                        (scoreFilter === 'alto' && diagnostic.score >= 80) ||
-                        (scoreFilter === 'medio' && diagnostic.score >= 40 && diagnostic.score < 80) ||
-                        (scoreFilter === 'baixo' && diagnostic.score < 40);
-    
-    return matchesSearch && matchesStatus && matchesScore;
+export default function Diagnosticos() {
+  const navigate = useNavigate();
+  const [diagnosticos, setDiagnosticos] = useState<DiagnosticoItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filtros, setFiltros] = useState({
+    empresa: '',
+    status: '',
+    nivel: '',
+    dataInicio: '',
+    dataFim: ''
   });
 
-  const handleViewPDF = (pdfUrl: string, company: string) => {
-    if (!pdfUrl) {
-      toast({
-        title: "PDF não disponível",
-        description: "O PDF ainda não foi gerado para este diagnóstico.",
-        variant: "destructive"
-      });
-      return;
+  useEffect(() => {
+    carregarDiagnosticos();
+  }, []);
+
+  const carregarDiagnosticos = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('diagnosticos')
+        .select(`
+          id,
+          score_total,
+          nivel,
+          status,
+          created_at,
+          pdf_url,
+          empresas (nome)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const diagnosticosFormatados = data?.map(d => ({
+        id: d.id,
+        empresa_nome: (d.empresas as any)?.nome || 'N/A',
+        score_total: d.score_total,
+        nivel: d.nivel,
+        status: d.status,
+        created_at: d.created_at,
+        pdf_url: d.pdf_url
+      })) || [];
+
+      setDiagnosticos(diagnosticosFormatados);
+    } catch (error) {
+      console.error('Erro ao carregar diagnósticos:', error);
+      toast.error('Erro ao carregar diagnósticos');
+    } finally {
+      setLoading(false);
     }
-    window.open(pdfUrl, '_blank');
   };
 
-  const handleSendWhatsApp = (phone: string, pdfUrl: string, company: string) => {
-    if (!pdfUrl) {
-      toast({
-        title: "PDF não disponível",
-        description: "Não é possível enviar por WhatsApp sem o PDF gerado.",
-        variant: "destructive"
-      });
-      return;
+  const diagnosticosFiltrados = diagnosticos.filter(diag => {
+    const matchEmpresa = !filtros.empresa || 
+      diag.empresa_nome.toLowerCase().includes(filtros.empresa.toLowerCase());
+    const matchStatus = !filtros.status || diag.status === filtros.status;
+    const matchNivel = !filtros.nivel || diag.nivel === filtros.nivel;
+    
+    let matchData = true;
+    if (filtros.dataInicio || filtros.dataFim) {
+      const diagData = new Date(diag.created_at);
+      if (filtros.dataInicio) {
+        matchData = matchData && diagData >= new Date(filtros.dataInicio);
+      }
+      if (filtros.dataFim) {
+        matchData = matchData && diagData <= new Date(filtros.dataFim);
+      }
     }
-    
-    const message = `Olá, segue seu diagnóstico gerado. Clique aqui: ${pdfUrl}`;
-    const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    
-    toast({
-      title: "WhatsApp aberto",
-      description: `Mensagem preparada para ${company}`
+
+    return matchEmpresa && matchStatus && matchNivel && matchData;
+  });
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      'concluido': 'bg-green-100 text-green-800',
+      'pendente': 'bg-yellow-100 text-yellow-800',
+      'em_andamento': 'bg-blue-100 text-blue-800'
+    };
+    return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getNivelColor = (nivel: string) => {
+    const colors = {
+      'Iniciante': 'text-red-600',
+      'Emergente': 'text-orange-600',
+      'Intermediário': 'text-blue-600',
+      'Avançado': 'text-green-600'
+    };
+    return colors[nivel as keyof typeof colors] || 'text-gray-600';
+  };
+
+  const handleVer = (id: string) => {
+    navigate(`/diagnosticos/${id}`);
+  };
+
+  const handleEditar = (id: string) => {
+    navigate(`/diagnosticos/${id}/editar`);
+  };
+
+  const handleRefazer = (id: string) => {
+    navigate(`/novo-diagnostico?refazer=${id}`);
+  };
+
+  const handleComparar = (id: string) => {
+    navigate(`/acompanhamento?diagnostico=${id}`);
+  };
+
+  const limparFiltros = () => {
+    setFiltros({
+      empresa: '',
+      status: '',
+      nivel: '',
+      dataInicio: '',
+      dataFim: ''
     });
   };
 
-  const handleScheduleMeeting = (calendarUrl: string, company: string) => {
-    if (!calendarUrl) {
-      toast({
-        title: "Link não disponível",
-        description: "Nenhum link de agendamento disponível.",
-        variant: "destructive"
-      });
-      return;
-    }
-    window.open(calendarUrl, '_blank');
-  };
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-64"></div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-10 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+          <div className="h-96 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Diagnósticos</h1>
-          <p className="text-gray-600 mt-1">Histórico completo de todos os diagnósticos realizados</p>
+          <h1 className="text-2xl font-bold text-[#0F3244]">Diagnósticos</h1>
+          <p className="text-gray-600">Gerencie todos os diagnósticos realizados</p>
         </div>
-        <Link to="/novo-diagnostico">
-          <Button className="bg-petrol hover:bg-petrol/90 text-white">
-            <FileText className="mr-2 h-4 w-4" />
-            Novo Diagnóstico
-          </Button>
-        </Link>
+        <Button 
+          onClick={() => navigate('/novo-diagnostico')}
+          className="bg-[#3C9CD6] hover:bg-[#3C9CD6]/90"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Novo Diagnóstico
+        </Button>
       </div>
 
-      {/* Filters */}
+      {/* Filtros */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>
-            Filtre os diagnósticos por empresa, status ou pontuação
-          </CardDescription>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Buscar</label>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="md:col-span-2">
               <Input
-                placeholder="Empresa ou cliente..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar por empresa..."
+                value={filtros.empresa}
+                onChange={(e) => setFiltros(prev => ({ ...prev, empresa: e.target.value }))}
+                className="w-full"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="Concluído">Concluído</SelectItem>
-                  <SelectItem value="Pendente">Pendente</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Score</label>
-              <Select value={scoreFilter} onValueChange={setScoreFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="alto">Alto (80%+)</SelectItem>
-                  <SelectItem value="medio">Médio (40-79%)</SelectItem>
-                  <SelectItem value="baixo">Baixo (&lt;40%)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Período</label>
-              <Select>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecionar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                  <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                  <SelectItem value="90d">Últimos 90 dias</SelectItem>
-                  <SelectItem value="all">Todos</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={filtros.status} onValueChange={(value) => setFiltros(prev => ({ ...prev, status: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="concluido">Concluído</SelectItem>
+                <SelectItem value="pendente">Pendente</SelectItem>
+                <SelectItem value="em_andamento">Em Andamento</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filtros.nivel} onValueChange={(value) => setFiltros(prev => ({ ...prev, nivel: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Nível" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="Iniciante">Iniciante</SelectItem>
+                <SelectItem value="Emergente">Emergente</SelectItem>
+                <SelectItem value="Intermediário">Intermediário</SelectItem>
+                <SelectItem value="Avançado">Avançado</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              type="date"
+              value={filtros.dataInicio}
+              onChange={(e) => setFiltros(prev => ({ ...prev, dataInicio: e.target.value }))}
+              placeholder="Data início"
+            />
+            <Input
+              type="date"
+              value={filtros.dataFim}
+              onChange={(e) => setFiltros(prev => ({ ...prev, dataFim: e.target.value }))}
+              placeholder="Data fim"
+            />
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={limparFiltros}>
+              Limpar Filtros
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Results Count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-600">
-          Mostrando {filteredDiagnostics.length} de {mockDiagnostics.length} diagnósticos
-        </p>
-      </div>
-
-      {/* Diagnostics List */}
-      <div className="grid gap-4">
-        {filteredDiagnostics.map((diagnostic) => (
-          <Card key={diagnostic.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                {/* Company Info */}
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <h3 className="font-semibold text-lg text-gray-900">{diagnostic.company}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge className={getStatusBadge(diagnostic.status)}>
-                        {diagnostic.status}
-                      </Badge>
-                      <Badge className={getLevelBadge(diagnostic.level)}>
-                        {diagnostic.level}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-                    <p><strong>Cliente:</strong> {diagnostic.client}</p>
-                    <p><strong>Data:</strong> {new Date(diagnostic.date).toLocaleDateString('pt-BR')}</p>
-                    <p><strong>E-mail:</strong> {diagnostic.email}</p>
-                    <p><strong>WhatsApp:</strong> {diagnostic.phone}</p>
-                  </div>
-                </div>
-
-                {/* Score */}
-                <div className="text-center">
-                  <div className={`text-3xl font-bold p-4 rounded-lg ${getScoreColor(diagnostic.score)}`}>
-                    {diagnostic.score}%
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 min-w-fit">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewPDF(diagnostic.pdfUrl, diagnostic.company)}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Ver PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendWhatsApp(diagnostic.phone, diagnostic.pdfUrl, diagnostic.company)}
-                    className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
-                  >
-                    📤 WhatsApp
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleScheduleMeeting(diagnostic.calendarUrl, diagnostic.company)}
-                    className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Agendar
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {filteredDiagnostics.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-12">
-            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum diagnóstico encontrado</h3>
-            <p className="text-gray-600 mb-6">
-              Não há diagnósticos que correspondam aos filtros selecionados.
-            </p>
-            <Button variant="outline" onClick={() => {
-              setSearchTerm('');
-              setStatusFilter('todos');
-              setScoreFilter('todos');
-            }}>
-              Limpar Filtros
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      {/* Lista de Diagnósticos */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Diagnósticos ({diagnosticosFiltrados.length})</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {diagnosticosFiltrados.length === 0 ? (
+            <div className="text-center py-12">
+              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 mb-4">
+                {diagnosticos.length === 0 
+                  ? 'Nenhum diagnóstico encontrado' 
+                  : 'Nenhum diagnóstico corresponde aos filtros aplicados'
+                }
+              </p>
+              <Button 
+                onClick={() => navigate('/novo-diagnostico')}
+                className="bg-[#3C9CD6] hover:bg-[#3C9CD6]/90"
+              >
+                Criar Primeiro Diagnóstico
+              </Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left p-3 font-medium text-gray-700">Empresa</th>
+                    <th className="text-left p-3 font-medium text-gray-700">Score</th>
+                    <th className="text-left p-3 font-medium text-gray-700">Nível</th>
+                    <th className="text-left p-3 font-medium text-gray-700">Status</th>
+                    <th className="text-left p-3 font-medium text-gray-700">Data</th>
+                    <th className="text-left p-3 font-medium text-gray-700">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {diagnosticosFiltrados.map((diagnostico) => (
+                    <tr key={diagnostico.id} className="border-b hover:bg-gray-50">
+                      <td className="p-3 font-medium">{diagnostico.empresa_nome}</td>
+                      <td className="p-3">
+                        <span className="font-semibold text-[#0F3244]">
+                          {diagnostico.score_total}%
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <span className={`font-medium ${getNivelColor(diagnostico.nivel)}`}>
+                          {diagnostico.nivel}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <Badge className={getStatusColor(diagnostico.status)}>
+                          {diagnostico.status.replace('_', ' ')}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-gray-600">
+                        {new Date(diagnostico.created_at).toLocaleDateString('pt-BR')}
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleVer(diagnostico.id)}
+                            title="Ver detalhes"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEditar(diagnostico.id)}
+                            title="Editar"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRefazer(diagnostico.id)}
+                            title="Refazer"
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleComparar(diagnostico.id)}
+                            title="Comparar"
+                          >
+                            <BarChart className="h-4 w-4" />
+                          </Button>
+                          {diagnostico.pdf_url && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(diagnostico.pdf_url, '_blank')}
+                              title="Baixar PDF"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default Diagnosticos;
+}

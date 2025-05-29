@@ -1,531 +1,602 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, ArrowRight, Download, FileText } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, ArrowRight, Download, Send, Save, FileText } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
-const NovoDiagnostico = () => {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [companyData, setCompanyData] = useState({
-    clientName: '',
-    companyName: '',
-    email: '',
-    phone: '',
-    website: '',
-    sector: '',
-    employees: '',
-    revenue: ''
+interface EmpresaData {
+  nome: string;
+  setor: string;
+  site_instagram: string;
+  funcionarios: string;
+  faturamento: string;
+  whatsapp: string;
+}
+
+interface Pergunta {
+  id: string;
+  pergunta: string;
+  categoria: string;
+  tipo: string;
+  opcoes: any[];
+  obrigatoria: boolean;
+}
+
+interface Resposta {
+  pergunta_id: string;
+  resposta: string;
+  score: number;
+}
+
+interface ResultadoDiagnostico {
+  scoreTotal: number;
+  scoreEstrategia: number;
+  scoreMarketing: number;
+  scoreVendas: number;
+  nivel: string;
+  pontosFortes: string[];
+  pontosAtencao: string[];
+  recomendacoes: string[];
+}
+
+export default function NovoDiagnostico() {
+  const navigate = useNavigate();
+  const [etapaAtual, setEtapaAtual] = useState(1);
+  const [empresaData, setEmpresaData] = useState<EmpresaData>({
+    nome: '',
+    setor: '',
+    site_instagram: '',
+    funcionarios: '',
+    faturamento: '',
+    whatsapp: ''
   });
+  const [perguntas, setPerguntas] = useState<Pergunta[]>([]);
+  const [respostas, setRespostas] = useState<Resposta[]>([]);
+  const [resultado, setResultado] = useState<ResultadoDiagnostico | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [diagnosticoId, setDiagnosticoId] = useState<string>('');
 
-  const [answers, setAnswers] = useState<{[key: number]: number}>({});
-  const [results, setResults] = useState<any>(null);
-
-  const mockQuestions = [
-    {
-      id: 1,
-      question: "Sua empresa possui uma estratégia de marketing digital estruturada?",
-      category: "Marketing",
-      options: [
-        { text: "Não temos estratégia definida", score: 0 },
-        { text: "Temos algumas ações isoladas", score: 1 },
-        { text: "Temos estratégia básica implementada", score: 2 },
-        { text: "Temos estratégia completa e bem executada", score: 3 }
-      ],
-      required: true
-    },
-    {
-      id: 2,
-      question: "Como é o processo de vendas da sua empresa?",
-      category: "Vendas",
-      options: [
-        { text: "Não temos processo estruturado", score: 0 },
-        { text: "Processo básico e informal", score: 1 },
-        { text: "Processo definido com algumas ferramentas", score: 2 },
-        { text: "Processo otimizado com CRM e automações", score: 3 }
-      ],
-      required: false
-    },
-    {
-      id: 3,
-      question: "Sua empresa possui planejamento estratégico definido?",
-      category: "Estratégia",
-      options: [
-        { text: "Não temos planejamento", score: 0 },
-        { text: "Planejamento informal/básico", score: 1 },
-        { text: "Planejamento anual estruturado", score: 2 },
-        { text: "Planejamento estratégico completo com metas", score: 3 }
-      ],
-      required: false
-    },
-    {
-      id: 4,
-      question: "Como sua empresa monitora e analisa indicadores de desempenho?",
-      category: "Gestão",
-      options: [
-        { text: "Não fazemos monitoramento", score: 0 },
-        { text: "Acompanhamos alguns indicadores básicos", score: 1 },
-        { text: "Temos dashboards e relatórios regulares", score: 2 },
-        { text: "Análise avançada com BI e automações", score: 3 }
-      ],
-      required: false
+  useEffect(() => {
+    if (etapaAtual === 2) {
+      carregarPerguntas();
     }
-  ];
+  }, [etapaAtual]);
 
-  const sectors = [
-    "Tecnologia", "Varejo", "Serviços", "Indústria", "Saúde", 
-    "Educação", "Consultoria", "E-commerce", "Construção", "Outro"
-  ];
+  const carregarPerguntas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('perguntas')
+        .select('*')
+        .eq('ativa', true)
+        .order('categoria');
 
-  const employeeRanges = [
-    "1-5", "6-10", "11-25", "26-50", "51-100", "101-500", "500+"
-  ];
+      if (error) throw error;
+      setPerguntas(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar perguntas:', error);
+      toast.error('Erro ao carregar perguntas');
+    }
+  };
 
-  const revenueRanges = [
-    "Até R$ 100k", "R$ 100k - R$ 500k", "R$ 500k - R$ 1M", 
-    "R$ 1M - R$ 5M", "R$ 5M - R$ 10M", "Acima de R$ 10M"
-  ];
-
-  const handleNext = () => {
-    if (currentStep === 1) {
-      // Validar dados da empresa
-      if (!companyData.clientName || !companyData.companyName || !companyData.email) {
-        toast({
-          title: "Campos obrigatórios",
-          description: "Preencha nome do cliente, empresa e e-mail.",
-          variant: "destructive"
-        });
+  const proximaEtapa = async () => {
+    if (etapaAtual === 1) {
+      if (!empresaData.nome.trim()) {
+        toast.error('Nome da empresa é obrigatório');
         return;
       }
+      setEtapaAtual(2);
+    } else if (etapaAtual === 2) {
+      await processarDiagnostico();
     }
+  };
 
-    if (currentStep === 2) {
-      // Validar perguntas obrigatórias
-      const requiredQuestions = mockQuestions.filter(q => q.required);
-      for (const question of requiredQuestions) {
-        if (!(question.id in answers)) {
-          toast({
-            title: "Pergunta obrigatória",
-            description: `Por favor, responda: ${question.question}`,
-            variant: "destructive"
-          });
-          return;
-        }
+  const etapaAnterior = () => {
+    if (etapaAtual > 1) {
+      setEtapaAtual(etapaAtual - 1);
+    }
+  };
+
+  const atualizarResposta = (perguntaId: string, resposta: string, score: number) => {
+    setRespostas(prev => {
+      const novasRespostas = prev.filter(r => r.pergunta_id !== perguntaId);
+      return [...novasRespostas, { pergunta_id: perguntaId, resposta, score }];
+    });
+  };
+
+  const calcularResultado = (): ResultadoDiagnostico => {
+    const scoresPorCategoria: Record<string, number[]> = {
+      'Estratégia': [],
+      'Marketing': [],
+      'Vendas': []
+    };
+
+    // Agrupar scores por categoria
+    respostas.forEach(resposta => {
+      const pergunta = perguntas.find(p => p.id === resposta.pergunta_id);
+      if (pergunta) {
+        scoresPorCategoria[pergunta.categoria]?.push(resposta.score);
       }
-      
-      // Calcular resultados
-      calculateResults();
-    }
+    });
 
-    setCurrentStep(prev => Math.min(prev + 1, 3));
-  };
-
-  const handleBack = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
-
-  const calculateResults = () => {
-    const categories = ["Marketing", "Vendas", "Estratégia", "Gestão"];
-    const categoryScores: {[key: string]: {total: number, max: number}} = {};
+    // Calcular médias por categoria
+    const scoreEstrategia = scoresPorCategoria['Estratégia'].length > 0
+      ? Math.round((scoresPorCategoria['Estratégia'].reduce((a, b) => a + b, 0) / scoresPorCategoria['Estratégia'].length) * 100 / 3)
+      : 0;
     
-    // Inicializar categorias
-    categories.forEach(cat => {
-      categoryScores[cat] = { total: 0, max: 0 };
-    });
+    const scoreMarketing = scoresPorCategoria['Marketing'].length > 0
+      ? Math.round((scoresPorCategoria['Marketing'].reduce((a, b) => a + b, 0) / scoresPorCategoria['Marketing'].length) * 100 / 3)
+      : 0;
+    
+    const scoreVendas = scoresPorCategoria['Vendas'].length > 0
+      ? Math.round((scoresPorCategoria['Vendas'].reduce((a, b) => a + b, 0) / scoresPorCategoria['Vendas'].length) * 100 / 3)
+      : 0;
 
-    // Calcular scores por categoria
-    mockQuestions.forEach(question => {
-      const answer = answers[question.id];
-      if (answer !== undefined) {
-        categoryScores[question.category].total += answer;
-      }
-      categoryScores[question.category].max += 3; // Pontuação máxima por pergunta
-    });
-
-    // Calcular percentuais
-    const categoryPercentages: {[key: string]: number} = {};
-    let totalScore = 0;
-    let totalMax = 0;
-
-    Object.entries(categoryScores).forEach(([category, scores]) => {
-      const percentage = scores.max > 0 ? Math.round((scores.total / scores.max) * 100) : 0;
-      categoryPercentages[category] = percentage;
-      totalScore += scores.total;
-      totalMax += scores.max;
-    });
-
-    const overallScore = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+    const scoreTotal = Math.round((scoreEstrategia + scoreMarketing + scoreVendas) / 3);
 
     // Determinar nível
-    let level = "Iniciante";
-    if (overallScore >= 80) level = "Avançado";
-    else if (overallScore >= 60) level = "Intermediário";
-    else if (overallScore >= 40) level = "Emergente";
+    let nivel = 'Iniciante';
+    if (scoreTotal >= 75) nivel = 'Avançado';
+    else if (scoreTotal >= 50) nivel = 'Intermediário';
+    else if (scoreTotal >= 25) nivel = 'Emergente';
 
-    // Identificar pontos fortes e de atenção
-    const strongPoints = Object.entries(categoryPercentages)
-      .filter(([_, score]) => score >= 80)
-      .map(([category]) => category);
+    // Gerar pontos fortes, atenção e recomendações baseados nos scores
+    const pontosFortes: string[] = [];
+    const pontosAtencao: string[] = [];
+    const recomendacoes: string[] = [];
 
-    const attentionPoints = Object.entries(categoryPercentages)
-      .filter(([_, score]) => score <= 40)
-      .map(([category]) => category);
+    if (scoreEstrategia >= 60) {
+      pontosFortes.push('Boa estruturação estratégica');
+    } else {
+      pontosAtencao.push('Planejamento estratégico necessita melhorias');
+      recomendacoes.push('Desenvolver um planejamento estratégico mais robusto');
+    }
 
-    setResults({
-      overallScore,
-      level,
-      categoryScores: categoryPercentages,
-      strongPoints,
-      attentionPoints,
-      recommendations: generateRecommendations(categoryPercentages)
-    });
+    if (scoreMarketing >= 60) {
+      pontosFortes.push('Marketing digital bem estruturado');
+    } else {
+      pontosAtencao.push('Estratégia de marketing pode ser aprimorada');
+      recomendacoes.push('Investir em marketing digital e presença online');
+    }
+
+    if (scoreVendas >= 60) {
+      pontosFortes.push('Processo de vendas bem definido');
+    } else {
+      pontosAtencao.push('Processo comercial precisa de estruturação');
+      recomendacoes.push('Implementar CRM e otimizar funil de vendas');
+    }
+
+    return {
+      scoreTotal,
+      scoreEstrategia,
+      scoreMarketing,
+      scoreVendas,
+      nivel,
+      pontosFortes,
+      pontosAtencao,
+      recomendacoes
+    };
   };
 
-  const generateRecommendations = (scores: {[key: string]: number}) => {
-    const recommendations: {[key: string]: string[]} = {};
-    
-    Object.entries(scores).forEach(([category, score]) => {
-      if (score < 40) {
-        switch (category) {
-          case "Marketing":
-            recommendations[category] = [
-              "Desenvolver estratégia de marketing digital",
-              "Implementar presença nas redes sociais",
-              "Criar conteúdo relevante para o público-alvo"
-            ];
-            break;
-          case "Vendas":
-            recommendations[category] = [
-              "Estruturar processo de vendas",
-              "Implementar CRM para gestão de leads",
-              "Treinar equipe comercial"
-            ];
-            break;
-          case "Estratégia":
-            recommendations[category] = [
-              "Elaborar planejamento estratégico",
-              "Definir metas e indicadores",
-              "Realizar análise de mercado"
-            ];
-            break;
-          case "Gestão":
-            recommendations[category] = [
-              "Implementar indicadores de desempenho",
-              "Criar rotinas de monitoramento",
-              "Estabelecer processos organizacionais"
-            ];
-            break;
-        }
-      }
-    });
+  const processarDiagnostico = async () => {
+    setLoading(true);
+    try {
+      // 1. Salvar empresa
+      const { data: empresaSalva, error: empresaError } = await supabase
+        .from('empresas')
+        .insert(empresaData)
+        .select()
+        .single();
 
-    return recommendations;
+      if (empresaError) throw empresaError;
+
+      // 2. Calcular resultado
+      const resultadoCalculado = calcularResultado();
+      setResultado(resultadoCalculado);
+
+      // 3. Salvar diagnóstico
+      const { data: diagnosticoSalvo, error: diagnosticoError } = await supabase
+        .from('diagnosticos')
+        .insert({
+          empresa_id: empresaSalva.id,
+          score_total: resultadoCalculado.scoreTotal,
+          score_estrategia: resultadoCalculado.scoreEstrategia,
+          score_marketing: resultadoCalculado.scoreMarketing,
+          score_vendas: resultadoCalculado.scoreVendas,
+          nivel: resultadoCalculado.nivel,
+          pontos_fortes: resultadoCalculado.pontosFortes,
+          pontos_atencao: resultadoCalculado.pontosAtencao,
+          recomendacoes: resultadoCalculado.recomendacoes,
+          status: 'concluido'
+        })
+        .select()
+        .single();
+
+      if (diagnosticoError) throw diagnosticoError;
+      setDiagnosticoId(diagnosticoSalvo.id);
+
+      // 4. Salvar respostas
+      const respostasParaSalvar = respostas.map(r => ({
+        ...r,
+        diagnostico_id: diagnosticoSalvo.id
+      }));
+
+      const { error: respostasError } = await supabase
+        .from('respostas')
+        .insert(respostasParaSalvar);
+
+      if (respostasError) throw respostasError;
+
+      setEtapaAtual(3);
+      toast.success('Diagnóstico concluído com sucesso!');
+
+    } catch (error) {
+      console.error('Erro ao processar diagnóstico:', error);
+      toast.error('Erro ao processar diagnóstico');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDownloadPDF = () => {
-    toast({
-      title: "PDF gerado",
-      description: "O relatório foi gerado com sucesso!",
-    });
+  const gerarProposta = () => {
+    navigate(`/propostas?diagnostico=${diagnosticoId}`);
   };
 
-  const renderStep1 = () => (
+  const baixarPDF = () => {
+    // Implementação básica - em produção seria gerado um PDF real
+    toast.info('Funcionalidade de PDF será implementada');
+  };
+
+  const salvarDiagnostico = () => {
+    toast.success('Diagnóstico salvo com sucesso!');
+    navigate('/diagnosticos');
+  };
+
+  const renderEtapa1 = () => (
     <Card>
       <CardHeader>
-        <CardTitle>Dados da Empresa</CardTitle>
+        <CardTitle className="text-[#0F3244]">Dados da Empresa</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="clientName">Nome do Cliente *</Label>
+          <div>
+            <Label htmlFor="nome">Nome da Empresa *</Label>
             <Input
-              id="clientName"
-              value={companyData.clientName}
-              onChange={(e) => setCompanyData({...companyData, clientName: e.target.value})}
-              placeholder="Nome completo"
+              id="nome"
+              value={empresaData.nome}
+              onChange={(e) => setEmpresaData(prev => ({ ...prev, nome: e.target.value }))}
+              placeholder="Ex: Empresa ABC Ltda"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="companyName">Nome da Empresa *</Label>
-            <Input
-              id="companyName"
-              value={companyData.companyName}
-              onChange={(e) => setCompanyData({...companyData, companyName: e.target.value})}
-              placeholder="Razão social ou nome fantasia"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">E-mail *</Label>
-            <Input
-              id="email"
-              type="email"
-              value={companyData.email}
-              onChange={(e) => setCompanyData({...companyData, email: e.target.value})}
-              placeholder="contato@empresa.com"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">WhatsApp</Label>
-            <Input
-              id="phone"
-              value={companyData.phone}
-              onChange={(e) => setCompanyData({...companyData, phone: e.target.value})}
-              placeholder="(11) 99999-9999"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="website">Site ou Instagram</Label>
-            <Input
-              id="website"
-              value={companyData.website}
-              onChange={(e) => setCompanyData({...companyData, website: e.target.value})}
-              placeholder="www.empresa.com ou @empresa"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="sector">Setor de Atuação</Label>
-            <Select value={companyData.sector} onValueChange={(value) => setCompanyData({...companyData, sector: value})}>
+          <div>
+            <Label htmlFor="setor">Setor</Label>
+            <Select value={empresaData.setor} onValueChange={(value) => setEmpresaData(prev => ({ ...prev, setor: value }))}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o setor" />
               </SelectTrigger>
               <SelectContent>
-                {sectors.map(sector => (
-                  <SelectItem key={sector} value={sector}>{sector}</SelectItem>
-                ))}
+                <SelectItem value="tecnologia">Tecnologia</SelectItem>
+                <SelectItem value="varejo">Varejo</SelectItem>
+                <SelectItem value="servicos">Serviços</SelectItem>
+                <SelectItem value="industria">Indústria</SelectItem>
+                <SelectItem value="saude">Saúde</SelectItem>
+                <SelectItem value="educacao">Educação</SelectItem>
+                <SelectItem value="outros">Outros</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="employees">Número de Funcionários</Label>
-            <Select value={companyData.employees} onValueChange={(value) => setCompanyData({...companyData, employees: value})}>
+          <div>
+            <Label htmlFor="site">Site/Instagram</Label>
+            <Input
+              id="site"
+              value={empresaData.site_instagram}
+              onChange={(e) => setEmpresaData(prev => ({ ...prev, site_instagram: e.target.value }))}
+              placeholder="www.exemplo.com.br"
+            />
+          </div>
+          <div>
+            <Label htmlFor="funcionarios">Número de Funcionários</Label>
+            <Select value={empresaData.funcionarios} onValueChange={(value) => setEmpresaData(prev => ({ ...prev, funcionarios: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione o porte" />
+                <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
-                {employeeRanges.map(range => (
-                  <SelectItem key={range} value={range}>{range}</SelectItem>
-                ))}
+                <SelectItem value="1-5">1 a 5</SelectItem>
+                <SelectItem value="6-20">6 a 20</SelectItem>
+                <SelectItem value="21-50">21 a 50</SelectItem>
+                <SelectItem value="51-100">51 a 100</SelectItem>
+                <SelectItem value="100+">Mais de 100</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="revenue">Faturamento Anual</Label>
-            <Select value={companyData.revenue} onValueChange={(value) => setCompanyData({...companyData, revenue: value})}>
+          <div>
+            <Label htmlFor="faturamento">Faturamento Anual</Label>
+            <Select value={empresaData.faturamento} onValueChange={(value) => setEmpresaData(prev => ({ ...prev, faturamento: value }))}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione a faixa" />
+                <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
-                {revenueRanges.map(range => (
-                  <SelectItem key={range} value={range}>{range}</SelectItem>
-                ))}
+                <SelectItem value="ate-100k">Até R$ 100 mil</SelectItem>
+                <SelectItem value="100k-500k">R$ 100 mil a R$ 500 mil</SelectItem>
+                <SelectItem value="500k-1m">R$ 500 mil a R$ 1 milhão</SelectItem>
+                <SelectItem value="1m-5m">R$ 1 a R$ 5 milhões</SelectItem>
+                <SelectItem value="5m+">Acima de R$ 5 milhões</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div>
+            <Label htmlFor="whatsapp">WhatsApp</Label>
+            <Input
+              id="whatsapp"
+              value={empresaData.whatsapp}
+              onChange={(e) => setEmpresaData(prev => ({ ...prev, whatsapp: e.target.value }))}
+              placeholder="(11) 99999-9999"
+            />
           </div>
         </div>
       </CardContent>
     </Card>
   );
 
-  const renderStep2 = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle>Diagnóstico Empresarial</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {mockQuestions.map((question) => (
-          <div key={question.id} className="space-y-3">
-            <div className="flex items-start gap-2">
-              <h4 className="font-medium text-gray-900">{question.question}</h4>
-              {question.required && <span className="text-red-500">*</span>}
-            </div>
-            <div className="pl-4 border-l-2 border-gray-200">
-              <p className="text-sm text-gray-600 mb-3">Categoria: {question.category}</p>
-              <RadioGroup
-                value={answers[question.id]?.toString() || ""}
-                onValueChange={(value) => setAnswers({...answers, [question.id]: parseInt(value)})}
-              >
-                {question.options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.score.toString()} id={`q${question.id}_${index}`} />
-                    <Label htmlFor={`q${question.id}_${index}`} className="text-sm">
-                      {option.text}
+  const renderEtapa2 = () => {
+    const categorias = ['Estratégia', 'Marketing', 'Vendas'];
+    
+    return (
+      <div className="space-y-6">
+        {categorias.map(categoria => {
+          const perguntasCategoria = perguntas.filter(p => p.categoria === categoria);
+          
+          return (
+            <Card key={categoria}>
+              <CardHeader>
+                <CardTitle className="text-[#0F3244]">{categoria}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {perguntasCategoria.map(pergunta => (
+                  <div key={pergunta.id} className="space-y-3">
+                    <Label className="text-base font-medium">
+                      {pergunta.pergunta}
+                      {pergunta.obrigatoria && <span className="text-red-500 ml-1">*</span>}
                     </Label>
+                    
+                    {pergunta.tipo === 'multipla_escolha' ? (
+                      <RadioGroup
+                        value={respostas.find(r => r.pergunta_id === pergunta.id)?.resposta || ''}
+                        onValueChange={(value) => {
+                          const opcao = pergunta.opcoes.find(o => o.texto === value);
+                          if (opcao) {
+                            atualizarResposta(pergunta.id, value, opcao.score);
+                          }
+                        }}
+                      >
+                        {pergunta.opcoes.map((opcao, index) => (
+                          <div key={index} className="flex items-center space-x-2">
+                            <RadioGroupItem value={opcao.texto} id={`${pergunta.id}-${index}`} />
+                            <Label htmlFor={`${pergunta.id}-${index}`} className="font-normal">
+                              {opcao.texto}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    ) : (
+                      <Textarea
+                        value={respostas.find(r => r.pergunta_id === pergunta.id)?.resposta || ''}
+                        onChange={(e) => atualizarResposta(pergunta.id, e.target.value, 0)}
+                        placeholder="Digite sua resposta..."
+                        rows={3}
+                      />
+                    )}
                   </div>
                 ))}
-              </RadioGroup>
-            </div>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      {/* Score Geral */}
-      <Card>
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Resultado do Diagnóstico</CardTitle>
-        </CardHeader>
-        <CardContent className="text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-gradient-to-br from-petrol to-blue-light text-white">
-            <div>
-              <div className="text-3xl font-bold">{results?.overallScore}%</div>
-              <div className="text-sm">{results?.level}</div>
-            </div>
-          </div>
-          <p className="text-gray-600">
-            Sua empresa está no nível <strong>{results?.level}</strong> de maturidade empresarial.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Scores por Categoria */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Scores por Categoria</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {results?.categoryScores && Object.entries(results.categoryScores).map(([category, score]) => (
-            <div key={category} className="space-y-2">
-              <div className="flex justify-between">
-                <span className="font-medium">{category}</span>
-                <span className="text-sm text-gray-600">{score as number}%</span>
-              </div>
-              <Progress value={score as number} className="h-2" />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Pontos Fortes e de Atenção */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-green-200">
-          <CardHeader>
-            <CardTitle className="text-green-800">🎯 Pontos Fortes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {results?.strongPoints?.length > 0 ? (
-              <ul className="space-y-2">
-                {results.strongPoints.map((point: string) => (
-                  <li key={point} className="text-green-700">✅ {point}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-600">Continue trabalhando para desenvolver pontos fortes.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="border-red-200">
-          <CardHeader>
-            <CardTitle className="text-red-800">⚠️ Pontos de Atenção</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {results?.attentionPoints?.length > 0 ? (
-              <ul className="space-y-2">
-                {results.attentionPoints.map((point: string) => (
-                  <li key={point} className="text-red-700">🔴 {point}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-gray-600">Parabéns! Nenhum ponto crítico identificado.</p>
-            )}
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
+    );
+  };
 
-      {/* Recomendações */}
-      {results?.recommendations && Object.keys(results.recommendations).length > 0 && (
+  const renderEtapa3 = () => {
+    if (!resultado) return null;
+
+    const scoresPorCategoria = {
+      'Estratégia': resultado.scoreEstrategia,
+      'Marketing': resultado.scoreMarketing,
+      'Vendas': resultado.scoreVendas
+    };
+
+    const getNivelColor = (nivel: string) => {
+      const colors = {
+        'Iniciante': 'bg-red-100 text-red-800',
+        'Emergente': 'bg-orange-100 text-orange-800',
+        'Intermediário': 'bg-blue-100 text-blue-800',
+        'Avançado': 'bg-green-100 text-green-800'
+      };
+      return colors[nivel as keyof typeof colors] || 'bg-gray-100 text-gray-800';
+    };
+
+    return (
+      <div className="space-y-6">
+        {/* Score Total */}
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl text-[#0F3244]">Resultado do Diagnóstico</CardTitle>
+            <div className="text-4xl font-bold text-[#3C9CD6] mt-4">
+              {resultado.scoreTotal}%
+            </div>
+            <Badge className={`mx-auto mt-2 ${getNivelColor(resultado.nivel)}`}>
+              Nível {resultado.nivel}
+            </Badge>
+          </CardHeader>
+        </Card>
+
+        {/* Scores por Área */}
         <Card>
           <CardHeader>
-            <CardTitle>💡 Recomendações</CardTitle>
+            <CardTitle className="text-[#0F3244]">Score por Área</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {Object.entries(results.recommendations).map(([category, recs]) => (
-              <div key={category}>
-                <h5 className="font-medium text-gray-900 mb-2">{category}</h5>
-                <ul className="space-y-1 ml-4">
-                  {(recs as string[]).map((rec, index) => (
-                    <li key={index} className="text-gray-700">• {rec}</li>
-                  ))}
-                </ul>
+            {Object.entries(scoresPorCategoria).map(([category, score]) => (
+              <div key={category} className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="font-medium">{category}</span>
+                  <span className="text-sm text-gray-600">{score}%</span>
+                </div>
+                <Progress value={score} className="h-2" />
               </div>
             ))}
           </CardContent>
         </Card>
-      )}
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button onClick={handleDownloadPDF} className="bg-petrol hover:bg-petrol/90 text-white">
-          <Download className="mr-2 h-4 w-4" />
-          Baixar PDF
-        </Button>
-        <Button variant="outline" className="border-blue-light text-blue-light hover:bg-blue-light hover:text-white">
-          <FileText className="mr-2 h-4 w-4" />
-          Gerar Proposta
-        </Button>
+        {/* Pontos Fortes */}
+        {resultado.pontosFortes.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-green-700">Pontos Fortes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {resultado.pontosFortes.map((ponto, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-green-500 mr-2">✓</span>
+                    {ponto}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Pontos de Atenção */}
+        {resultado.pontosAtencao.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-orange-700">Pontos de Atenção</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {resultado.pontosAtencao.map((ponto, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-orange-500 mr-2">⚠</span>
+                    {ponto}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Recomendações */}
+        {resultado.recomendacoes.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-[#0F3244]">Recomendações</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {resultado.recomendacoes.map((recomendacao, index) => (
+                  <li key={index} className="flex items-start">
+                    <span className="text-[#3C9CD6] mr-2">→</span>
+                    {recomendacao}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Ações */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-wrap gap-4 justify-center">
+              <Button onClick={baixarPDF} variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Baixar PDF
+              </Button>
+              <Button onClick={gerarProposta} className="bg-[#FBB03B] hover:bg-[#FBB03B]/90">
+                <Send className="h-4 w-4 mr-2" />
+                Gerar Proposta
+              </Button>
+              <Button onClick={salvarDiagnostico} className="bg-[#3C9CD6] hover:bg-[#3C9CD6]/90">
+                <Save className="h-4 w-4 mr-2" />
+                Salvar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      {/* Header com Progress */}
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-gray-900">Novo Diagnóstico</h1>
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Etapa {currentStep} de 3</span>
-            <span>{Math.round((currentStep / 3) * 100)}% Concluído</span>
+    <div className="p-6 max-w-4xl mx-auto">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-[#0F3244] mb-2">Novo Diagnóstico</h1>
+        
+        {/* Progress */}
+        <div className="flex items-center space-x-4 mb-4">
+          <div className="flex-1">
+            <Progress value={(etapaAtual / 3) * 100} className="h-2" />
           </div>
-          <Progress value={(currentStep / 3) * 100} className="h-2" />
+          <span className="text-sm text-gray-600">
+            Etapa {etapaAtual} de 3
+          </span>
         </div>
-        <div className="flex gap-4 text-sm">
-          <span className={currentStep === 1 ? "text-petrol font-medium" : "text-gray-500"}>
+
+        {/* Etapas */}
+        <div className="flex justify-between text-sm">
+          <span className={etapaAtual >= 1 ? 'text-[#3C9CD6] font-medium' : 'text-gray-400'}>
             1. Dados da Empresa
           </span>
-          <span className={currentStep === 2 ? "text-petrol font-medium" : "text-gray-500"}>
+          <span className={etapaAtual >= 2 ? 'text-[#3C9CD6] font-medium' : 'text-gray-400'}>
             2. Perguntas
           </span>
-          <span className={currentStep === 3 ? "text-petrol font-medium" : "text-gray-500"}>
+          <span className={etapaAtual >= 3 ? 'text-[#3C9CD6] font-medium' : 'text-gray-400'}>
             3. Resultado
           </span>
         </div>
       </div>
 
-      {/* Conteúdo da Etapa */}
-      {currentStep === 1 && renderStep1()}
-      {currentStep === 2 && renderStep2()}
-      {currentStep === 3 && renderStep3()}
+      {/* Conteúdo */}
+      {etapaAtual === 1 && renderEtapa1()}
+      {etapaAtual === 2 && renderEtapa2()}
+      {etapaAtual === 3 && renderEtapa3()}
 
       {/* Navegação */}
-      {currentStep < 3 && (
-        <div className="flex justify-between">
+      {etapaAtual < 3 && (
+        <div className="flex justify-between mt-6">
           <Button
             variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 1}
+            onClick={etapaAnterior}
+            disabled={etapaAtual === 1}
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Anterior
           </Button>
           <Button
-            onClick={handleNext}
-            className="bg-petrol hover:bg-petrol/90 text-white"
+            onClick={proximaEtapa}
+            disabled={loading}
+            className="bg-[#3C9CD6] hover:bg-[#3C9CD6]/90"
           >
-            {currentStep === 2 ? "Finalizar" : "Próximo"}
-            <ArrowRight className="ml-2 h-4 w-4" />
+            {loading ? 'Processando...' : (
+              <>
+                {etapaAtual === 2 ? 'Finalizar' : 'Próximo'}
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       )}
     </div>
   );
-};
-
-export default NovoDiagnostico;
+}
