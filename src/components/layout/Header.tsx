@@ -13,23 +13,39 @@ import {
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { BackButton } from "@/components/ui/back-button";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function Header() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { state } = useSidebar();
   
-  // Mostrar botão voltar em páginas que não sejam o dashboard
-  const showBackButton = location.pathname !== '/dashboard';
+  // Mostrar botão voltar em páginas específicas que não sejam o dashboard
+  const showBackButton = location.pathname !== '/dashboard' && 
+                         !location.pathname.startsWith('/diagnosticos') &&
+                         !location.pathname.startsWith('/propostas') &&
+                         !location.pathname.startsWith('/planos') &&
+                         !location.pathname.startsWith('/perguntas');
   
   // Mostrar o trigger apenas quando o sidebar estiver recolhido
   const showSidebarTrigger = state === "collapsed";
+
+  const handleBackClick = () => {
+    // Para páginas de edição, voltar para a página de listagem correspondente
+    if (location.pathname.includes('/novo-diagnostico')) {
+      navigate('/diagnosticos');
+    } else if (location.pathname.includes('/editar-proposta')) {
+      navigate('/propostas');
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <header className="h-16 border-b bg-white flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         {showSidebarTrigger && <SidebarTrigger />}
-        {showBackButton && <BackButton />}
+        {showBackButton && <BackButton onClick={handleBackClick} />}
         <div className="hidden lg:block">
           <h1 className="text-xl font-semibold text-gray-900">
             CheckUp de Negócios
