@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -49,9 +49,12 @@ const NovoDiagnostico = () => {
   // Hook para buscar dados quando estiver editando
   const { data: editData, isLoading: editLoading } = useDiagnosticEdit(editId);
 
+  // Adicionar ref para controlar se os dados já foram carregados
+  const dataLoadedRef = useRef(false);
+
   // Carregar dados quando estiver editando
   useEffect(() => {
-    if (isEditing && editData) {
+    if (isEditing && editData && !dataLoadedRef.current) {
       const { diagnostic, respostas } = editData;
       const empresa = diagnostic.empresas;
 
@@ -87,6 +90,8 @@ const NovoDiagnostico = () => {
         setResults(calculatedResults);
       }
 
+      // Marcar como carregado e exibir toast apenas uma vez
+      dataLoadedRef.current = true;
       toast({
         title: "Dados carregados",
         description: "Os dados do diagnóstico foram carregados para edição."
