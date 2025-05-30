@@ -9,12 +9,12 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   let yPosition = margin;
   
-  // Cores do sistema (mantendo identidade visual)
-  const petrolColor = [15, 50, 68] as const; // #0F3244
-  const blueLight = [60, 156, 214] as const; // #3C9CD6
-  const grayLight = [248, 250, 252] as const;
-  const grayBorder = [229, 231, 235] as const;
-  const grayText = [107, 114, 128] as const;
+  // Cores do sistema (mantendo identidade visual) - properly typed as tuples
+  const petrolColor: [number, number, number] = [15, 50, 68]; // #0F3244
+  const blueLight: [number, number, number] = [60, 156, 214]; // #3C9CD6
+  const grayLight: [number, number, number] = [248, 250, 252];
+  const grayBorder: [number, number, number] = [229, 231, 235];
+  const grayText: [number, number, number] = [107, 114, 128];
   
   // Helper function para adicionar nova página se necessário
   const checkPageBreak = (requiredHeight: number) => {
