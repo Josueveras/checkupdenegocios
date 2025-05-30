@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface Question {
   id: number;
@@ -18,9 +19,38 @@ interface DiagnosticQuestionsStepProps {
   questions: Question[];
   answers: {[key: number]: number};
   setAnswers: (answers: {[key: number]: number}) => void;
+  isLoading?: boolean;
 }
 
-export const DiagnosticQuestionsStep = ({ questions, answers, setAnswers }: DiagnosticQuestionsStepProps) => {
+export const DiagnosticQuestionsStep = ({ 
+  questions, 
+  answers, 
+  setAnswers, 
+  isLoading = false 
+}: DiagnosticQuestionsStepProps) => {
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Diagnóstico Empresarial</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="space-y-3">
+              <Skeleton className="h-6 w-full" />
+              <div className="pl-4 border-l-2 border-gray-200 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-4 w-56" />
+                <Skeleton className="h-4 w-72" />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -39,8 +38,13 @@ const NovoDiagnostico = () => {
   const saveDiagnosticoMutation = useSaveDiagnostico();
   const saveRespostasMutation = useSaveRespostas();
 
-  const { questions } = useDiagnosticQuestions();
+  const { questions, isLoading: questionsLoading, error: questionsError } = useDiagnosticQuestions();
   const { calculateResults } = useDiagnosticCalculations();
+
+  console.log('Questions loaded:', questions);
+  console.log('Current answers:', answers);
+  console.log('Questions loading:', questionsLoading);
+  console.log('Questions error:', questionsError);
 
   const handleNext = () => {
     if (currentStep === 1) {
@@ -70,7 +74,9 @@ const NovoDiagnostico = () => {
       }
       
       // Calcular resultados
+      console.log('Calculating results with answers:', answers, 'and questions:', questions);
       const calculatedResults = calculateResults(answers, questions);
+      console.log('Calculated results:', calculatedResults);
       setResults(calculatedResults);
     }
 
@@ -83,6 +89,12 @@ const NovoDiagnostico = () => {
 
   const handleSaveDiagnostic = async () => {
     try {
+      console.log('Starting diagnostic save process...');
+      console.log('Company data:', companyData);
+      console.log('Diagnostic data:', diagnosticData);
+      console.log('Results:', results);
+      console.log('Answers:', answers);
+
       // Validar campos obrigatórios
       if (!diagnosticData.planos || !diagnosticData.valores || !diagnosticData.observacoes) {
         toast({
@@ -105,7 +117,9 @@ const NovoDiagnostico = () => {
         faturamento: companyData.revenue
       };
 
+      console.log('Saving empresa:', empresaData);
       const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
+      console.log('Empresa saved:', empresa);
 
       // Preparar dados do diagnóstico
       const diagnosticoData = {
@@ -125,18 +139,27 @@ const NovoDiagnostico = () => {
         status: 'concluido'
       };
 
+      console.log('Saving diagnostico:', diagnosticoData);
       const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
+      console.log('Diagnostico saved:', diagnostico);
 
-      // Salvar respostas
-      const respostasData = Object.entries(answers).map(([perguntaId, score]) => ({
-        diagnostico_id: diagnostico.id,
-        pergunta_id: perguntaId,
-        score: score,
-        resposta: questions.find(q => q.id === parseInt(perguntaId))?.options.find(o => o.score === score)?.text
-      }));
+      // Salvar respostas - Usar string UUID em vez de número
+      const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
+        const question = questions.find(q => q.id.toString() === perguntaId);
+        const resposta = question?.options.find(o => o.score === score)?.text || '';
+        
+        return {
+          diagnostico_id: diagnostico.id,
+          pergunta_id: perguntaId, // Manter como string se a pergunta_id for UUID
+          score: score,
+          resposta: resposta
+        };
+      });
 
+      console.log('Saving respostas:', respostasData);
       if (respostasData.length > 0) {
         await saveRespostasMutation.mutateAsync(respostasData);
+        console.log('Respostas saved successfully');
       }
 
       toast({
@@ -148,10 +171,10 @@ const NovoDiagnostico = () => {
       navigate('/diagnosticos');
 
     } catch (error) {
-      console.error('Erro ao salvar diagnóstico:', error);
+      console.error('Erro detalhado ao salvar diagnóstico:', error);
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar o diagnóstico.",
+        description: `Ocorreu um erro ao salvar o diagnóstico: ${error.message || 'Erro desconhecido'}`,
         variant: "destructive"
       });
     }
@@ -287,6 +310,7 @@ const NovoDiagnostico = () => {
           questions={questions}
           answers={answers}
           setAnswers={setAnswers}
+          isLoading={questionsLoading}
         />
       )}
       {currentStep === 3 && results && (
@@ -317,6 +341,7 @@ const NovoDiagnostico = () => {
           <Button
             onClick={handleNext}
             className="bg-petrol hover:bg-petrol/90 text-white"
+            disabled={currentStep === 2 && questionsLoading}
           >
             {currentStep === 3 ? "Finalizar" : "Próximo"}
             <ArrowRight className="ml-2 h-4 w-4" />
