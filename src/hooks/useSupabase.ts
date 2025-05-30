@@ -27,7 +27,7 @@ export const useDiagnosticos = () => {
         .from('diagnosticos')
         .select(`
           *,
-          empresas (
+          empresas!diagnosticos_empresa_id_fkey (
             nome,
             cliente_nome,
             cliente_email,
