@@ -3,13 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ArrowLeft, ArrowRight, Download, FileText } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Download, FileText, Save, Edit } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
 
 const NovoDiagnostico = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [companyData, setCompanyData] = useState({
     clientName: '',
@@ -24,6 +28,15 @@ const NovoDiagnostico = () => {
 
   const [answers, setAnswers] = useState<{[key: number]: number}>({});
   const [results, setResults] = useState<any>(null);
+  const [diagnosticData, setDiagnosticData] = useState({
+    planos: '',
+    valores: '',
+    observacoes: ''
+  });
+
+  const saveEmpresaMutation = useSaveEmpresa();
+  const saveDiagnosticoMutation = useSaveDiagnostico();
+  const saveRespostasMutation = useSaveRespostas();
 
   const mockQuestions = [
     {
@@ -121,7 +134,7 @@ const NovoDiagnostico = () => {
       calculateResults();
     }
 
-    setCurrentStep(prev => Math.min(prev + 1, 3));
+    setCurrentStep(prev => Math.min(prev + 1, 4));
   };
 
   const handleBack = () => {
@@ -226,10 +239,169 @@ const NovoDiagnostico = () => {
     return recommendations;
   };
 
+  const handleSaveDiagnostic = async () => {
+    try {
+      // Validar campos obrigatórios
+      if (!diagnosticData.planos || !diagnosticData.valores || !diagnosticData.observacoes) {
+        toast({
+          title: "Campos obrigatórios",
+          description: "Preencha planos, valores e observações antes de salvar.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Salvar empresa primeiro
+      const empresaData = {
+        nome: companyData.companyName,
+        cliente_nome: companyData.clientName,
+        cliente_email: companyData.email,
+        cliente_telefone: companyData.phone,
+        site_instagram: companyData.website,
+        setor: companyData.sector,
+        funcionarios: companyData.employees,
+        faturamento: companyData.revenue
+      };
+
+      const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
+
+      // Preparar dados do diagnóstico
+      const diagnosticoData = {
+        empresa_id: empresa.id,
+        score_total: results.overallScore,
+        score_marketing: results.categoryScores.Marketing || 0,
+        score_vendas: results.categoryScores.Vendas || 0,
+        score_estrategia: results.categoryScores.Estratégia || 0,
+        score_gestao: results.categoryScores.Gestão || 0,
+        nivel: results.level,
+        pontos_fortes: results.strongPoints,
+        pontos_atencao: results.attentionPoints,
+        recomendacoes: results.recommendations,
+        planos: diagnosticData.planos,
+        valores: parseFloat(diagnosticData.valores),
+        observacoes: diagnosticData.observacoes,
+        status: 'concluido'
+      };
+
+      const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
+
+      // Salvar respostas
+      const respostasData = Object.entries(answers).map(([perguntaId, score]) => ({
+        diagnostico_id: diagnostico.id,
+        pergunta_id: perguntaId,
+        score: score,
+        resposta: mockQuestions.find(q => q.id === parseInt(perguntaId))?.options.find(o => o.score === score)?.text
+      }));
+
+      if (respostasData.length > 0) {
+        await saveRespostasMutation.mutateAsync(respostasData);
+      }
+
+      toast({
+        title: "Diagnóstico salvo",
+        description: "O diagnóstico foi salvo com sucesso!",
+      });
+
+      // Redirecionar para diagnósticos
+      navigate('/diagnosticos');
+
+    } catch (error) {
+      console.error('Erro ao salvar diagnóstico:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar o diagnóstico.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleGenerateProposal = () => {
+    // Validar se os campos obrigatórios estão preenchidos
+    if (!diagnosticData.planos || !diagnosticData.valores || !diagnosticData.observacoes) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Preencha planos, valores e observações antes de gerar proposta.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Navegar para propostas com dados do diagnóstico
+    navigate('/propostas', { 
+      state: { 
+        companyData, 
+        results, 
+        diagnosticData 
+      } 
+    });
+  };
+
   const handleDownloadPDF = () => {
+    // Criar conteúdo HTML para o PDF
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Diagnóstico Empresarial - ${companyData.companyName}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            .header { text-align: center; margin-bottom: 30px; }
+            .score { font-size: 24px; font-weight: bold; text-align: center; margin: 20px 0; }
+            .category { margin: 15px 0; }
+            .recommendations { margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Relatório de Diagnóstico Empresarial</h1>
+            <h2>${companyData.companyName}</h2>
+            <p>Cliente: ${companyData.clientName}</p>
+            <p>Data: ${new Date().toLocaleDateString('pt-BR')}</p>
+          </div>
+          
+          <div class="score">
+            Score Geral: ${results?.overallScore}% - Nível ${results?.level}
+          </div>
+          
+          <h3>Scores por Categoria:</h3>
+          ${Object.entries(results?.categoryScores || {}).map(([category, score]) => 
+            `<div class="category"><strong>${category}:</strong> ${score}%</div>`
+          ).join('')}
+          
+          <div class="recommendations">
+            <h3>Recomendações:</h3>
+            ${Object.entries(results?.recommendations || {}).map(([category, recs]) => 
+              `<div><strong>${category}:</strong><ul>${(recs as string[]).map(rec => `<li>${rec}</li>`).join('')}</ul></div>`
+            ).join('')}
+          </div>
+          
+          <div>
+            <h3>Planos Sugeridos:</h3>
+            <p>${diagnosticData.planos}</p>
+            
+            <h3>Valores:</h3>
+            <p>R$ ${diagnosticData.valores}</p>
+            
+            <h3>Observações:</h3>
+            <p>${diagnosticData.observacoes}</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Criar blob e fazer download
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `diagnostico-${companyData.companyName.replace(/\s+/g, '-').toLowerCase()}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
     toast({
       title: "PDF gerado",
-      description: "O relatório foi gerado com sucesso!",
+      description: "O arquivo foi baixado com sucesso!",
     });
   };
 
@@ -459,18 +631,78 @@ const NovoDiagnostico = () => {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <Button onClick={handleDownloadPDF} className="bg-petrol hover:bg-petrol/90 text-white">
-          <Download className="mr-2 h-4 w-4" />
-          Baixar PDF
-        </Button>
-        <Button variant="outline" className="border-blue-light text-blue-light hover:bg-blue-light hover:text-white">
-          <FileText className="mr-2 h-4 w-4" />
-          Gerar Proposta
-        </Button>
-      </div>
+  const renderStep4 = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Edit className="h-5 w-5" />
+            Finalizar Diagnóstico
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="planos">Planos Sugeridos *</Label>
+            <Textarea
+              id="planos"
+              value={diagnosticData.planos}
+              onChange={(e) => setDiagnosticData({...diagnosticData, planos: e.target.value})}
+              placeholder="Descreva os planos e estratégias recomendadas..."
+              className="min-h-[100px]"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="valores">Valores (R$) *</Label>
+            <Input
+              id="valores"
+              type="number"
+              value={diagnosticData.valores}
+              onChange={(e) => setDiagnosticData({...diagnosticData, valores: e.target.value})}
+              placeholder="Ex: 15000"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="observacoes">Observações Personalizadas *</Label>
+            <Textarea
+              id="observacoes"
+              value={diagnosticData.observacoes}
+              onChange={(e) => setDiagnosticData({...diagnosticData, observacoes: e.target.value})}
+              placeholder="Observações específicas para este cliente..."
+              className="min-h-[100px]"
+            />
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+            <Button 
+              onClick={handleSaveDiagnostic} 
+              className="bg-petrol hover:bg-petrol/90 text-white"
+              disabled={saveEmpresaMutation.isPending || saveDiagnosticoMutation.isPending}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saveEmpresaMutation.isPending || saveDiagnosticoMutation.isPending ? 'Salvando...' : 'Concluir Diagnóstico'}
+            </Button>
+            
+            <Button onClick={handleDownloadPDF} variant="outline">
+              <Download className="mr-2 h-4 w-4" />
+              Baixar PDF
+            </Button>
+            
+            <Button 
+              onClick={handleGenerateProposal} 
+              variant="outline" 
+              className="border-blue-light text-blue-light hover:bg-blue-light hover:text-white"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Gerar Proposta
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 
@@ -481,10 +713,10 @@ const NovoDiagnostico = () => {
         <h1 className="text-3xl font-bold text-gray-900">Novo Diagnóstico</h1>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Etapa {currentStep} de 3</span>
-            <span>{Math.round((currentStep / 3) * 100)}% Concluído</span>
+            <span>Etapa {currentStep} de 4</span>
+            <span>{Math.round((currentStep / 4) * 100)}% Concluído</span>
           </div>
-          <Progress value={(currentStep / 3) * 100} className="h-2" />
+          <Progress value={(currentStep / 4) * 100} className="h-2" />
         </div>
         <div className="flex gap-4 text-sm">
           <span className={currentStep === 1 ? "text-petrol font-medium" : "text-gray-500"}>
@@ -496,6 +728,9 @@ const NovoDiagnostico = () => {
           <span className={currentStep === 3 ? "text-petrol font-medium" : "text-gray-500"}>
             3. Resultado
           </span>
+          <span className={currentStep === 4 ? "text-petrol font-medium" : "text-gray-500"}>
+            4. Finalizar
+          </span>
         </div>
       </div>
 
@@ -503,9 +738,10 @@ const NovoDiagnostico = () => {
       {currentStep === 1 && renderStep1()}
       {currentStep === 2 && renderStep2()}
       {currentStep === 3 && renderStep3()}
+      {currentStep === 4 && renderStep4()}
 
       {/* Navegação */}
-      {currentStep < 3 && (
+      {currentStep < 4 && (
         <div className="flex justify-between">
           <Button
             variant="outline"
@@ -519,7 +755,7 @@ const NovoDiagnostico = () => {
             onClick={handleNext}
             className="bg-petrol hover:bg-petrol/90 text-white"
           >
-            {currentStep === 2 ? "Finalizar" : "Próximo"}
+            {currentStep === 3 ? "Finalizar" : "Próximo"}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>

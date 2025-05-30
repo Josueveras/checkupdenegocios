@@ -60,7 +60,9 @@ export type Database = {
           empresa_id: string
           id: string
           nivel: string
+          observacoes: string | null
           pdf_url: string | null
+          planos: string | null
           pontos_atencao: Json | null
           pontos_fortes: Json | null
           recomendacoes: Json | null
@@ -71,13 +73,16 @@ export type Database = {
           score_vendas: number
           status: string
           updated_at: string
+          valores: number | null
         }
         Insert: {
           created_at?: string
           empresa_id: string
           id?: string
           nivel: string
+          observacoes?: string | null
           pdf_url?: string | null
+          planos?: string | null
           pontos_atencao?: Json | null
           pontos_fortes?: Json | null
           recomendacoes?: Json | null
@@ -88,13 +93,16 @@ export type Database = {
           score_vendas?: number
           status?: string
           updated_at?: string
+          valores?: number | null
         }
         Update: {
           created_at?: string
           empresa_id?: string
           id?: string
           nivel?: string
+          observacoes?: string | null
           pdf_url?: string | null
+          planos?: string | null
           pontos_atencao?: Json | null
           pontos_fortes?: Json | null
           recomendacoes?: Json | null
@@ -105,10 +113,18 @@ export type Database = {
           score_vendas?: number
           status?: string
           updated_at?: string
+          valores?: number | null
         }
         Relationships: [
           {
             foreignKeyName: "diagnosticos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_diagnosticos_empresa_id"
             columns: ["empresa_id"]
             isOneToOne: false
             referencedRelation: "empresas"
@@ -302,6 +318,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_propostas_diagnostico_id"
+            columns: ["diagnostico_id"]
+            isOneToOne: false
+            referencedRelation: "diagnosticos"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "propostas_diagnostico_id_fkey"
             columns: ["diagnostico_id"]
             isOneToOne: false
@@ -343,6 +366,20 @@ export type Database = {
           score?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_respostas_diagnostico_id"
+            columns: ["diagnostico_id"]
+            isOneToOne: false
+            referencedRelation: "diagnosticos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_respostas_pergunta_id"
+            columns: ["pergunta_id"]
+            isOneToOne: false
+            referencedRelation: "perguntas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "respostas_diagnostico_id_fkey"
             columns: ["diagnostico_id"]
