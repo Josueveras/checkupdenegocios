@@ -129,7 +129,7 @@ const DiagnosticoView = () => {
               {diagnostic.score_total}%
             </div>
             <div className="mt-4">
-              <Badge className={getLevelBadge(diagnostic.nivel)} size="lg">
+              <Badge className={`${getLevelBadge(diagnostic.nivel)} text-lg px-4 py-2`}>
                 {diagnostic.nivel}
               </Badge>
             </div>
