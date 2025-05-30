@@ -5,15 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, Settings, Edit, Trash2, Eye } from 'lucide-react';
+import { FileText, Download, Calendar, Eye, Edit, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
 import { useDiagnosticos } from '@/hooks/useSupabase';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { generateDiagnosticPDF, downloadPDF, getPDFDataURL } from '@/utils/pdfGenerator';
-import { scheduleGoogleCalendarEvent } from '@/utils/calendarUtils';
-import { sendWhatsAppMessage } from '@/utils/whatsappUtils';
+import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
 import { EditDiagnosticButton } from '@/components/EditDiagnosticButton';
 import {
   AlertDialog,
@@ -33,44 +28,14 @@ const Diagnosticos = () => {
   const [scoreFilter, setScoreFilter] = useState('todos');
   
   const { data: diagnosticos = [], isLoading, error } = useDiagnosticos();
-  const queryClient = useQueryClient();
+  const { 
+    deleteDiagnostic, 
+    handleGenerateAndDownloadPDF, 
+    handleSendWhatsApp, 
+    handleScheduleCalendar 
+  } = useDiagnosticOperations();
 
   console.log('Diagnósticos do Supabase:', diagnosticos);
-
-  const deleteDiagnostic = useMutation({
-    mutationFn: async (id: string) => {
-      // Primeiro deletar respostas relacionadas
-      const { error: respostasError } = await supabase
-        .from('respostas')
-        .delete()
-        .eq('diagnostico_id', id);
-      
-      if (respostasError) throw respostasError;
-
-      // Depois deletar o diagnóstico
-      const { error } = await supabase
-        .from('diagnosticos')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
-      toast({
-        title: "Diagnóstico excluído",
-        description: "O diagnóstico foi excluído com sucesso."
-      });
-    },
-    onError: (error) => {
-      console.error('Erro ao excluir diagnóstico:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível excluir o diagnóstico.",
-        variant: "destructive"
-      });
-    }
-  });
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 bg-green-50";
@@ -108,87 +73,7 @@ const Diagnosticos = () => {
     return matchesSearch && matchesStatus && matchesScore;
   });
 
-  const handleGenerateAndDownloadPDF = async (diagnostic: any) => {
-    try {
-      const doc = generateDiagnosticPDF(diagnostic);
-      const filename = `diagnostico-${diagnostic.empresas?.nome || 'empresa'}-${new Date().toISOString().split('T')[0]}.pdf`;
-      downloadPDF(doc, filename);
-      
-      // Salvar URL do PDF no banco (simulado)
-      const pdfDataURL = getPDFDataURL(doc);
-      
-      toast({
-        title: "PDF gerado",
-        description: "O PDF foi gerado e baixado com sucesso."
-      });
-    } catch (error) {
-      console.error('Erro ao gerar PDF:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível gerar o PDF.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSendWhatsApp = async (diagnostic: any) => {
-    try {
-      const empresa = diagnostic.empresas;
-      if (!empresa?.cliente_telefone) {
-        toast({
-          title: "Telefone não disponível",
-          description: "Número de WhatsApp não cadastrado para este cliente.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Gerar PDF primeiro
-      const doc = generateDiagnosticPDF(diagnostic);
-      const pdfDataURL = getPDFDataURL(doc);
-      
-      const message = `Olá ${empresa.cliente_nome}, segue seu diagnóstico empresarial. Score: ${diagnostic.score_total}%. PDF: ${pdfDataURL}`;
-      
-      sendWhatsAppMessage(empresa.cliente_telefone, message);
-      
-      toast({
-        title: "WhatsApp aberto",
-        description: `Mensagem preparada para ${empresa.nome}`
-      });
-    } catch (error) {
-      console.error('Erro ao enviar WhatsApp:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível abrir o WhatsApp.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleScheduleCalendar = (diagnostic: any) => {
-    try {
-      const empresa = diagnostic.empresas;
-      const title = `Apresentação Diagnóstico - ${empresa?.nome || 'Empresa'}`;
-      const description = `Reunião para apresentar os resultados do diagnóstico empresarial para ${empresa?.nome} com ${empresa?.cliente_nome}.`;
-      
-      scheduleGoogleCalendarEvent(title, description, empresa?.cliente_email);
-      
-      toast({
-        title: "Agenda aberta",
-        description: "Evento criado no Google Calendar"
-      });
-    } catch (error) {
-      console.error('Erro ao agendar:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível criar o evento na agenda.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleViewDiagnostic = (diagnosticId: string) => {
-    // Navegar para uma página de visualização detalhada
     window.open(`/diagnostico/${diagnosticId}`, '_blank');
   };
 
