@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 
 export const generateDiagnosticPDF = (diagnosticData: any) => {
@@ -9,12 +10,12 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   let yPosition = margin;
   
-  // Cores do sistema (mantendo identidade visual) - properly typed as tuples
-  const petrolColor: [number, number, number] = [15, 50, 68]; // #0F3244
-  const blueLight: [number, number, number] = [60, 156, 214]; // #3C9CD6
-  const grayLight: [number, number, number] = [248, 250, 252];
-  const grayBorder: [number, number, number] = [229, 231, 235];
-  const grayText: [number, number, number] = [107, 114, 128];
+  // Cores do sistema (mantendo identidade visual)
+  const petrolColor = [15, 50, 68] as const;
+  const blueLight = [60, 156, 214] as const;
+  const grayLight = [248, 250, 252] as const;
+  const grayBorder = [229, 231, 235] as const;
+  const grayText = [107, 114, 128] as const;
   
   // Helper function para adicionar nova página se necessário
   const checkPageBreak = (requiredHeight: number) => {
@@ -28,7 +29,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   const drawCard = (x: number, y: number, width: number, height: number, title?: string) => {
     // Fundo do card
     doc.setFillColor(255, 255, 255);
-    doc.setDrawColor(...grayBorder);
+    doc.setDrawColor(grayBorder[0], grayBorder[1], grayBorder[2]);
     doc.setLineWidth(0.5);
     doc.roundedRect(x, y, width, height, 3, 3, 'FD');
     
@@ -42,7 +43,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
     if (title) {
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...petrolColor);
+      doc.setTextColor(petrolColor[0], petrolColor[1], petrolColor[2]);
       doc.text(title, x + 15, y + 20);
     }
   };
@@ -56,7 +57,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   };
   
   // Header principal - mantendo design da plataforma
-  doc.setFillColor(...petrolColor);
+  doc.setFillColor(petrolColor[0], petrolColor[1], petrolColor[2]);
   doc.rect(0, 0, pageWidth, 70, 'F');
   
   doc.setTextColor(255, 255, 255);
@@ -84,7 +85,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   doc.setFontSize(11);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...grayText);
+  doc.setTextColor(grayText[0], grayText[1], grayText[2]);
   
   // Primeira linha
   doc.text('Nome da Empresa', leftColumn, yPosition + 40);
@@ -93,7 +94,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   doc.text(empresa?.nome || 'N/A', leftColumn, yPosition + 50);
   
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...grayText);
+  doc.setTextColor(grayText[0], grayText[1], grayText[2]);
   doc.text('Cliente', rightColumn, yPosition + 40);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -101,14 +102,14 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   // Segunda linha
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...grayText);
+  doc.setTextColor(grayText[0], grayText[1], grayText[2]);
   doc.text('E-mail', leftColumn, yPosition + 65);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
   doc.text(empresa?.cliente_email || 'N/A', leftColumn, yPosition + 75);
   
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...grayText);
+  doc.setTextColor(grayText[0], grayText[1], grayText[2]);
   doc.text('Telefone', rightColumn, yPosition + 65);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
@@ -128,7 +129,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   const centerX = margin + scoreCardWidth/2;
   const centerY = yPosition + 80;
   
-  doc.setFillColor(...blueLight);
+  doc.setFillColor(blueLight[0], blueLight[1], blueLight[2]);
   doc.circle(centerX, centerY, 25, 'F');
   
   doc.setTextColor(255, 255, 255);
@@ -165,7 +166,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
                       cat.score >= 60 ? [234, 179, 8] : 
                       cat.score >= 40 ? [249, 115, 22] : [239, 68, 68];
     
-    doc.setFillColor(...scoreColor);
+    doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
     doc.roundedRect(catX + 60, catY - 8, 25, 12, 2, 2, 'F');
     
     doc.setTextColor(255, 255, 255);
@@ -236,7 +237,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
       
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...blueLight);
+      doc.setTextColor(blueLight[0], blueLight[1], blueLight[2]);
       doc.text(categoria, margin + 15, recY);
       recY += 15;
       
@@ -246,7 +247,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
       
       recomendacoes.forEach((rec: string) => {
         // Bullet point azul
-        doc.setFillColor(...blueLight);
+        doc.setFillColor(blueLight[0], blueLight[1], blueLight[2]);
         doc.circle(margin + 20, recY - 3, 1.5, 'F');
         
         const textHeight = addWrappedText(rec, margin + 28, recY, contentWidth - 40, 10);
@@ -278,7 +279,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   checkPageBreak(40);
   
   // Linha separadora
-  doc.setDrawColor(...grayBorder);
+  doc.setDrawColor(grayBorder[0], grayBorder[1], grayBorder[2]);
   doc.setLineWidth(0.5);
   doc.line(margin, yPosition, pageWidth - margin, yPosition);
   
@@ -286,7 +287,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...grayText);
+  doc.setTextColor(grayText[0], grayText[1], grayText[2]);
   doc.text('CheckUp de Negocios - Diagnostico Empresarial', margin, yPosition);
   doc.text(`Pagina ${doc.getCurrentPageInfo().pageNumber}`, pageWidth - margin, yPosition, { align: 'right' });
   
