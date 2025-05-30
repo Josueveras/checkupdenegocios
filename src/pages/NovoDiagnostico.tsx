@@ -72,6 +72,17 @@ const NovoDiagnostico = () => {
     return <div className="flex items-center justify-center h-64">Carregando dados para edição...</div>;
   }
 
+  if (questionsError) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar perguntas: {questionsError.message}</p>
+          <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header com Progress */}
