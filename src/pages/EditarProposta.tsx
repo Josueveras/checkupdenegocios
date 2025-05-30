@@ -55,6 +55,23 @@ const EditarProposta = () => {
     }
   });
 
+  // Helper function to convert acoes_sugeridas to string array
+  const getAcoesSugeridas = (acoes: any): string[] => {
+    if (!acoes) return [];
+    if (typeof acoes === 'string') {
+      try {
+        const parsed = JSON.parse(acoes);
+        return Array.isArray(parsed) ? parsed : [acoes];
+      } catch {
+        return [acoes];
+      }
+    }
+    if (Array.isArray(acoes)) {
+      return acoes.map(acao => String(acao));
+    }
+    return [];
+  };
+
   useEffect(() => {
     if (proposta) {
       setFormData({
@@ -62,7 +79,7 @@ const EditarProposta = () => {
         valor: proposta.valor?.toString() || '',
         prazo: proposta.prazo || '',
         status: proposta.status || 'rascunho',
-        acoes_sugeridas: proposta.acoes_sugeridas || []
+        acoes_sugeridas: getAcoesSugeridas(proposta.acoes_sugeridas)
       });
     }
   }, [proposta]);
