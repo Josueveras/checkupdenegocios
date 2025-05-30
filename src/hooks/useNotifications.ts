@@ -18,13 +18,14 @@ export const useNotifications = () => {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Usando any para contornar a limitação dos tipos do Supabase
+      const { data, error } = await (supabase as any)
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Notification[] || [];
+      return (data as Notification[]) || [];
     }
   });
 };
@@ -35,7 +36,8 @@ export const useMarkAsRead = () => {
   
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      const { error } = await supabase
+      // Usando any para contornar a limitação dos tipos do Supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ lida: true })
         .eq('id', notificationId);
@@ -57,7 +59,8 @@ export const useCreateNotification = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      const { data, error } = await supabase
+      // Usando any para contornar a limitação dos tipos do Supabase
+      const { data, error } = await (supabase as any)
         .from('notifications')
         .insert({
           ...notification,
