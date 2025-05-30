@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useDiagnosticNotifications } from './useDiagnosticNotifications';
 
 // Hook para empresas
 export const useEmpresas = () => {
@@ -109,20 +110,28 @@ export const useSaveEmpresa = () => {
 // Hook para salvar diagnóstico
 export const useSaveDiagnostico = () => {
   const queryClient = useQueryClient();
+  const { notifyDiagnosticCompleted } = useDiagnosticNotifications();
   
   return useMutation({
     mutationFn: async (diagnostico: any) => {
       const { data, error } = await supabase
         .from('diagnosticos')
         .insert(diagnostico)
-        .select()
+        .select(`
+          *,
+          empresas!diagnosticos_empresa_id_fkey (nome)
+        `)
         .single();
       
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
+      // Criar notificação quando diagnóstico for concluído
+      if (data?.empresas?.nome) {
+        notifyDiagnosticCompleted(data.empresas.nome, data.id);
+      }
     }
   });
 };

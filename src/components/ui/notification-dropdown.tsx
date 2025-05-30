@@ -11,56 +11,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  type: 'diagnostic' | 'proposal' | 'system';
-  pdfUrl?: string;
-  read: boolean;
-  createdAt: Date;
-}
+import { useNotifications, useMarkAsRead } from '@/hooks/useNotifications';
 
 export function NotificationDropdown() {
-  const [notifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Novo Diagnóstico',
-      message: 'Diagnóstico da Tech Solutions foi concluído',
-      type: 'diagnostic',
-      pdfUrl: 'https://example.com/diagnostic1.pdf',
-      read: false,
-      createdAt: new Date(Date.now() - 60000) // 1 minuto atrás
-    },
-    {
-      id: '2',
-      title: 'Proposta Gerada',
-      message: 'Proposta para Marketing Digital Pro está pronta',
-      type: 'proposal',
-      pdfUrl: 'https://example.com/proposal1.pdf',
-      read: false,
-      createdAt: new Date(Date.now() - 300000) // 5 minutos atrás
-    },
-    {
-      id: '3',
-      title: 'Sistema',
-      message: 'Bem-vindo ao CheckUp de Negócios!',
-      type: 'system',
-      read: true,
-      createdAt: new Date(Date.now() - 3600000) // 1 hora atrás
+  const { data: notifications = [], isLoading } = useNotifications();
+  const markAsRead = useMarkAsRead();
+
+  const unreadCount = notifications.filter(n => !n.lida).length;
+
+  const handleNotificationClick = (notification: any) => {
+    // Marcar como lida
+    if (!notification.lida) {
+      markAsRead.mutate(notification.id);
     }
-  ]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  const handleNotificationClick = (notification: Notification) => {
-    if (notification.pdfUrl) {
-      window.open(notification.pdfUrl, '_blank');
+    // Abrir PDF se existir
+    if (notification.link_pdf) {
+      window.open(notification.link_pdf, '_blank');
     }
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const minutes = Math.floor(diff / 60000);
@@ -72,6 +44,14 @@ export function NotificationDropdown() {
     if (minutes > 0) return `${minutes}m`;
     return 'agora';
   };
+
+  if (isLoading) {
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Bell className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>
@@ -106,17 +86,20 @@ export function NotificationDropdown() {
           notifications.map((notification) => (
             <DropdownMenuItem
               key={notification.id}
-              className={`cursor-pointer p-3 ${!notification.read ? 'bg-blue-50' : ''}`}
+              className={`cursor-pointer p-3 ${!notification.lida ? 'bg-blue-50' : ''}`}
               onClick={() => handleNotificationClick(notification)}
             >
               <div className="flex flex-col w-full space-y-1">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-sm">{notification.title}</span>
-                  <span className="text-xs text-gray-500">{formatTime(notification.createdAt)}</span>
+                  <span className="font-medium text-sm">{notification.titulo}</span>
+                  <span className="text-xs text-gray-500">{formatTime(notification.created_at)}</span>
                 </div>
-                <p className="text-sm text-gray-600">{notification.message}</p>
-                {notification.pdfUrl && (
+                <p className="text-sm text-gray-600">{notification.descricao}</p>
+                {notification.link_pdf && (
                   <span className="text-xs text-blue-600">Clique para abrir PDF</span>
+                )}
+                {!notification.lida && (
+                  <div className="w-2 h-2 bg-blue-500 rounded-full ml-auto"></div>
                 )}
               </div>
             </DropdownMenuItem>

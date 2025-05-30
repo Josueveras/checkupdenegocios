@@ -5,10 +5,12 @@ import { toast } from '@/hooks/use-toast';
 import { generateProposalPDF, downloadPDF, getPDFDataURL } from '@/utils/pdfGenerator';
 import { sendWhatsAppMessage, createProposalWhatsAppMessage } from '@/utils/whatsappUtils';
 import { useNavigate } from 'react-router-dom';
+import { useDiagnosticNotifications } from './useDiagnosticNotifications';
 
 export const useProposalOperations = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { notifyProposalGenerated } = useDiagnosticNotifications();
 
   const deleteProposal = useMutation({
     mutationFn: async (id: string) => {
@@ -99,10 +101,37 @@ export const useProposalOperations = () => {
     }
   };
 
+  const createProposal = useMutation({
+    mutationFn: async (proposalData: any) => {
+      const { data, error } = await supabase
+        .from('propostas')
+        .insert(proposalData)
+        .select(`
+          *,
+          diagnosticos!propostas_diagnostico_id_fkey (
+            empresas!diagnosticos_empresa_id_fkey (nome)
+          )
+        `)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['propostas'] });
+      // Criar notificação quando proposta for gerada
+      const empresaNome = data?.diagnosticos?.empresas?.nome;
+      if (empresaNome) {
+        notifyProposalGenerated(empresaNome, data.id);
+      }
+    }
+  });
+
   return {
     deleteProposal,
     handleEditProposal,
     handleDownloadPDF,
-    handleSendWhatsApp
+    handleSendWhatsApp,
+    createProposal
   };
 };
