@@ -26,7 +26,7 @@ const NovoDiagnostico = () => {
     revenue: ''
   });
 
-  const [answers, setAnswers] = useState<{[key: number]: number}>({});
+  const [answers, setAnswers] = useState<{[key: string]: number}>({});
   const [results, setResults] = useState<any>(null);
   const [diagnosticData, setDiagnosticData] = useState({
     planos: '',
@@ -143,14 +143,14 @@ const NovoDiagnostico = () => {
       const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
       console.log('Diagnostico saved:', diagnostico);
 
-      // Salvar respostas - Usar string UUID em vez de número
+      // Salvar respostas - Usar UUID em vez de número
       const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
-        const question = questions.find(q => q.id.toString() === perguntaId);
+        const question = questions.find(q => q.id === perguntaId);
         const resposta = question?.options.find(o => o.score === score)?.text || '';
         
         return {
           diagnostico_id: diagnostico.id,
-          pergunta_id: perguntaId, // Manter como string se a pergunta_id for UUID
+          pergunta_id: perguntaId, // Agora é string UUID
           score: score,
           resposta: resposta
         };

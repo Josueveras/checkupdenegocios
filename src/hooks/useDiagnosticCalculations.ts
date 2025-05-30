@@ -1,6 +1,6 @@
 
 interface Question {
-  id: number;
+  id: string;
   question: string;
   category: string;
   options: Array<{
@@ -11,7 +11,7 @@ interface Question {
 }
 
 export const useDiagnosticCalculations = () => {
-  const calculateResults = (answers: {[key: number]: number}, questions: Question[]) => {
+  const calculateResults = (answers: {[key: string]: number}, questions: Question[]) => {
     const categories = ["Marketing", "Vendas", "Estratégia", "Gestão"];
     const categoryScores: {[key: string]: {total: number, max: number}} = {};
     

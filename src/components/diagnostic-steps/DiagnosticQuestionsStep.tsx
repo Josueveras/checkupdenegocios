@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Question {
-  id: number;
+  id: string;
   question: string;
   category: string;
   options: Array<{
@@ -17,8 +17,8 @@ interface Question {
 
 interface DiagnosticQuestionsStepProps {
   questions: Question[];
-  answers: {[key: number]: number};
-  setAnswers: (answers: {[key: number]: number}) => void;
+  answers: {[key: string]: number};
+  setAnswers: (answers: {[key: string]: number}) => void;
   isLoading?: boolean;
 }
 
@@ -46,6 +46,22 @@ export const DiagnosticQuestionsStep = ({
               </div>
             </div>
           ))}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!questions || questions.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Diagnóstico Empresarial</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-12">
+          <div className="text-gray-500">
+            <p className="text-lg font-medium mb-2">Nenhuma pergunta encontrada</p>
+            <p className="text-sm">Cadastre perguntas na página "Perguntas" para começar o diagnóstico.</p>
+          </div>
         </CardContent>
       </Card>
     );

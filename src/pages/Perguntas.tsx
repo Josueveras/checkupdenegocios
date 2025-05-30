@@ -8,12 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Edit, FileText, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Edit, FileText, Settings, Trash2 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { usePerguntasManager } from '@/hooks/usePerguntasManager';
 
 interface Question {
-  id: number;
+  id?: string;
   question: string;
   category: string;
   options: Array<{ text: string; score: number }>;
@@ -21,45 +22,7 @@ interface Question {
 }
 
 const Perguntas = () => {
-  const [questions, setQuestions] = useState<Question[]>([
-    {
-      id: 1,
-      question: "Sua empresa possui uma estratégia de marketing digital estruturada?",
-      category: "Marketing",
-      options: [
-        { text: "Não temos estratégia definida", score: 0 },
-        { text: "Temos algumas ações isoladas", score: 1 },
-        { text: "Temos estratégia básica implementada", score: 2 },
-        { text: "Temos estratégia completa e bem executada", score: 3 }
-      ],
-      required: true
-    },
-    {
-      id: 2,
-      question: "Como é o processo de vendas da sua empresa?",
-      category: "Vendas",
-      options: [
-        { text: "Não temos processo estruturado", score: 0 },
-        { text: "Processo básico e informal", score: 1 },
-        { text: "Processo definido com algumas ferramentas", score: 2 },
-        { text: "Processo otimizado com CRM e automações", score: 3 }
-      ],
-      required: true
-    },
-    {
-      id: 3,
-      question: "Sua empresa possui planejamento estratégico definido?",
-      category: "Estratégia",
-      options: [
-        { text: "Não temos planejamento", score: 0 },
-        { text: "Planejamento informal/básico", score: 1 },
-        { text: "Planejamento anual estruturado", score: 2 },
-        { text: "Planejamento estratégico completo com metas", score: 3 }
-      ],
-      required: false
-    }
-  ]);
-
+  const { questions, isLoading, saveQuestion, deleteQuestion } = usePerguntasManager();
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isNewQuestion, setIsNewQuestion] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -74,7 +37,6 @@ const Perguntas = () => {
 
   const handleNewQuestion = () => {
     setEditingQuestion({
-      id: Date.now(),
       question: "",
       category: "Marketing",
       options: [
@@ -89,7 +51,7 @@ const Perguntas = () => {
     setDialogOpen(true);
   };
 
-  const handleSaveQuestion = () => {
+  const handleSaveQuestion = async () => {
     if (!editingQuestion) return;
 
     // Validação básica
@@ -111,30 +73,43 @@ const Perguntas = () => {
       return;
     }
 
-    if (isNewQuestion) {
-      setQuestions(prev => [...prev, editingQuestion]);
+    try {
+      await saveQuestion.mutateAsync(editingQuestion);
+      
       toast({
-        title: "Pergunta criada",
-        description: "Nova pergunta adicionada com sucesso!"
+        title: isNewQuestion ? "Pergunta criada" : "Pergunta atualizada",
+        description: isNewQuestion 
+          ? "Nova pergunta adicionada com sucesso!" 
+          : "Pergunta editada com sucesso!"
       });
-    } else {
-      setQuestions(prev => prev.map(q => q.id === editingQuestion.id ? editingQuestion : q));
+
+      setDialogOpen(false);
+      setEditingQuestion(null);
+    } catch (error) {
+      console.error('Erro ao salvar pergunta:', error);
       toast({
-        title: "Pergunta atualizada",
-        description: "Pergunta editada com sucesso!"
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro ao salvar a pergunta.",
+        variant: "destructive"
       });
     }
-
-    setDialogOpen(false);
-    setEditingQuestion(null);
   };
 
-  const handleDeleteQuestion = (id: number) => {
-    setQuestions(prev => prev.filter(q => q.id !== id));
-    toast({
-      title: "Pergunta removida",
-      description: "Pergunta excluída com sucesso!"
-    });
+  const handleDeleteQuestion = async (id: string) => {
+    try {
+      await deleteQuestion.mutateAsync(id);
+      toast({
+        title: "Pergunta removida",
+        description: "Pergunta excluída com sucesso!"
+      });
+    } catch (error) {
+      console.error('Erro ao excluir pergunta:', error);
+      toast({
+        title: "Erro ao excluir",
+        description: "Ocorreu um erro ao excluir a pergunta.",
+        variant: "destructive"
+      });
+    }
   };
 
   const updateOption = (index: number, field: 'text' | 'score', value: string | number) => {
@@ -155,6 +130,19 @@ const Perguntas = () => {
     };
     return colors[category as keyof typeof colors] || colors["Marketing"];
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Editor de Perguntas</h1>
+            <p className="text-gray-600 mt-1">Carregando perguntas...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -227,10 +215,10 @@ const Perguntas = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDeleteQuestion(question.id)}
+                    onClick={() => question.id && handleDeleteQuestion(question.id)}
                     className="text-red-600 border-red-200 hover:bg-red-50"
                   >
-                    Excluir
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -359,14 +347,21 @@ const Perguntas = () => {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleSaveQuestion} className="bg-petrol hover:bg-petrol/90">
-              {isNewQuestion ? "Criar Pergunta" : "Salvar Alterações"}
+            <Button 
+              onClick={handleSaveQuestion} 
+              className="bg-petrol hover:bg-petrol/90"
+              disabled={saveQuestion.isPending}
+            >
+              {saveQuestion.isPending 
+                ? "Salvando..." 
+                : (isNewQuestion ? "Criar Pergunta" : "Salvar Alterações")
+              }
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {questions.length === 0 && (
+      {questions.length === 0 && !isLoading && (
         <Card>
           <CardContent className="text-center py-12">
             <Edit className="h-12 w-12 text-gray-400 mx-auto mb-4" />
