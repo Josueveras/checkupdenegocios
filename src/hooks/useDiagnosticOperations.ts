@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -109,18 +108,16 @@ export const useDiagnosticOperations = () => {
 
       toast({
         title: "Gerando PDF...",
-        description: "Preparando arquivo para envio"
+        description: "Preparando link para envio"
       });
 
       // Fazer upload do PDF e obter URL pública
       const pdfUrl = await uploadPDFToStorage(diagnostic);
       
-      // Criar mensagem personalizada
+      // Criar mensagem simples com o link
       const message = createDiagnosticWhatsAppMessage(
         empresa.nome || 'Empresa',
         empresa.cliente_nome || 'Cliente',
-        diagnostic.score_total,
-        diagnostic.nivel,
         pdfUrl
       );
       

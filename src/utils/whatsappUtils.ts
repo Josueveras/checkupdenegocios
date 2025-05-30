@@ -19,24 +19,10 @@ export const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
 export const createDiagnosticWhatsAppMessage = (
   companyName: string, 
   clientName: string, 
-  score: number, 
-  level: string,
   pdfUrl: string
 ) => {
-  const message = `Olá ${clientName}! 👋
-
-Seu diagnóstico empresarial da *${companyName}* está pronto!
-📊 *Score obtido:* ${score}% (${level})
-
-📄 Você pode acessar o relatório completo no link abaixo:
-${pdfUrl}
-
-📅 Que tal agendarmos uma reunião para discutir os resultados e próximos passos?
-
-Estou à disposição para tirar dúvidas e te ajudar no que for necessário. 😉
-
-Att,
-CheckUp de Negócios`;
+  const message = `Olá ${clientName}!
+📄 Acesse seu diagnóstico: ${pdfUrl}`;
 
   return message;
 };
