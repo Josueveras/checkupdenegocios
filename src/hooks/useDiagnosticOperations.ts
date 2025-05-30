@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { generateDiagnosticPDF, downloadPDF, getPDFDataURL } from '@/utils/pdfGenerator';
+import { generateDiagnosticPDF, downloadPDF } from '@/utils/pdfGenerator';
 import { sendWhatsAppMessage, createDiagnosticWhatsAppMessage } from '@/utils/whatsappUtils';
 import { scheduleGoogleCalendarEvent } from '@/utils/calendarUtils';
 
@@ -44,6 +44,37 @@ export const useDiagnosticOperations = () => {
     }
   });
 
+  const uploadPDFToStorage = async (diagnostic: any): Promise<string> => {
+    try {
+      // Gerar o PDF
+      const doc = generateDiagnosticPDF(diagnostic);
+      const pdfBytes = doc.output('arraybuffer');
+      
+      // Nome do arquivo
+      const fileName = `diagnostico-${diagnostic.empresas?.nome || 'empresa'}-${diagnostic.id}-${new Date().getTime()}.pdf`;
+      
+      // Upload para o Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('diagnosticos')
+        .upload(fileName, pdfBytes, {
+          contentType: 'application/pdf',
+          upsert: true
+        });
+
+      if (error) throw error;
+
+      // Obter URL pública
+      const { data: urlData } = supabase.storage
+        .from('diagnosticos')
+        .getPublicUrl(fileName);
+
+      return urlData.publicUrl;
+    } catch (error) {
+      console.error('Erro ao fazer upload do PDF:', error);
+      throw error;
+    }
+  };
+
   const handleGenerateAndDownloadPDF = async (diagnostic: any) => {
     try {
       const doc = generateDiagnosticPDF(diagnostic);
@@ -76,29 +107,34 @@ export const useDiagnosticOperations = () => {
         return;
       }
 
-      // Gerar PDF e obter data URL
-      const doc = generateDiagnosticPDF(diagnostic);
-      const pdfDataURL = getPDFDataURL(doc);
+      toast({
+        title: "Gerando PDF...",
+        description: "Preparando arquivo para envio"
+      });
+
+      // Fazer upload do PDF e obter URL pública
+      const pdfUrl = await uploadPDFToStorage(diagnostic);
       
       // Criar mensagem personalizada
       const message = createDiagnosticWhatsAppMessage(
         empresa.nome || 'Empresa',
         empresa.cliente_nome || 'Cliente',
         diagnostic.score_total,
-        pdfDataURL
+        diagnostic.nivel,
+        pdfUrl
       );
       
       sendWhatsAppMessage(empresa.cliente_telefone, message);
       
       toast({
         title: "WhatsApp aberto",
-        description: `Mensagem com PDF preparada para ${empresa.nome}`
+        description: `Mensagem preparada para ${empresa.nome}`,
       });
     } catch (error) {
       console.error('Erro ao enviar WhatsApp:', error);
       toast({
         title: "Erro",
-        description: "Não foi possível abrir o WhatsApp.",
+        description: "Não foi possível preparar a mensagem do WhatsApp.",
         variant: "destructive"
       });
     }

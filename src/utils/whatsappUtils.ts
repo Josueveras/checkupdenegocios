@@ -16,18 +16,28 @@ export const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
   window.open(whatsappUrl, '_blank');
 };
 
-export const createDiagnosticWhatsAppMessage = (companyName: string, clientName: string, score: number, pdfUrl?: string) => {
-  let message = `Olá ${clientName}! 👋\n\n`;
-  message += `Seu diagnóstico empresarial da *${companyName}* está pronto! 📊\n\n`;
-  message += `🎯 *Score obtido: ${score}%*\n\n`;
-  
-  if (pdfUrl) {
-    message += `📄 Você pode visualizar o relatório completo aqui: ${pdfUrl}\n\n`;
-  }
-  
-  message += `📅 Que tal agendarmos uma reunião para discutir os resultados e próximos passos?\n\n`;
-  message += `Estou à disposição para esclarecer qualquer dúvida! 😊`;
-  
+export const createDiagnosticWhatsAppMessage = (
+  companyName: string, 
+  clientName: string, 
+  score: number, 
+  level: string,
+  pdfUrl: string
+) => {
+  const message = `Olá ${clientName}! 👋
+
+Seu diagnóstico empresarial da *${companyName}* está pronto!
+📊 *Score obtido:* ${score}% (${level})
+
+📄 Você pode acessar o relatório completo no link abaixo:
+${pdfUrl}
+
+📅 Que tal agendarmos uma reunião para discutir os resultados e próximos passos?
+
+Estou à disposição para tirar dúvidas e te ajudar no que for necessário. 😉
+
+Att,
+CheckUp de Negócios`;
+
   return message;
 };
 
