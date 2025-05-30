@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -36,12 +37,12 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
         </div>
         <div className="flex-1 flex flex-col">
           <Header />
-          <main className="flex-1 p-6 overflow-auto">
+          <main className="flex-1 p-6 overflow-auto pb-20 md:pb-6">
             {children}
           </main>
         </div>
         
-        {/* Menu flutuante para mobile */}
+        {/* Menu mobile fixo na parte inferior */}
         <FloatingMobileMenu />
       </div>
     </SidebarProvider>
