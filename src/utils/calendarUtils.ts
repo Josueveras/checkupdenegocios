@@ -17,6 +17,29 @@ export const createCalendarEvent = (title: string, date: Date, details: string) 
   window.open(calendarUrl, '_blank');
 };
 
+export const scheduleGoogleCalendarEvent = (title: string, description: string, clientEmail?: string) => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(14, 0, 0, 0); // 14:00
+
+  const startDate = tomorrow.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  const endDate = new Date(tomorrow.getTime() + 60 * 60 * 1000).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${startDate}/${endDate}`,
+    details: description,
+    add: clientEmail || '',
+    location: '',
+    sf: 'true',
+    output: 'xml'
+  });
+  
+  const calendarUrl = `https://calendar.google.com/calendar/render?${params.toString()}`;
+  window.open(calendarUrl, '_blank');
+};
+
 export const scheduleDiagnosticMeeting = (companyName: string, clientName: string) => {
   const title = `Reunião de Apresentação - ${companyName}`;
   const details = `Reunião para apresentar os resultados do diagnóstico empresarial da ${companyName} com ${clientName}.`;

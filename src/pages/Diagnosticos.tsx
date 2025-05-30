@@ -5,69 +5,72 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, Settings } from 'lucide-react';
+import { FileText, Download, Calendar, Settings, Edit, Trash2, Eye } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { useDiagnosticos } from '@/hooks/useSupabase';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { generateDiagnosticPDF, downloadPDF, getPDFDataURL } from '@/utils/pdfGenerator';
+import { scheduleGoogleCalendarEvent } from '@/utils/calendarUtils';
+import { sendWhatsAppMessage } from '@/utils/whatsappUtils';
+import { EditDiagnosticButton } from '@/components/EditDiagnosticButton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const Diagnosticos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [scoreFilter, setScoreFilter] = useState('todos');
+  
+  const { data: diagnosticos = [], isLoading, error } = useDiagnosticos();
+  const queryClient = useQueryClient();
 
-  const mockDiagnostics = [
-    {
-      id: 1,
-      company: "Tech Solutions LTDA",
-      client: "João Silva",
-      email: "joao@techsolutions.com",
-      phone: "11999999999",
-      score: 78,
-      level: "Intermediário",
-      date: "2024-01-15",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic1.pdf",
-      calendarUrl: "https://calendly.com/agencia"
+  console.log('Diagnósticos do Supabase:', diagnosticos);
+
+  const deleteDiagnostic = useMutation({
+    mutationFn: async (id: string) => {
+      // Primeiro deletar respostas relacionadas
+      const { error: respostasError } = await supabase
+        .from('respostas')
+        .delete()
+        .eq('diagnostico_id', id);
+      
+      if (respostasError) throw respostasError;
+
+      // Depois deletar o diagnóstico
+      const { error } = await supabase
+        .from('diagnosticos')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
     },
-    {
-      id: 2,
-      company: "Marketing Digital Pro",
-      client: "Maria Santos",
-      email: "maria@marketingpro.com",
-      phone: "11888888888",
-      score: 45,
-      level: "Emergente",
-      date: "2024-01-14",
-      status: "Pendente",
-      pdfUrl: "",
-      calendarUrl: "https://calendly.com/agencia"
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
+      toast({
+        title: "Diagnóstico excluído",
+        description: "O diagnóstico foi excluído com sucesso."
+      });
     },
-    {
-      id: 3,
-      company: "Inovação & Estratégia",
-      client: "Pedro Costa",
-      email: "pedro@inovacao.com",
-      phone: "11777777777",
-      score: 92,
-      level: "Avançado",
-      date: "2024-01-13",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic3.pdf",
-      calendarUrl: ""
-    },
-    {
-      id: 4,
-      company: "Consultoria Business",
-      client: "Ana Lima",
-      email: "ana@consultoria.com",
-      phone: "11666666666",
-      score: 28,
-      level: "Iniciante",
-      date: "2024-01-12",
-      status: "Concluído",
-      pdfUrl: "https://example.com/diagnostic4.pdf",
-      calendarUrl: "https://calendly.com/agencia"
+    onError: (error) => {
+      console.error('Erro ao excluir diagnóstico:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o diagnóstico.",
+        variant: "destructive"
+      });
     }
-  ];
+  });
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 bg-green-50";
@@ -87,66 +90,115 @@ const Diagnosticos = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    return status === "Concluído" 
+    return status === "concluido" 
       ? "bg-blue-100 text-blue-800" 
       : "bg-gray-100 text-gray-800";
   };
 
-  const filteredDiagnostics = mockDiagnostics.filter(diagnostic => {
-    const matchesSearch = diagnostic.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         diagnostic.client.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredDiagnostics = diagnosticos.filter(diagnostic => {
+    const empresa = diagnostic.empresas;
+    const matchesSearch = empresa?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         empresa?.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || diagnostic.status === statusFilter;
     const matchesScore = scoreFilter === 'todos' || 
-                        (scoreFilter === 'alto' && diagnostic.score >= 80) ||
-                        (scoreFilter === 'medio' && diagnostic.score >= 40 && diagnostic.score < 80) ||
-                        (scoreFilter === 'baixo' && diagnostic.score < 40);
+                        (scoreFilter === 'alto' && diagnostic.score_total >= 80) ||
+                        (scoreFilter === 'medio' && diagnostic.score_total >= 40 && diagnostic.score_total < 80) ||
+                        (scoreFilter === 'baixo' && diagnostic.score_total < 40);
     
     return matchesSearch && matchesStatus && matchesScore;
   });
 
-  const handleViewPDF = (pdfUrl: string, company: string) => {
-    if (!pdfUrl) {
+  const handleGenerateAndDownloadPDF = async (diagnostic: any) => {
+    try {
+      const doc = generateDiagnosticPDF(diagnostic);
+      const filename = `diagnostico-${diagnostic.empresas?.nome || 'empresa'}-${new Date().toISOString().split('T')[0]}.pdf`;
+      downloadPDF(doc, filename);
+      
+      // Salvar URL do PDF no banco (simulado)
+      const pdfDataURL = getPDFDataURL(doc);
+      
       toast({
-        title: "PDF não disponível",
-        description: "O PDF ainda não foi gerado para este diagnóstico.",
+        title: "PDF gerado",
+        description: "O PDF foi gerado e baixado com sucesso."
+      });
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o PDF.",
         variant: "destructive"
       });
-      return;
     }
-    window.open(pdfUrl, '_blank');
   };
 
-  const handleSendWhatsApp = (phone: string, pdfUrl: string, company: string) => {
-    if (!pdfUrl) {
+  const handleSendWhatsApp = async (diagnostic: any) => {
+    try {
+      const empresa = diagnostic.empresas;
+      if (!empresa?.cliente_telefone) {
+        toast({
+          title: "Telefone não disponível",
+          description: "Número de WhatsApp não cadastrado para este cliente.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Gerar PDF primeiro
+      const doc = generateDiagnosticPDF(diagnostic);
+      const pdfDataURL = getPDFDataURL(doc);
+      
+      const message = `Olá ${empresa.cliente_nome}, segue seu diagnóstico empresarial. Score: ${diagnostic.score_total}%. PDF: ${pdfDataURL}`;
+      
+      sendWhatsAppMessage(empresa.cliente_telefone, message);
+      
       toast({
-        title: "PDF não disponível",
-        description: "Não é possível enviar por WhatsApp sem o PDF gerado.",
+        title: "WhatsApp aberto",
+        description: `Mensagem preparada para ${empresa.nome}`
+      });
+    } catch (error) {
+      console.error('Erro ao enviar WhatsApp:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível abrir o WhatsApp.",
         variant: "destructive"
       });
-      return;
     }
-    
-    const message = `Olá, segue seu diagnóstico gerado. Clique aqui: ${pdfUrl}`;
-    const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    
-    toast({
-      title: "WhatsApp aberto",
-      description: `Mensagem preparada para ${company}`
-    });
   };
 
-  const handleScheduleMeeting = (calendarUrl: string, company: string) => {
-    if (!calendarUrl) {
+  const handleScheduleCalendar = (diagnostic: any) => {
+    try {
+      const empresa = diagnostic.empresas;
+      const title = `Apresentação Diagnóstico - ${empresa?.nome || 'Empresa'}`;
+      const description = `Reunião para apresentar os resultados do diagnóstico empresarial para ${empresa?.nome} com ${empresa?.cliente_nome}.`;
+      
+      scheduleGoogleCalendarEvent(title, description, empresa?.cliente_email);
+      
       toast({
-        title: "Link não disponível",
-        description: "Nenhum link de agendamento disponível.",
+        title: "Agenda aberta",
+        description: "Evento criado no Google Calendar"
+      });
+    } catch (error) {
+      console.error('Erro ao agendar:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o evento na agenda.",
         variant: "destructive"
       });
-      return;
     }
-    window.open(calendarUrl, '_blank');
   };
+
+  const handleViewDiagnostic = (diagnosticId: string) => {
+    // Navegar para uma página de visualização detalhada
+    window.open(`/diagnostico/${diagnosticId}`, '_blank');
+  };
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-64">Carregando diagnósticos...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-600">Erro ao carregar diagnósticos: {error.message}</div>;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -190,8 +242,8 @@ const Diagnosticos = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="Concluído">Concluído</SelectItem>
-                  <SelectItem value="Pendente">Pendente</SelectItem>
+                  <SelectItem value="concluido">Concluído</SelectItem>
+                  <SelectItem value="pendente">Pendente</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -230,7 +282,7 @@ const Diagnosticos = () => {
       {/* Results Count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Mostrando {filteredDiagnostics.length} de {mockDiagnostics.length} diagnósticos
+          Mostrando {filteredDiagnostics.length} de {diagnosticos.length} diagnósticos
         </p>
       </div>
 
@@ -243,59 +295,110 @@ const Diagnosticos = () => {
                 {/* Company Info */}
                 <div className="flex-1 space-y-2">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <h3 className="font-semibold text-lg text-gray-900">{diagnostic.company}</h3>
+                    <h3 className="font-semibold text-lg text-gray-900">{diagnostic.empresas?.nome || 'Empresa não informada'}</h3>
                     <div className="flex flex-wrap gap-2">
                       <Badge className={getStatusBadge(diagnostic.status)}>
-                        {diagnostic.status}
+                        {diagnostic.status === 'concluido' ? 'Concluído' : 'Pendente'}
                       </Badge>
-                      <Badge className={getLevelBadge(diagnostic.level)}>
-                        {diagnostic.level}
+                      <Badge className={getLevelBadge(diagnostic.nivel)}>
+                        {diagnostic.nivel}
                       </Badge>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-                    <p><strong>Cliente:</strong> {diagnostic.client}</p>
-                    <p><strong>Data:</strong> {new Date(diagnostic.date).toLocaleDateString('pt-BR')}</p>
-                    <p><strong>E-mail:</strong> {diagnostic.email}</p>
-                    <p><strong>WhatsApp:</strong> {diagnostic.phone}</p>
+                    <p><strong>Cliente:</strong> {diagnostic.empresas?.cliente_nome || 'N/A'}</p>
+                    <p><strong>Data:</strong> {new Date(diagnostic.created_at).toLocaleDateString('pt-BR')}</p>
+                    <p><strong>E-mail:</strong> {diagnostic.empresas?.cliente_email || 'N/A'}</p>
+                    <p><strong>WhatsApp:</strong> {diagnostic.empresas?.cliente_telefone || 'N/A'}</p>
                   </div>
                 </div>
 
                 {/* Score */}
                 <div className="text-center">
-                  <div className={`text-3xl font-bold p-4 rounded-lg ${getScoreColor(diagnostic.score)}`}>
-                    {diagnostic.score}%
+                  <div className={`text-3xl font-bold p-4 rounded-lg ${getScoreColor(diagnostic.score_total)}`}>
+                    {diagnostic.score_total}%
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 min-w-fit">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewPDF(diagnostic.pdfUrl, diagnostic.company)}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Ver PDF
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSendWhatsApp(diagnostic.phone, diagnostic.pdfUrl, diagnostic.company)}
-                    className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
-                  >
-                    📤 WhatsApp
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleScheduleMeeting(diagnostic.calendarUrl, diagnostic.company)}
-                    className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    Agendar
-                  </Button>
+                <div className="flex flex-col gap-2 min-w-fit">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Baixar PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleSendWhatsApp(diagnostic)}
+                      className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
+                    >
+                      📤 WhatsApp
+                    </Button>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleScheduleCalendar(diagnostic)}
+                      className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Agendar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewDiagnostic(diagnostic.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      Ver
+                    </Button>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <EditDiagnosticButton 
+                      diagnosticId={diagnostic.id} 
+                      size="sm"
+                      variant="outline" 
+                    />
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Excluir
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir este diagnóstico? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteDiagnostic.mutate(diagnostic.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </div>
             </CardContent>

@@ -1,24 +1,40 @@
 
-export const sendWhatsAppMessage = (phone: string, message: string) => {
-  // Remover caracteres especiais do telefone
-  const cleanPhone = phone.replace(/\D/g, '');
+export const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
+  // Remove caracteres não numéricos do telefone
+  const cleanPhone = phoneNumber.replace(/\D/g, '');
   
-  // Garantir que tenha código do país (55 para Brasil)
-  const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
+  // Adiciona código do país se não tiver
+  const phone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
   
-  // Criar URL do WhatsApp
-  const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+  // Codifica a mensagem para URL
+  const encodedMessage = encodeURIComponent(message);
   
-  // Abrir em nova aba
+  // Cria a URL do WhatsApp
+  const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
+  
+  // Abre em nova aba
   window.open(whatsappUrl, '_blank');
 };
 
-export const sendDiagnosticWhatsApp = (phone: string, pdfUrl: string, companyName: string) => {
-  const message = `Olá! Segue seu diagnóstico empresarial da ${companyName}. Clique aqui para visualizar: ${pdfUrl}`;
-  sendWhatsAppMessage(phone, message);
+export const createDiagnosticWhatsAppMessage = (companyName: string, clientName: string, score: number, pdfUrl?: string) => {
+  let message = `Olá ${clientName}! 👋\n\n`;
+  message += `Seu diagnóstico empresarial da ${companyName} está pronto! 📊\n\n`;
+  message += `Score obtido: ${score}% 🎯\n\n`;
+  
+  if (pdfUrl) {
+    message += `Você pode visualizar o relatório completo aqui: ${pdfUrl}\n\n`;
+  }
+  
+  message += `Que tal agendarmos uma reunião para discutir os resultados e próximos passos? 📅`;
+  
+  return message;
 };
 
-export const sendProposalWhatsApp = (phone: string, pdfUrl: string, companyName: string) => {
-  const message = `Olá! Segue a proposta comercial personalizada para ${companyName}. Clique aqui para visualizar: ${pdfUrl}`;
-  sendWhatsAppMessage(phone, message);
+export const createProposalWhatsAppMessage = (companyName: string, clientName: string, proposalValue: number) => {
+  let message = `Olá ${clientName}! 👋\n\n`;
+  message += `Preparamos uma proposta personalizada para a ${companyName} baseada no seu diagnóstico! 💼\n\n`;
+  message += `Valor: ${proposalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n\n`;
+  message += `Vamos conversar sobre como podemos ajudar sua empresa a crescer? 🚀`;
+  
+  return message;
 };
