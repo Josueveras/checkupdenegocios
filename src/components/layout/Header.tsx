@@ -13,6 +13,7 @@ import {
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { NotificationDropdown } from "@/components/ui/notification-dropdown";
 import { BackButton } from "@/components/ui/back-button";
+import { MobileMenu } from "./MobileMenu";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export function Header() {
@@ -42,9 +43,9 @@ export function Header() {
   };
 
   return (
-    <header className="h-16 border-b bg-white flex items-center justify-between px-6">
+    <header className="h-16 border-b bg-white flex items-center justify-between px-6 relative">
       <div className="flex items-center gap-4">
-        {showSidebarTrigger && <SidebarTrigger />}
+        {showSidebarTrigger && <SidebarTrigger className="hidden md:flex" />}
         {showBackButton && <BackButton onClick={handleBackClick} />}
         <div className="hidden lg:block">
           <h1 className="text-xl font-semibold text-gray-900">
@@ -55,6 +56,9 @@ export function Header() {
           </p>
         </div>
       </div>
+
+      {/* Menu mobile */}
+      <MobileMenu />
 
       <div className="flex items-center gap-4">
         <NotificationDropdown />

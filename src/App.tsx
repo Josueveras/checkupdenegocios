@@ -30,7 +30,10 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
-        <AppSidebar />
+        {/* Sidebar apenas no desktop */}
+        <div className="hidden md:block">
+          <AppSidebar />
+        </div>
         <div className="flex-1 flex flex-col">
           <Header />
           <main className="flex-1 p-6 overflow-auto">
