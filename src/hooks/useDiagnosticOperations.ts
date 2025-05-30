@@ -43,6 +43,44 @@ export const useDiagnosticOperations = () => {
     }
   });
 
+  const generatePDFForSharing = async (diagnostic: any): Promise<{ blob: Blob; url?: string }> => {
+    try {
+      // Gerar o PDF
+      const doc = generateDiagnosticPDF(diagnostic);
+      const pdfBytes = doc.output('arraybuffer');
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      
+      // Nome do arquivo
+      const fileName = `diagnostico-${diagnostic.empresas?.nome || 'empresa'}-${diagnostic.id}-${new Date().getTime()}.pdf`;
+      
+      try {
+        // Tentar fazer upload para obter URL pública
+        const { data, error } = await supabase.storage
+          .from('diagnosticos')
+          .upload(fileName, pdfBytes, {
+            contentType: 'application/pdf',
+            upsert: true
+          });
+
+        if (!error) {
+          // Obter URL pública
+          const { data: urlData } = supabase.storage
+            .from('diagnosticos')
+            .getPublicUrl(fileName);
+
+          return { blob, url: urlData.publicUrl };
+        }
+      } catch (uploadError) {
+        console.warn('Não foi possível fazer upload do PDF, mas o blob está disponível:', uploadError);
+      }
+
+      return { blob };
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      throw error;
+    }
+  };
+
   const uploadPDFToStorage = async (diagnostic: any): Promise<string> => {
     try {
       // Gerar o PDF
@@ -167,6 +205,7 @@ export const useDiagnosticOperations = () => {
 
   return {
     deleteDiagnostic,
+    generatePDFForSharing,
     handleGenerateAndDownloadPDF,
     handleSendWhatsApp,
     handleScheduleCalendar,

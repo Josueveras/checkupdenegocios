@@ -1,4 +1,5 @@
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, Download, FileText } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
+import { ShareButton } from '@/components/ShareButton';
+import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
+import { toast } from '@/hooks/use-toast';
 
 interface DiagnosticData {
   planos: string;
@@ -20,6 +24,8 @@ interface FinalizeStepProps {
   onDownloadPDF: () => void;
   onGenerateProposal: () => void;
   isSaving: boolean;
+  companyData?: any;
+  results?: any;
 }
 
 export const FinalizeStep = ({ 
@@ -28,8 +34,14 @@ export const FinalizeStep = ({
   onSaveDiagnostic,
   onDownloadPDF,
   onGenerateProposal,
-  isSaving 
+  isSaving,
+  companyData,
+  results
 }: FinalizeStepProps) => {
+  const [pdfData, setPdfData] = useState<{ blob: Blob; url?: string } | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const { generatePDFForSharing } = useDiagnosticOperations();
+
   // Debounce para campos de texto
   const debouncedUpdate = useDebounce((field: string, value: string) => {
     setDiagnosticData({...diagnosticData, [field]: value});
@@ -37,6 +49,56 @@ export const FinalizeStep = ({
 
   const handleInputChange = (field: string, value: string) => {
     debouncedUpdate(field, value);
+  };
+
+  const handlePrepareShare = async () => {
+    if (pdfData) return pdfData;
+
+    if (!companyData || !results) {
+      toast({
+        title: "Dados incompletos",
+        description: "Complete o diagnóstico antes de compartilhar",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeneratingPDF(true);
+    try {
+      // Criar um objeto diagnóstico temporário para gerar o PDF
+      const tempDiagnostic = {
+        empresas: {
+          nome: companyData.companyName,
+          cliente_nome: companyData.clientName,
+          cliente_email: companyData.clientEmail,
+          cliente_telefone: companyData.clientPhone
+        },
+        score_total: results.overallScore,
+        score_marketing: results.categoryScores?.Marketing || 0,
+        score_vendas: results.categoryScores?.Vendas || 0,
+        score_estrategia: results.categoryScores?.Estratégia || 0,
+        score_gestao: results.categoryScores?.Gestão || 0,
+        nivel: results.level,
+        pontos_fortes: results.strengths || [],
+        pontos_atencao: results.improvements || [],
+        recomendacoes: results.recommendations || {},
+        observacoes: diagnosticData.observacoes,
+        created_at: new Date().toISOString()
+      };
+
+      const result = await generatePDFForSharing(tempDiagnostic);
+      setPdfData(result);
+      return result;
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o PDF para compartilhamento",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsGeneratingPDF(false);
+    }
   };
 
   return (
@@ -105,6 +167,24 @@ export const FinalizeStep = ({
               <Download className="mr-2 h-4 w-4" />
               Baixar PDF
             </Button>
+
+            {pdfData ? (
+              <ShareButton
+                pdfBlob={pdfData.blob}
+                fileName={`diagnostico-${companyData?.companyName || 'empresa'}-${new Date().toISOString().split('T')[0]}.pdf`}
+                companyName={companyData?.companyName || 'Empresa'}
+                pdfUrl={pdfData.url}
+              />
+            ) : (
+              <Button
+                onClick={handlePrepareShare}
+                disabled={isGeneratingPDF}
+                variant="outline"
+                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              >
+                {isGeneratingPDF ? 'Preparando...' : '📤 Compartilhar PDF'}
+              </Button>
+            )}
             
             <Button 
               onClick={onGenerateProposal} 

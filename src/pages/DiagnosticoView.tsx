@@ -1,16 +1,20 @@
-
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Download, Edit } from 'lucide-react';
 import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
+import { ShareButton } from '@/components/ShareButton';
+import { toast } from '@/hooks/use-toast';
 
 const DiagnosticoView = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { diagnostic } = location.state || {};
-  const { handleGenerateAndDownloadPDF, handleSendWhatsApp } = useDiagnosticOperations();
+  const { handleGenerateAndDownloadPDF, handleSendWhatsApp, generatePDFForSharing } = useDiagnosticOperations();
+  const [pdfData, setPdfData] = useState<{ blob: Blob; url?: string } | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   if (!diagnostic) {
     return (
@@ -24,6 +28,26 @@ const DiagnosticoView = () => {
   }
 
   const empresa = diagnostic.empresas;
+
+  const handlePrepareShare = async () => {
+    if (pdfData) return pdfData;
+
+    setIsGeneratingPDF(true);
+    try {
+      const result = await generatePDFForSharing(diagnostic);
+      setPdfData(result);
+      return result;
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível gerar o PDF para compartilhamento",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 bg-green-50";
@@ -258,6 +282,23 @@ const DiagnosticoView = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3">
+            {pdfData ? (
+              <ShareButton
+                pdfBlob={pdfData.blob}
+                fileName={`diagnostico-${empresa?.nome || 'empresa'}-${new Date().toISOString().split('T')[0]}.pdf`}
+                companyName={empresa?.nome || 'Empresa'}
+                pdfUrl={pdfData.url}
+              />
+            ) : (
+              <Button
+                onClick={handlePrepareShare}
+                disabled={isGeneratingPDF}
+                variant="outline"
+                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+              >
+                {isGeneratingPDF ? 'Preparando...' : '📤 Compartilhar PDF'}
+              </Button>
+            )}
             <Button
               onClick={() => handleSendWhatsApp(diagnostic)}
               className="bg-green-600 hover:bg-green-700 text-white"
