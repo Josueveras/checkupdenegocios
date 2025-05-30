@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 
 export const generateDiagnosticPDF = (diagnosticData: any) => {
@@ -10,10 +11,10 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   let yPosition = margin;
   
   // Cores do sistema
-  const petrolColor = [15, 50, 68]; // #0F3244
-  const blueLight = [60, 156, 214]; // #3C9CD6
-  const grayLight = [248, 250, 252];
-  const grayText = [107, 114, 128];
+  const petrolColor = [15, 50, 68] as const; // #0F3244
+  const blueLight = [60, 156, 214] as const; // #3C9CD6
+  const grayLight = [248, 250, 252] as const;
+  const grayText = [107, 114, 128] as const;
   
   // Helper function para adicionar nova página se necessário
   const checkPageBreak = (requiredHeight: number) => {
@@ -40,7 +41,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   };
   
   // Header do diagnóstico
-  doc.setFillColor(...petrolColor);
+  doc.setFillColor(15, 50, 68);
   doc.rect(0, 0, pageWidth, 60, 'F');
   
   doc.setTextColor(255, 255, 255);
@@ -64,7 +65,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...petrolColor);
+  doc.setTextColor(15, 50, 68);
   doc.text('Informações da Empresa', margin + 10, yPosition + 15);
   
   doc.setFontSize(10);
@@ -105,14 +106,14 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...petrolColor);
+  doc.setTextColor(15, 50, 68);
   doc.text('Score Geral', margin + 10, yPosition + 15);
   
   // Círculo do score
   const centerX = margin + scoreCardWidth/2;
   const centerY = yPosition + 55;
   
-  doc.setFillColor(...blueLight);
+  doc.setFillColor(60, 156, 214);
   doc.circle(centerX, centerY, 20, 'F');
   
   doc.setTextColor(255, 255, 255);
@@ -128,7 +129,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...petrolColor);
+  doc.setTextColor(15, 50, 68);
   doc.text('Scores por Categoria', margin + scoreCardWidth + 20, yPosition + 15);
   
   doc.setFontSize(10);
@@ -210,7 +211,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
     
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...petrolColor);
+    doc.setTextColor(15, 50, 68);
     doc.text('💡 Recomendações', margin + 10, yPosition + 15);
     
     let recY = yPosition + 30;
@@ -220,7 +221,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
       
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.setTextColor(...blueLight);
+      doc.setTextColor(60, 156, 214);
       doc.text(categoria, margin + 15, recY);
       recY += 15;
       
@@ -248,7 +249,7 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
     
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...petrolColor);
+    doc.setTextColor(15, 50, 68);
     doc.text('Observações', margin + 10, yPosition + 15);
     
     doc.setFontSize(10);
