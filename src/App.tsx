@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Header } from "@/components/layout/Header";
+import { FloatingMobileMenu } from "@/components/layout/FloatingMobileMenu";
 
 // Pages
 import Dashboard from "./pages/Dashboard";
@@ -40,6 +40,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             {children}
           </main>
         </div>
+        
+        {/* Menu flutuante para mobile */}
+        <FloatingMobileMenu />
       </div>
     </SidebarProvider>
   );

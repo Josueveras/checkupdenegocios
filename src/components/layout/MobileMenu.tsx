@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const menuItems = [
   {
@@ -56,12 +57,18 @@ const menuItems = [
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
   const currentPath = location.pathname;
 
   const isActive = (path: string) => currentPath === path;
 
   const toggleMenu = () => setIsOpen(!isOpen);
   const closeMenu = () => setIsOpen(false);
+
+  // Não renderizar em mobile já que temos o menu flutuante
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <div className="md:hidden">
