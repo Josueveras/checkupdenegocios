@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Edit, Save, Download, FileText } from 'lucide-react';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface DiagnosticData {
   planos: string;
@@ -29,6 +30,15 @@ export const FinalizeStep = ({
   onGenerateProposal,
   isSaving 
 }: FinalizeStepProps) => {
+  // Debounce para campos de texto
+  const debouncedUpdate = useDebounce((field: string, value: string) => {
+    setDiagnosticData({...diagnosticData, [field]: value});
+  }, 300);
+
+  const handleInputChange = (field: string, value: string) => {
+    debouncedUpdate(field, value);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -39,12 +49,21 @@ export const FinalizeStep = ({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Campo honeypot invisível para proteção anti-bot */}
+          <input
+            type="text"
+            name="website_url"
+            autoComplete="off"
+            style={{ display: 'none' }}
+            tabIndex={-1}
+          />
+          
           <div className="space-y-2">
             <Label htmlFor="planos">Planos Sugeridos *</Label>
             <Textarea
               id="planos"
-              value={diagnosticData.planos}
-              onChange={(e) => setDiagnosticData({...diagnosticData, planos: e.target.value})}
+              defaultValue={diagnosticData.planos}
+              onChange={(e) => handleInputChange('planos', e.target.value)}
               placeholder="Descreva os planos e estratégias recomendadas..."
               className="min-h-[100px]"
             />
@@ -55,8 +74,8 @@ export const FinalizeStep = ({
             <Input
               id="valores"
               type="number"
-              value={diagnosticData.valores}
-              onChange={(e) => setDiagnosticData({...diagnosticData, valores: e.target.value})}
+              defaultValue={diagnosticData.valores}
+              onChange={(e) => handleInputChange('valores', e.target.value)}
               placeholder="Ex: 15000"
             />
           </div>
@@ -65,8 +84,8 @@ export const FinalizeStep = ({
             <Label htmlFor="observacoes">Observações Personalizadas *</Label>
             <Textarea
               id="observacoes"
-              value={diagnosticData.observacoes}
-              onChange={(e) => setDiagnosticData({...diagnosticData, observacoes: e.target.value})}
+              defaultValue={diagnosticData.observacoes}
+              onChange={(e) => handleInputChange('observacoes', e.target.value)}
               placeholder="Observações específicas para este cliente..."
               className="min-h-[100px]"
             />

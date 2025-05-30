@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
@@ -11,6 +10,28 @@ interface OperationsProps {
   questions: any[];
   isEditing: boolean;
 }
+
+// Função para detectar bot através do honeypot
+const detectBot = (element: HTMLElement): boolean => {
+  const honeypotField = element.querySelector('input[name="website_url"]') as HTMLInputElement;
+  if (honeypotField && honeypotField.value && honeypotField.value.trim() !== "") {
+    console.warn('Bot detectado: campo honeypot preenchido');
+    return true;
+  }
+  return false;
+};
+
+// Função para obter IP do usuário (simplificada)
+const getUserIP = async (): Promise<string> => {
+  try {
+    const response = await fetch('https://api.ipify.org?format=json');
+    const data = await response.json();
+    return data.ip || 'unknown';
+  } catch (error) {
+    console.warn('Erro ao obter IP:', error);
+    return 'unknown';
+  }
+};
 
 export const useDiagnosticOperationsHandler = ({
   companyData,
@@ -28,6 +49,20 @@ export const useDiagnosticOperationsHandler = ({
   const handleSaveDiagnostic = async () => {
     try {
       console.log('Starting diagnostic save process...');
+
+      // Verificar proteção anti-bot
+      const formElement = document.querySelector('form') || document.body;
+      if (detectBot(formElement)) {
+        toast({
+          title: "Ação bloqueada",
+          description: "Possível atividade de bot detectada.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Delay artificial para proteção anti-spam
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Validar campos obrigatórios
       if (!diagnosticData.planos || !diagnosticData.valores || !diagnosticData.observacoes) {
@@ -47,6 +82,9 @@ export const useDiagnosticOperationsHandler = ({
         return;
       }
 
+      // Obter IP do usuário para controle de spam
+      const userIP = await getUserIP();
+
       // Salvar empresa primeiro
       const empresaData = {
         nome: companyData.companyName,
@@ -61,7 +99,7 @@ export const useDiagnosticOperationsHandler = ({
 
       const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
 
-      // Preparar dados do diagnóstico
+      // Preparar dados do diagnóstico (incluindo IP para controle)
       const diagnosticoData = {
         empresa_id: empresa.id,
         score_total: results.overallScore,
@@ -76,7 +114,9 @@ export const useDiagnosticOperationsHandler = ({
         planos: diagnosticData.planos,
         valores: parseFloat(diagnosticData.valores),
         observacoes: diagnosticData.observacoes,
-        status: 'concluido'
+        status: 'concluido',
+        // Nota: IP seria adicionado aqui se a coluna existisse na tabela
+        // ip: userIP
       };
 
       const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
@@ -116,6 +156,17 @@ export const useDiagnosticOperationsHandler = ({
   };
 
   const handleGenerateProposal = () => {
+    // Verificar proteção anti-bot
+    const formElement = document.querySelector('form') || document.body;
+    if (detectBot(formElement)) {
+      toast({
+        title: "Ação bloqueada",
+        description: "Possível atividade de bot detectada.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     if (!diagnosticData.planos || !diagnosticData.valores || !diagnosticData.observacoes) {
       toast({
         title: "Campos obrigatórios",
@@ -135,6 +186,17 @@ export const useDiagnosticOperationsHandler = ({
   };
 
   const handleDownloadPDF = () => {
+    // Verificar proteção anti-bot
+    const formElement = document.querySelector('form') || document.body;
+    if (detectBot(formElement)) {
+      toast({
+        title: "Ação bloqueada",
+        description: "Possível atividade de bot detectada.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       const htmlContent = `
         <html>

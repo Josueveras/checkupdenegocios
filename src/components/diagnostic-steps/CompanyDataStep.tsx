@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface CompanyData {
   clientName: string;
@@ -35,19 +36,37 @@ const revenueRanges = [
 ];
 
 export const CompanyDataStep = ({ companyData, setCompanyData }: CompanyDataStepProps) => {
+  // Debounce para campos de texto
+  const debouncedUpdate = useDebounce((field: string, value: string) => {
+    setCompanyData({...companyData, [field]: value});
+  }, 300);
+
+  const handleInputChange = (field: string, value: string) => {
+    debouncedUpdate(field, value);
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Dados da Empresa</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Campo honeypot invisível para proteção anti-bot */}
+        <input
+          type="text"
+          name="website_url"
+          autoComplete="off"
+          style={{ display: 'none' }}
+          tabIndex={-1}
+        />
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="clientName">Nome do Cliente *</Label>
             <Input
               id="clientName"
-              value={companyData.clientName}
-              onChange={(e) => setCompanyData({...companyData, clientName: e.target.value})}
+              defaultValue={companyData.clientName}
+              onChange={(e) => handleInputChange('clientName', e.target.value)}
               placeholder="Nome completo"
             />
           </div>
@@ -55,8 +74,8 @@ export const CompanyDataStep = ({ companyData, setCompanyData }: CompanyDataStep
             <Label htmlFor="companyName">Nome da Empresa *</Label>
             <Input
               id="companyName"
-              value={companyData.companyName}
-              onChange={(e) => setCompanyData({...companyData, companyName: e.target.value})}
+              defaultValue={companyData.companyName}
+              onChange={(e) => handleInputChange('companyName', e.target.value)}
               placeholder="Razão social ou nome fantasia"
             />
           </div>
@@ -65,8 +84,8 @@ export const CompanyDataStep = ({ companyData, setCompanyData }: CompanyDataStep
             <Input
               id="email"
               type="email"
-              value={companyData.email}
-              onChange={(e) => setCompanyData({...companyData, email: e.target.value})}
+              defaultValue={companyData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="contato@empresa.com"
             />
           </div>
@@ -74,8 +93,8 @@ export const CompanyDataStep = ({ companyData, setCompanyData }: CompanyDataStep
             <Label htmlFor="phone">WhatsApp</Label>
             <Input
               id="phone"
-              value={companyData.phone}
-              onChange={(e) => setCompanyData({...companyData, phone: e.target.value})}
+              defaultValue={companyData.phone}
+              onChange={(e) => handleInputChange('phone', e.target.value)}
               placeholder="(11) 99999-9999"
             />
           </div>
@@ -83,8 +102,8 @@ export const CompanyDataStep = ({ companyData, setCompanyData }: CompanyDataStep
             <Label htmlFor="website">Site ou Instagram</Label>
             <Input
               id="website"
-              value={companyData.website}
-              onChange={(e) => setCompanyData({...companyData, website: e.target.value})}
+              defaultValue={companyData.website}
+              onChange={(e) => handleInputChange('website', e.target.value)}
               placeholder="www.empresa.com ou @empresa"
             />
           </div>
