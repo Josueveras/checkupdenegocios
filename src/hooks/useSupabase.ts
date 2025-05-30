@@ -68,8 +68,8 @@ export const usePropostas = () => {
         .from('propostas')
         .select(`
           *,
-          diagnosticos (
-            empresas (
+          diagnosticos!propostas_diagnostico_id_fkey (
+            empresas!diagnosticos_empresa_id_fkey (
               nome,
               cliente_nome,
               cliente_email,

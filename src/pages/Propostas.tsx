@@ -121,6 +121,23 @@ const Propostas = () => {
     });
   };
 
+  // Helper function to safely parse and handle acoes_sugeridas
+  const getAcoesSugeridas = (acoes: any): string[] => {
+    if (!acoes) return [];
+    if (typeof acoes === 'string') {
+      try {
+        const parsed = JSON.parse(acoes);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [acoes];
+      }
+    }
+    if (Array.isArray(acoes)) {
+      return acoes;
+    }
+    return [];
+  };
+
   const totalValue = filteredPropostas.reduce((sum, proposta) => sum + (proposta.valor || 0), 0);
   const approvedValue = filteredPropostas
     .filter(p => p.status === 'aprovada')
@@ -242,6 +259,8 @@ const Propostas = () => {
       <div className="grid gap-6">
         {filteredPropostas.map((proposta) => {
           const empresa = proposta.diagnosticos?.empresas;
+          const acoesSugeridas = getAcoesSugeridas(proposta.acoes_sugeridas);
+          
           return (
             <Card key={proposta.id} className="hover:shadow-md transition-shadow relative">
               {/* Ícone de Editar no canto superior direito */}
@@ -282,12 +301,12 @@ const Propostas = () => {
                 <div>
                   <h5 className="font-medium text-gray-900 mb-2">Ações Sugeridas</h5>
                   <ul className="space-y-1">
-                    {proposta.acoes_sugeridas?.map((acao: string, index: number) => (
+                    {acoesSugeridas.length > 0 ? acoesSugeridas.map((acao: string, index: number) => (
                       <li key={index} className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-petrol rounded-full"></div>
                         <span className="text-gray-700">{acao}</span>
                       </li>
-                    )) || <li className="text-gray-500">Nenhuma ação definida</li>}
+                    )) : <li className="text-gray-500">Nenhuma ação definida</li>}
                   </ul>
                 </div>
 
@@ -421,12 +440,15 @@ const Propostas = () => {
               <div>
                 <h5 className="font-medium text-gray-900 mb-2">Ações Sugeridas</h5>
                 <ul className="space-y-2">
-                  {selectedProposta.acoes_sugeridas?.map((acao: string, index: number) => (
+                  {getAcoesSugeridas(selectedProposta.acoes_sugeridas).map((acao: string, index: number) => (
                     <li key={index} className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-petrol rounded-full mt-2"></div>
                       <span className="text-gray-700">{acao}</span>
                     </li>
-                  )) || <li className="text-gray-500">Nenhuma ação definida</li>}
+                  ))}
+                  {getAcoesSugeridas(selectedProposta.acoes_sugeridas).length === 0 && (
+                    <li className="text-gray-500">Nenhuma ação definida</li>
+                  )}
                 </ul>
               </div>
             </div>
