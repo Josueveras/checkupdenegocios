@@ -70,7 +70,7 @@ export function MobileMenu() {
         variant="ghost"
         size="icon"
         onClick={toggleMenu}
-        className="fixed top-4 right-4 z-50 bg-white shadow-md hover:bg-gray-50"
+        className="fixed top-4 right-4 z-50 bg-gray-900 text-white shadow-lg rounded-md p-2.5 hover:opacity-80 hover:bg-gray-900"
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
