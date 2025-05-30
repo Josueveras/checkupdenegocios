@@ -1,8 +1,9 @@
 
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Plus, FileText, Calendar, Settings, BarChart } from "lucide-react";
+import { Home, Plus, FileText, Calendar, Settings, BarChart, Users, ClipboardList, Target, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 
 const menuItems = [
   {
@@ -26,9 +27,29 @@ const menuItems = [
     icon: Calendar
   },
   {
+    title: "Propostas",
+    url: "/propostas",
+    icon: ClipboardList
+  },
+  {
+    title: "Planos",
+    url: "/planos",
+    icon: Target
+  },
+  {
+    title: "Perguntas",
+    url: "/perguntas",
+    icon: Users
+  },
+  {
     title: "Métricas",
     url: "/metricas",
     icon: BarChart
+  },
+  {
+    title: "Onboarding",
+    url: "/onboarding",
+    icon: User
   },
   {
     title: "Config",
@@ -50,33 +71,44 @@ export function FloatingMobileMenu() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg">
-      <div className="flex items-center justify-around px-2 py-2">
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <NavLink
-              key={item.title}
-              to={item.url}
-              className={cn(
-                "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px]",
-                isActive(item.url)
-                  ? "text-primary"
-                  : "text-gray-500 hover:text-primary"
-              )}
-            >
-              <Icon className={cn(
-                "h-6 w-6 mb-1",
-                isActive(item.url) ? "text-primary" : "text-gray-500"
-              )} />
-              <span className={cn(
-                "text-xs font-medium",
-                isActive(item.url) ? "text-primary" : "text-gray-500"
-              )}>
-                {item.title}
-              </span>
-            </NavLink>
-          );
-        })}
+      <div className="px-2 py-2">
+        <Carousel
+          opts={{
+            align: "start",
+            dragFree: true,
+          }}
+          className="w-full"
+        >
+          <CarouselContent className="-ml-2">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <CarouselItem key={item.title} className="pl-2 basis-auto">
+                  <NavLink
+                    to={item.url}
+                    className={cn(
+                      "flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200 min-w-[70px]",
+                      isActive(item.url)
+                        ? "text-primary bg-primary/10"
+                        : "text-gray-500 hover:text-primary hover:bg-gray-50"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "h-5 w-5 mb-1",
+                      isActive(item.url) ? "text-primary" : "text-gray-500"
+                    )} />
+                    <span className={cn(
+                      "text-xs font-medium text-center leading-tight",
+                      isActive(item.url) ? "text-primary" : "text-gray-500"
+                    )}>
+                      {item.title}
+                    </span>
+                  </NavLink>
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+        </Carousel>
       </div>
     </div>
   );
