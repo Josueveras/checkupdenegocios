@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { generateDiagnosticPDF, downloadPDF, getPDFDataURL } from '@/utils/pdfGenerator';
-import { sendWhatsAppMessage } from '@/utils/whatsappUtils';
+import { sendWhatsAppMessage, createDiagnosticWhatsAppMessage } from '@/utils/whatsappUtils';
 import { scheduleGoogleCalendarEvent } from '@/utils/calendarUtils';
 
 export const useDiagnosticOperations = () => {
@@ -76,16 +76,23 @@ export const useDiagnosticOperations = () => {
         return;
       }
 
+      // Gerar PDF e obter data URL
       const doc = generateDiagnosticPDF(diagnostic);
       const pdfDataURL = getPDFDataURL(doc);
       
-      const message = `Olá ${empresa.cliente_nome}, segue seu diagnóstico empresarial. Score: ${diagnostic.score_total}%. PDF: ${pdfDataURL}`;
+      // Criar mensagem personalizada
+      const message = createDiagnosticWhatsAppMessage(
+        empresa.nome || 'Empresa',
+        empresa.cliente_nome || 'Cliente',
+        diagnostic.score_total,
+        pdfDataURL
+      );
       
       sendWhatsAppMessage(empresa.cliente_telefone, message);
       
       toast({
         title: "WhatsApp aberto",
-        description: `Mensagem preparada para ${empresa.nome}`
+        description: `Mensagem com PDF preparada para ${empresa.nome}`
       });
     } catch (error) {
       console.error('Erro ao enviar WhatsApp:', error);
@@ -119,10 +126,17 @@ export const useDiagnosticOperations = () => {
     }
   };
 
+  const handleViewDiagnostic = (diagnosticId: string) => {
+    // Criar uma página de visualização do diagnóstico (implementar depois)
+    // Por enquanto, vamos abrir em nova aba com os dados
+    window.open(`/diagnostico-view/${diagnosticId}`, '_blank');
+  };
+
   return {
     deleteDiagnostic,
     handleGenerateAndDownloadPDF,
     handleSendWhatsApp,
-    handleScheduleCalendar
+    handleScheduleCalendar,
+    handleViewDiagnostic
   };
 };

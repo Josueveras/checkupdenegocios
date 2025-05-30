@@ -12,6 +12,7 @@ import { Header } from "@/components/layout/Header";
 import Dashboard from "./pages/Dashboard";
 import NovoDiagnostico from "./pages/NovoDiagnostico";
 import Diagnosticos from "./pages/Diagnosticos";
+import DiagnosticoView from "./pages/DiagnosticoView";
 import Acompanhamento from "./pages/Acompanhamento";
 import Propostas from "./pages/Propostas";
 import Planos from "./pages/Planos";
@@ -56,6 +57,9 @@ const App = () => (
           } />
           <Route path="/diagnosticos" element={
             <AppLayout><Diagnosticos /></AppLayout>
+          } />
+          <Route path="/diagnostico-view" element={
+            <AppLayout><DiagnosticoView /></AppLayout>
           } />
           <Route path="/acompanhamento" element={
             <AppLayout><Acompanhamento /></AppLayout>

@@ -6,10 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText, Download, Calendar, Eye, Edit, Trash2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDiagnosticos } from '@/hooks/useSupabase';
 import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
-import { EditDiagnosticButton } from '@/components/EditDiagnosticButton';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 const Diagnosticos = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [scoreFilter, setScoreFilter] = useState('todos');
@@ -73,8 +73,13 @@ const Diagnosticos = () => {
     return matchesSearch && matchesStatus && matchesScore;
   });
 
-  const handleViewDiagnostic = (diagnosticId: string) => {
-    window.open(`/diagnostico/${diagnosticId}`, '_blank');
+  const handleViewDiagnostic = (diagnostic: any) => {
+    // Navegar para uma página de visualização com os dados do diagnóstico
+    navigate('/diagnostico-view', { state: { diagnostic } });
+  };
+
+  const handleEditDiagnostic = (diagnosticId: string) => {
+    navigate(`/novo-diagnostico?edit=${diagnosticId}`);
   };
 
   if (isLoading) {
@@ -240,7 +245,7 @@ const Diagnosticos = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewDiagnostic(diagnostic.id)}
+                      onClick={() => handleViewDiagnostic(diagnostic)}
                       className="flex items-center gap-2"
                     >
                       <Eye className="h-4 w-4" />
@@ -249,11 +254,15 @@ const Diagnosticos = () => {
                   </div>
 
                   <div className="flex gap-2">
-                    <EditDiagnosticButton 
-                      diagnosticId={diagnostic.id} 
+                    <Button
+                      variant="outline"
                       size="sm"
-                      variant="outline" 
-                    />
+                      onClick={() => handleEditDiagnostic(diagnostic.id)}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Editar
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button

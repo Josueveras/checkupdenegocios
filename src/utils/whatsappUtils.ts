@@ -18,23 +18,24 @@ export const sendWhatsAppMessage = (phoneNumber: string, message: string) => {
 
 export const createDiagnosticWhatsAppMessage = (companyName: string, clientName: string, score: number, pdfUrl?: string) => {
   let message = `Olá ${clientName}! 👋\n\n`;
-  message += `Seu diagnóstico empresarial da ${companyName} está pronto! 📊\n\n`;
-  message += `Score obtido: ${score}% 🎯\n\n`;
+  message += `Seu diagnóstico empresarial da *${companyName}* está pronto! 📊\n\n`;
+  message += `🎯 *Score obtido: ${score}%*\n\n`;
   
   if (pdfUrl) {
-    message += `Você pode visualizar o relatório completo aqui: ${pdfUrl}\n\n`;
+    message += `📄 Você pode visualizar o relatório completo aqui: ${pdfUrl}\n\n`;
   }
   
-  message += `Que tal agendarmos uma reunião para discutir os resultados e próximos passos? 📅`;
+  message += `📅 Que tal agendarmos uma reunião para discutir os resultados e próximos passos?\n\n`;
+  message += `Estou à disposição para esclarecer qualquer dúvida! 😊`;
   
   return message;
 };
 
 export const createProposalWhatsAppMessage = (companyName: string, clientName: string, proposalValue: number) => {
   let message = `Olá ${clientName}! 👋\n\n`;
-  message += `Preparamos uma proposta personalizada para a ${companyName} baseada no seu diagnóstico! 💼\n\n`;
-  message += `Valor: ${proposalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}\n\n`;
-  message += `Vamos conversar sobre como podemos ajudar sua empresa a crescer? 🚀\n\n`;
+  message += `Preparamos uma proposta personalizada para a *${companyName}* baseada no seu diagnóstico! 💼\n\n`;
+  message += `💰 *Valor: ${proposalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}*\n\n`;
+  message += `🚀 Vamos conversar sobre como podemos ajudar sua empresa a crescer?\n\n`;
   message += `📋 Confira todos os detalhes da nossa proposta comercial e as ações que iremos implementar para impulsionar seus resultados!`;
   
   return message;
