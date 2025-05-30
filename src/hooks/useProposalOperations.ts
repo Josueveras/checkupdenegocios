@@ -4,9 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { generateProposalPDF, downloadPDF, getPDFDataURL } from '@/utils/pdfGenerator';
 import { sendWhatsAppMessage, createProposalWhatsAppMessage } from '@/utils/whatsappUtils';
+import { useNavigate } from 'react-router-dom';
 
 export const useProposalOperations = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const deleteProposal = useMutation({
     mutationFn: async (id: string) => {
@@ -33,6 +35,10 @@ export const useProposalOperations = () => {
       });
     }
   });
+
+  const handleEditProposal = (proposalId: string) => {
+    navigate(`/editar-proposta?id=${proposalId}`);
+  };
 
   const handleDownloadPDF = async (proposta: any) => {
     try {
@@ -95,6 +101,7 @@ export const useProposalOperations = () => {
 
   return {
     deleteProposal,
+    handleEditProposal,
     handleDownloadPDF,
     handleSendWhatsApp
   };

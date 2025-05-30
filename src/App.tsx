@@ -15,6 +15,7 @@ import Diagnosticos from "./pages/Diagnosticos";
 import DiagnosticoView from "./pages/DiagnosticoView";
 import Acompanhamento from "./pages/Acompanhamento";
 import Propostas from "./pages/Propostas";
+import EditarProposta from "./pages/EditarProposta";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
@@ -66,6 +67,9 @@ const App = () => (
           } />
           <Route path="/propostas" element={
             <AppLayout><Propostas /></AppLayout>
+          } />
+          <Route path="/editar-proposta" element={
+            <AppLayout><EditarProposta /></AppLayout>
           } />
           <Route path="/planos" element={
             <AppLayout><Planos /></AppLayout>

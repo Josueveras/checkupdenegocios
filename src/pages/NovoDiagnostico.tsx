@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
 import { CompanyDataStep } from '@/components/diagnostic-steps/CompanyDataStep';
 import { DiagnosticQuestionsStep } from '@/components/diagnostic-steps/DiagnosticQuestionsStep';
@@ -11,9 +11,14 @@ import { ResultsStep } from '@/components/diagnostic-steps/ResultsStep';
 import { FinalizeStep } from '@/components/diagnostic-steps/FinalizeStep';
 import { useDiagnosticCalculations } from '@/hooks/useDiagnosticCalculations';
 import { useDiagnosticQuestions } from '@/hooks/useDiagnosticQuestions';
+import { useDiagnosticEdit } from '@/hooks/useDiagnosticEdit';
 
 const NovoDiagnostico = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
+  const isEditing = !!editId;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [companyData, setCompanyData] = useState({
     clientName: '',
@@ -40,6 +45,54 @@ const NovoDiagnostico = () => {
 
   const { questions, isLoading: questionsLoading, error: questionsError } = useDiagnosticQuestions();
   const { calculateResults } = useDiagnosticCalculations();
+  
+  // Hook para buscar dados quando estiver editando
+  const { data: editData, isLoading: editLoading } = useDiagnosticEdit(editId);
+
+  // Carregar dados quando estiver editando
+  useEffect(() => {
+    if (isEditing && editData) {
+      const { diagnostic, respostas } = editData;
+      const empresa = diagnostic.empresas;
+
+      // Preencher dados da empresa
+      setCompanyData({
+        clientName: empresa?.cliente_nome || '',
+        companyName: empresa?.nome || '',
+        email: empresa?.cliente_email || '',
+        phone: empresa?.cliente_telefone || '',
+        website: empresa?.site_instagram || '',
+        sector: empresa?.setor || '',
+        employees: empresa?.funcionarios || '',
+        revenue: empresa?.faturamento || ''
+      });
+
+      // Preencher respostas
+      const answersMap: {[key: string]: number} = {};
+      respostas.forEach((resposta: any) => {
+        answersMap[resposta.pergunta_id] = resposta.score;
+      });
+      setAnswers(answersMap);
+
+      // Preencher dados do diagnóstico
+      setDiagnosticData({
+        planos: diagnostic.planos || '',
+        valores: diagnostic.valores?.toString() || '',
+        observacoes: diagnostic.observacoes || ''
+      });
+
+      // Calcular resultados baseado nas respostas
+      if (Object.keys(answersMap).length > 0 && questions.length > 0) {
+        const calculatedResults = calculateResults(answersMap, questions);
+        setResults(calculatedResults);
+      }
+
+      toast({
+        title: "Dados carregados",
+        description: "Os dados do diagnóstico foram carregados para edição."
+      });
+    }
+  }, [editData, isEditing, questions, calculateResults]);
 
   console.log('Questions loaded:', questions);
   console.log('Current answers:', answers);
@@ -101,6 +154,15 @@ const NovoDiagnostico = () => {
           title: "Campos obrigatórios",
           description: "Preencha planos, valores e observações antes de salvar.",
           variant: "destructive"
+        });
+        return;
+      }
+
+      if (isEditing) {
+        // Lógica de atualização (implementar conforme necessário)
+        toast({
+          title: "Atualização em desenvolvimento",
+          description: "A funcionalidade de atualização será implementada em breve.",
         });
         return;
       }
@@ -270,11 +332,17 @@ const NovoDiagnostico = () => {
     });
   };
 
+  if (editLoading) {
+    return <div className="flex items-center justify-center h-64">Carregando dados para edição...</div>;
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header com Progress */}
       <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-gray-900">Novo Diagnóstico</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          {isEditing ? 'Editar Diagnóstico' : 'Novo Diagnóstico'}
+        </h1>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
             <span>Etapa {currentStep} de 4</span>
