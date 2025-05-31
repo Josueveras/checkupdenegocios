@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 
 export const generateDiagnosticPDF = (diagnosticData: any) => {
@@ -10,12 +11,12 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   let yPosition = margin;
   
   // Paleta de cores do novo design
-  const petrolColor = [15, 50, 68] as const;
-  const blueLight = [60, 156, 214] as const;
-  const mustard = [251, 176, 59] as const;
-  const grayLight = [245, 245, 245] as const;
-  const grayText = [107, 114, 128] as const;
-  const white = [255, 255, 255] as const;
+  const petrolColor = [15, 50, 68];
+  const blueLight = [60, 156, 214];
+  const mustard = [251, 176, 59];
+  const grayLight = [245, 245, 245];
+  const grayText = [107, 114, 128];
+  const white = [255, 255, 255];
   
   // Helper functions
   const checkPageBreak = (requiredHeight: number) => {
