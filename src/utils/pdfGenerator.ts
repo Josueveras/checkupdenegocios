@@ -10,12 +10,11 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
   
   let yPosition = margin;
   
-  // Paleta de cores do novo design
+  // Paleta de cores
   const petrolColor = [15, 50, 68];
-  const blueLight = [60, 156, 214];
-  const mustard = [251, 176, 59];
-  const grayLight = [245, 245, 245];
-  const grayText = [107, 114, 128];
+  const mustardColor = [251, 176, 59];
+  const textColor = [51, 51, 51];
+  const lightGray = [245, 245, 245];
   const white = [255, 255, 255];
   
   // Helper functions
@@ -26,222 +25,206 @@ export const generateDiagnosticPDF = (diagnosticData: any) => {
     }
   };
   
-  const drawModernCard = (x: number, y: number, width: number, height: number, backgroundColor?: number[]) => {
-    const bgColor = backgroundColor || grayLight;
-    doc.setFillColor(bgColor[0], bgColor[1], bgColor[2]);
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(x, y, width, height, 8, 8, 'FD');
-  };
-  
-  const addTitle = (text: string, x: number, y: number, size: number, color?: number[]) => {
-    const textColor = color || petrolColor;
+  const addTitle = (text: string, x: number, y: number, size: number, color: number[] = petrolColor) => {
     doc.setFontSize(size);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+    doc.setTextColor(color[0], color[1], color[2]);
     doc.text(text, x, y);
   };
   
-  const addText = (text: string, x: number, y: number, size: number, style: string = 'normal', color?: number[]) => {
-    const textColor = color || [0, 0, 0];
+  const addText = (text: string, x: number, y: number, size: number = 10, style: string = 'normal', color: number[] = textColor) => {
     doc.setFontSize(size);
     doc.setFont('helvetica', style as any);
-    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+    doc.setTextColor(color[0], color[1], color[2]);
     doc.text(text, x, y);
   };
   
-  // PÁGINA DE CAPA
-  doc.setFillColor(white[0], white[1], white[2]);
-  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  const drawBlock = (x: number, y: number, width: number, height: number, backgroundColor: number[] = lightGray) => {
+    doc.setFillColor(backgroundColor[0], backgroundColor[1], backgroundColor[2]);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(x, y, width, height, 3, 3, 'FD');
+  };
   
-  // Título principal
-  addTitle('Relatório de Diagnóstico Empresarial', pageWidth/2, 80, 24);
-  doc.text('Relatório de Diagnóstico Empresarial', pageWidth/2, 80, { align: 'center' });
-  
-  // Subtítulo
-  addText('Análise completa do seu negócio', pageWidth/2, 100, 16, 'normal', grayText);
-  doc.text('Análise completa do seu negócio', pageWidth/2, 100, { align: 'center' });
-  
-  // Card central com informações
-  drawModernCard(margin + 20, 130, contentWidth - 40, 120, white);
+  // CABEÇALHO
+  addTitle('Diagnóstico Empresarial', margin, yPosition + 15, 24);
   
   const empresa = diagnosticData.empresas;
-  const cardCenterX = pageWidth / 2;
+  const empresaInfo = `${empresa?.nome || 'N/A'}`;
+  const dataInfo = `Data: ${new Date().toLocaleDateString('pt-BR')}`;
   
-  // Informações da empresa
-  addTitle('Nome da empresa:', cardCenterX, 160, 12, grayText);
-  doc.text('Nome da empresa:', cardCenterX, 160, { align: 'center' });
+  // Informações da empresa e data à direita
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+  doc.text(empresaInfo, pageWidth - margin, yPosition + 10, { align: 'right' });
+  doc.text(dataInfo, pageWidth - margin, yPosition + 25, { align: 'right' });
   
-  addText(empresa?.nome || 'N/A', cardCenterX, 175, 14, 'bold');
-  doc.text(empresa?.nome || 'N/A', cardCenterX, 175, { align: 'center' });
-  
-  addTitle('Responsável:', cardCenterX, 200, 12, grayText);
-  doc.text('Responsável:', cardCenterX, 200, { align: 'center' });
-  
-  addText(empresa?.cliente_nome || 'N/A', cardCenterX, 215, 14, 'bold');
-  doc.text(empresa?.cliente_nome || 'N/A', cardCenterX, 215, { align: 'center' });
-  
-  addTitle('Data:', cardCenterX, 240, 12, grayText);
-  doc.text('Data:', cardCenterX, 240, { align: 'center' });
-  
-  addText(new Date().toLocaleDateString('pt-BR'), cardCenterX, 255, 14, 'bold');
-  doc.text(new Date().toLocaleDateString('pt-BR'), cardCenterX, 255, { align: 'center' });
-  
-  // NOVA PÁGINA - RESUMO
-  doc.addPage();
-  yPosition = margin;
-  
-  // Título da página
-  addTitle('Resumo Executivo', margin, yPosition + 20, 22);
   yPosition += 50;
   
-  // Card do score geral
-  drawModernCard(margin, yPosition, contentWidth, 140, white);
+  // BLOCO: DADOS DA EMPRESA
+  checkPageBreak(60);
+  drawBlock(margin, yPosition, contentWidth, 55);
+  addTitle('Dados da Empresa', margin + 10, yPosition + 15, 14);
   
-  // Score circular em destaque
+  addText(`Cliente: ${empresa?.cliente_nome || 'N/A'}`, margin + 10, yPosition + 30, 10);
+  addText(`E-mail: ${empresa?.cliente_email || 'N/A'}`, margin + 10, yPosition + 42, 10);
+  addText(`Telefone: ${empresa?.cliente_telefone || 'N/A'}`, margin + 100, yPosition + 30, 10);
+  addText(`Setor: ${empresa?.setor || 'N/A'}`, margin + 100, yPosition + 42, 10);
+  
+  yPosition += 75;
+  
+  // BLOCO: RESULTADOS
+  checkPageBreak(140);
+  drawBlock(margin, yPosition, contentWidth, 135);
+  addTitle('Resultados', margin + 10, yPosition + 15, 14);
+  
+  // Score geral em destaque
   const centerX = pageWidth / 2;
-  const centerY = yPosition + 70;
-  
-  // Círculo grande para o score
-  doc.setFillColor(blueLight[0], blueLight[1], blueLight[2]);
-  doc.circle(centerX, centerY, 35, 'F');
-  
-  // Score em branco
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(32);
+  doc.setFontSize(36);
   doc.setFont('helvetica', 'bold');
-  doc.text(`${diagnosticData.score_total}%`, centerX, centerY - 5, { align: 'center' });
+  doc.setTextColor(petrolColor[0], petrolColor[1], petrolColor[2]);
+  doc.text(`${diagnosticData.score_total}%`, centerX, yPosition + 45, { align: 'center' });
   
   doc.setFontSize(14);
-  doc.text('SCORE GERAL', centerX, centerY + 15, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Nível: ${diagnosticData.nivel}`, centerX, yPosition + 60, { align: 'center' });
   
-  // Status do negócio
-  addTitle(diagnosticData.nivel, centerX, yPosition + 130, 18);
-  doc.text(diagnosticData.nivel, centerX, yPosition + 130, { align: 'center' });
-  
-  yPosition += 160;
-  
-  // PÁGINAS DAS ÁREAS AVALIADAS
+  // Pontuação por categoria
   const categorias = [
-    { nome: 'Marketing', emoji: '📣', score: diagnosticData.score_marketing },
-    { nome: 'Vendas', emoji: '📈', score: diagnosticData.score_vendas },
-    { nome: 'Estratégia', emoji: '🎯', score: diagnosticData.score_estrategia },
-    { nome: 'Gestão', emoji: '⚙️', score: diagnosticData.score_gestao }
+    { nome: 'Estratégia', score: diagnosticData.score_estrategia },
+    { nome: 'Vendas', score: diagnosticData.score_vendas },
+    { nome: 'Marketing', score: diagnosticData.score_marketing },
+    { nome: 'Gestão', score: diagnosticData.score_gestao }
   ];
   
-  categorias.forEach((categoria) => {
-    checkPageBreak(180);
+  let catY = yPosition + 80;
+  categorias.forEach((cat, index) => {
+    const catX = margin + 15 + (index % 2) * (contentWidth / 2);
+    if (index === 2) catY += 15;
     
-    // Card da categoria
-    drawModernCard(margin, yPosition, contentWidth, 160, grayLight);
+    addText(`${cat.nome}: ${cat.score}%`, catX, catY + (index >= 2 ? 0 : 0), 10, 'bold');
     
-    // Título da área com emoji
-    addTitle(`${categoria.emoji} ${categoria.nome}`, margin + 20, yPosition + 30, 20);
-    
-    // Score da área
-    const scoreColor = categoria.score >= 80 ? [34, 197, 94] : 
-                      categoria.score >= 60 ? mustard : 
-                      categoria.score >= 40 ? [249, 115, 22] : [239, 68, 68];
-    
-    // Barra de progresso
-    const barWidth = 120;
-    const barHeight = 12;
-    const barX = margin + 20;
-    const barY = yPosition + 50;
+    // Barra de progresso simples
+    const barWidth = 60;
+    const barHeight = 4;
+    const barX = catX + 60;
+    const barY = catY - 3 + (index >= 2 ? 0 : 0);
     
     // Fundo da barra
     doc.setFillColor(220, 220, 220);
-    doc.roundedRect(barX, barY, barWidth, barHeight, 6, 6, 'F');
+    doc.rect(barX, barY, barWidth, barHeight, 'F');
     
-    // Progresso da barra
-    const progressWidth = (barWidth * categoria.score) / 100;
-    doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
-    doc.roundedRect(barX, barY, progressWidth, barHeight, 6, 6, 'F');
-    
-    // Texto do score
-    addText(`${categoria.score}%`, barX + barWidth + 10, barY + 8, 14, 'bold', scoreColor);
-    
-    // Status da área
-    const status = categoria.score >= 80 ? 'Avançado' : 
-                   categoria.score >= 60 ? 'Em Desenvolvimento' : 
-                   categoria.score >= 40 ? 'Iniciante' : 'Crítico';
-    
-    addText(`Status: ${status}`, margin + 20, yPosition + 80, 12, 'normal', grayText);
-    
-    // Espaço para diagnóstico detalhado (simulado)
-    addText('Diagnóstico detalhado da área:', margin + 20, yPosition + 100, 10, 'bold');
-    addText('Esta área apresenta oportunidades de melhoria que podem', margin + 20, yPosition + 115, 10);
-    addText('ser desenvolvidas através de estratégias específicas.', margin + 20, yPosition + 125, 10);
-    addText('Recomendamos foco em ações prioritárias para evolução.', margin + 20, yPosition + 135, 10);
-    
-    yPosition += 180;
+    // Progresso
+    const progressWidth = (barWidth * cat.score) / 100;
+    const progressColor = cat.score >= 70 ? [34, 197, 94] : cat.score >= 50 ? mustardColor : [239, 68, 68];
+    doc.setFillColor(progressColor[0], progressColor[1], progressColor[2]);
+    doc.rect(barX, barY, progressWidth, barHeight, 'F');
   });
   
-  // Pontos Fortes e de Atenção (se existirem)
+  yPosition += 155;
+  
+  // BLOCO: PONTOS FORTES E PONTOS DE ATENÇÃO
   if (diagnosticData.pontos_fortes?.length > 0 || diagnosticData.pontos_atencao?.length > 0) {
-    checkPageBreak(160);
+    checkPageBreak(100);
+    
+    const blockWidth = (contentWidth - 10) / 2;
     
     // Pontos Fortes
     if (diagnosticData.pontos_fortes?.length > 0) {
-      drawModernCard(margin, yPosition, contentWidth/2 - 10, 140, white);
-      addTitle('🎯 Pontos Fortes', margin + 15, yPosition + 25, 14, [34, 197, 94]);
+      drawBlock(margin, yPosition, blockWidth, 95);
+      addTitle('Pontos Fortes', margin + 10, yPosition + 15, 12, [34, 197, 94]);
       
-      diagnosticData.pontos_fortes.slice(0, 4).forEach((ponto: string, index: number) => {
-        addText(`✓ ${ponto}`, margin + 15, yPosition + 45 + (index * 20), 10, 'normal', [34, 197, 94]);
+      diagnosticData.pontos_fortes.slice(0, 5).forEach((ponto: string, index: number) => {
+        addText(`• ${ponto}`, margin + 10, yPosition + 30 + (index * 12), 9);
       });
     }
     
     // Pontos de Atenção
     if (diagnosticData.pontos_atencao?.length > 0) {
-      drawModernCard(margin + contentWidth/2 + 10, yPosition, contentWidth/2 - 10, 140, white);
-      addTitle('⚠️ Pontos de Atenção', margin + contentWidth/2 + 25, yPosition + 25, 14, [249, 115, 22]);
+      drawBlock(margin + blockWidth + 10, yPosition, blockWidth, 95);
+      addTitle('Pontos de Atenção', margin + blockWidth + 20, yPosition + 15, 12, [239, 68, 68]);
       
-      diagnosticData.pontos_atencao.slice(0, 4).forEach((ponto: string, index: number) => {
-        addText(`• ${ponto}`, margin + contentWidth/2 + 25, yPosition + 45 + (index * 20), 10, 'normal', [249, 115, 22]);
+      diagnosticData.pontos_atencao.slice(0, 5).forEach((ponto: string, index: number) => {
+        addText(`• ${ponto}`, margin + blockWidth + 20, yPosition + 30 + (index * 12), 9);
       });
     }
     
-    yPosition += 160;
+    yPosition += 115;
   }
   
-  // ÚLTIMA PÁGINA - ENCERRAMENTO
-  doc.addPage();
+  // BLOCO: RECOMENDAÇÕES
+  checkPageBreak(80);
+  drawBlock(margin, yPosition, contentWidth, 75);
+  addTitle('Recomendações', margin + 10, yPosition + 15, 14);
   
-  // Fundo escuro para a página final
+  const recomendacoes = [
+    'Implementar sistema de CRM para melhor gestão de clientes',
+    'Desenvolver estratégia de marketing digital mais estruturada',
+    'Criar processos padronizados para vendas',
+    'Estabelecer métricas de acompanhamento de resultados'
+  ];
+  
+  recomendacoes.forEach((rec, index) => {
+    addText(`• ${rec}`, margin + 10, yPosition + 30 + (index * 10), 9);
+  });
+  
+  yPosition += 95;
+  
+  // BLOCO: OBSERVAÇÕES
+  if (diagnosticData.observacoes) {
+    checkPageBreak(60);
+    drawBlock(margin, yPosition, contentWidth, 55);
+    addTitle('Observações', margin + 10, yPosition + 15, 14);
+    
+    const lines = doc.splitTextToSize(diagnosticData.observacoes, contentWidth - 20);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+    doc.text(lines, margin + 10, yPosition + 30);
+    
+    yPosition += 75;
+  }
+  
+  // BLOCO FINAL - PRÓXIMOS PASSOS
+  checkPageBreak(120);
+  
+  // Fundo azul petróleo
   doc.setFillColor(petrolColor[0], petrolColor[1], petrolColor[2]);
-  doc.rect(0, 0, pageWidth, pageHeight, 'F');
+  doc.roundedRect(margin, yPosition, contentWidth, 115, 8, 8, 'F');
   
   // Título em branco
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(28);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Próximos Passos', pageWidth/2, 80, { align: 'center' });
+  doc.text('Próximos Passos', centerX, yPosition + 25, { align: 'center' });
   
-  // Emoji foguete
-  doc.setFontSize(40);
-  doc.text('🚀', pageWidth/2, 120, { align: 'center' });
-  
-  // Recomendações finais
-  doc.setFontSize(16);
+  // Texto em branco
+  doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-  doc.text('Com base na análise realizada, identificamos', pageWidth/2, 150, { align: 'center' });
-  doc.text('oportunidades estratégicas para impulsionar', pageWidth/2, 170, { align: 'center' });
-  doc.text('o crescimento do seu negócio.', pageWidth/2, 190, { align: 'center' });
+  doc.text('Com base na análise realizada, identificamos', centerX, yPosition + 45, { align: 'center' });
+  doc.text('oportunidades estratégicas para impulsionar', centerX, yPosition + 58, { align: 'center' });
+  doc.text('o crescimento do seu negócio.', centerX, yPosition + 71, { align: 'center' });
   
-  // Frase de impacto
-  doc.setFontSize(20);
+  // Frase destaque
+  doc.setFontSize(14);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(mustard[0], mustard[1], mustard[2]);
-  doc.text('Vamos juntos transformar seus resultados?', pageWidth/2, 230, { align: 'center' });
+  doc.setTextColor(mustardColor[0], mustardColor[1], mustardColor[2]);
+  doc.text('Vamos juntos transformar seus resultados?', centerX, yPosition + 90, { align: 'center' });
   
   // Botão visual
-  doc.setFillColor(mustard[0], mustard[1], mustard[2]);
-  doc.roundedRect(pageWidth/2 - 60, 245, 120, 25, 12, 12, 'F');
+  const buttonWidth = 140;
+  const buttonHeight = 18;
+  const buttonX = centerX - (buttonWidth / 2);
+  const buttonY = yPosition + 95;
   
-  doc.setTextColor(petrolColor[0], petrolColor[1], petrolColor[2]);
-  doc.setFontSize(12);
+  doc.setFillColor(mustardColor[0], mustardColor[1], mustardColor[2]);
+  doc.roundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 9, 9, 'F');
+  
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text('Agendar reunião de apresentação', pageWidth/2, 260, { align: 'center' });
+  doc.setTextColor(petrolColor[0], petrolColor[1], petrolColor[2]);
+  doc.text('Agendar reunião de apresentação', centerX, buttonY + 12, { align: 'center' });
   
   return doc;
 };
