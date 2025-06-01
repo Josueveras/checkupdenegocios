@@ -13,8 +13,7 @@ const HistoricalCheckups = () => {
       faturamento_atual: 150000,
       roi_estimado: 2.5,
       destaque_mes: 'Implementação do novo CRM aumentou conversão em 30%',
-      acoes_concluidas: 8,
-      recomendacoes: 'Focar em automação de vendas para o próximo mês'
+      acoes_concluidas: 8
     },
     {
       id: '2',
@@ -24,8 +23,7 @@ const HistoricalCheckups = () => {
       faturamento_atual: 95000,
       roi_estimado: 1.8,
       destaque_mes: 'Campanhas de mídia paga geraram 40% mais leads',
-      acoes_concluidas: 6,
-      recomendacoes: 'Otimizar funil de vendas e melhorar qualificação de leads'
+      acoes_concluidas: 6
     }
   ];
 
@@ -34,10 +32,10 @@ const HistoricalCheckups = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-petrol" />
-          📆 Histórico de Check-ups
+          📆 Check-ups Mensais
         </CardTitle>
         <CardDescription>
-          Cards mensais com os dados principais de cada acompanhamento.
+          Cards com os dados principais de cada acompanhamento mensal.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -65,19 +63,14 @@ const HistoricalCheckups = () => {
                       <div className="font-semibold">{checkup.roi_estimado}x</div>
                     </div>
                     <div>
-                      <span className="text-gray-600">Ações:</span>
-                      <div className="font-semibold">{checkup.acoes_concluidas} concluídas</div>
+                      <span className="text-gray-600">Ações Concluídas:</span>
+                      <div className="font-semibold">{checkup.acoes_concluidas}</div>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-gray-600 text-sm">Destaque:</span>
+                    <span className="text-gray-600 text-sm">Destaque do Mês:</span>
                     <p className="text-sm mt-1">{checkup.destaque_mes}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-gray-600 text-sm">Recomendações:</span>
-                    <p className="text-sm mt-1">{checkup.recomendacoes}</p>
                   </div>
 
                   <Button variant="outline" size="sm" className="w-full">
