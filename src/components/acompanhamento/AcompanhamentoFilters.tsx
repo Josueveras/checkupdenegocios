@@ -7,11 +7,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Filter, Search, X } from 'lucide-react';
 
 interface AcompanhamentoFiltersProps {
-  filters: any;
+  filters: {
+    empresaId: string;
+    mes: string;
+    scoreMinimo: string;
+    scoreMaximo: string;
+    roiMinimo: string;
+    roiMaximo: string;
+    status: string;
+  };
   setFilters: (filters: any) => void;
   applyFilters: () => void;
   clearFilters: () => void;
-  empresasComAcompanhamentos: any[];
+  empresasComAcompanhamentos: Array<{
+    id: string;
+    nome: string;
+    cliente_nome?: string;
+  }>;
 }
 
 const AcompanhamentoFilters = ({ 
