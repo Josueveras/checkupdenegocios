@@ -1,37 +1,11 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { BackButton } from '@/components/ui/back-button';
-import { 
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { 
-  ArrowLeft, 
-  Building2, 
-  BarChart3, 
-  LineChart, 
-  Calendar,
-  Target,
-  Award,
-  FileText,
-  BarChart,
-  TrendingUp,
-  Settings
-} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart as RechartsLineChart, Line, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 // Import utility functions
-import { formatCurrency, formatDate, formatDateShort, formatPercentage, formatROI } from '@/utils/formatters';
 import { 
   calculateScoreVariation, 
   calculateROIVariation, 
@@ -39,11 +13,18 @@ import {
   calculateAverageROI, 
   calculateAverageRevenue,
   getTotalCompletedActions,
-  getCompletedActionsCount,
   getDaysSinceLastCheckup,
   getCheckupsWithoutActions,
   getAverageActionsPerMonth
 } from '@/utils/calculations';
+
+// Import components
+import { EmpresaHeader } from '@/components/empresa/EmpresaHeader';
+import { EmpresaMetricCards } from '@/components/empresa/EmpresaMetricCards';
+import { EmpresaCharts } from '@/components/empresa/EmpresaCharts';
+import { EmpresaCheckupsTable } from '@/components/empresa/EmpresaCheckupsTable';
+import { EmpresaStrategicAnalysis } from '@/components/empresa/EmpresaStrategicAnalysis';
+import { EmpresaStrategicSummary } from '@/components/empresa/EmpresaStrategicSummary';
 
 const EmpresaDetalhada = () => {
   const { id } = useParams<{ id: string }>();
@@ -96,17 +77,6 @@ const EmpresaDetalhada = () => {
     mediaAcoesPorMes: getAverageActionsPerMonth(checkupsEmpresa || [])
   };
 
-  // Prepare chart data
-  const dadosGraficoScore = checkupsEmpresa?.map(checkup => ({
-    mes: formatDateShort(checkup.mes),
-    score: checkup.score_geral
-  })) || [];
-
-  const dadosGraficoFaturamento = checkupsEmpresa?.map(checkup => ({
-    mes: formatDateShort(checkup.mes),
-    faturamento: checkup.faturamento || 0
-  })) || [];
-
   const ultimoCheckup = checkupsEmpresa?.[checkupsEmpresa.length - 1];
 
   if (loadingEmpresa || loadingCheckups) {
@@ -124,296 +94,36 @@ const EmpresaDetalhada = () => {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h2>
-        <BackButton fallbackRoute="/acompanhamento" />
+        <Button 
+          onClick={() => navigate('/acompanhamento')} 
+          className="bg-petrol hover:bg-petrol/90 text-white"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar para Acompanhamento
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Building2 className="h-8 w-8 text-petrol" />
-            🏢 Empresa: {empresaSelecionada.nome}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Acompanhe a jornada real do projeto com dados comparativos, evolução mensal e sinais estratégicos de valor.
-          </p>
-        </div>
-        <BackButton fallbackRoute="/acompanhamento" />
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="border-l-4 border-l-petrol">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Check-ups Realizados</p>
-                <p className="text-2xl font-bold text-petrol">{checkupsEmpresa?.length || 0}</p>
-                <p className="text-xs text-gray-500">Check-ups registrados</p>
-              </div>
-              <FileText className="h-8 w-8 text-petrol" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-blue-400">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Crescimento do Score</p>
-                <p className="text-2xl font-bold text-blue-600">
-                  {formatPercentage(metricasDerivadas.variacaoScore)}
-                </p>
-                <p className="text-xs text-gray-500">Desde o primeiro check-up</p>
-              </div>
-              <BarChart className="h-8 w-8 text-blue-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-yellow-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">ROI Médio</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {formatROI(metricasDerivadas.roiMedio)}
-                </p>
-                <p className="text-xs text-gray-500">Retorno sobre investimento</p>
-              </div>
-              <TrendingUp className="h-8 w-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-l-4 border-l-green-500">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Ações Concluídas</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {metricasDerivadas.acoesConcluidasTotal}
-                </p>
-                <p className="text-xs text-gray-500">Estratégias finalizadas</p>
-              </div>
-              <Settings className="h-8 w-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LineChart className="h-5 w-5 text-petrol" />
-              📈 Evolução do Score Geral
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={{ score: { label: "Score", color: "#0F3244" } }} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsLineChart data={dadosGraficoScore}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line type="monotone" dataKey="score" stroke="var(--color-score)" strokeWidth={2} />
-                </RechartsLineChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-petrol" />
-              💰 Faturamento Mensal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ChartContainer config={{ faturamento: { label: "Faturamento", color: "#3C9CD6" } }} className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart data={dadosGraficoFaturamento}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="mes" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Bar dataKey="faturamento" fill="var(--color-faturamento)" />
-                </RechartsBarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Check-ups History Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-petrol" />
-            📆 Histórico de Check-ups
-          </CardTitle>
-          <CardDescription>
-            Todos os check-ups registrados para esta empresa em formato tabular.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mês</TableHead>
-                <TableHead>Score</TableHead>
-                <TableHead>ROI</TableHead>
-                <TableHead>Faturamento</TableHead>
-                <TableHead>Destaque</TableHead>
-                <TableHead>Ações</TableHead>
-                <TableHead>Observações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {checkupsEmpresa && checkupsEmpresa.length > 0 ? (
-                checkupsEmpresa.map((checkup) => (
-                  <TableRow key={checkup.id}>
-                    <TableCell className="font-medium">
-                      {formatDate(checkup.mes)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="default">{checkup.score_geral}%</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {checkup.roi ? formatROI(checkup.roi) : 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      {checkup.faturamento ? formatCurrency(Number(checkup.faturamento)) : 'N/A'}
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {checkup.destaque || 'Não informado'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">
-                        {getCompletedActionsCount(checkup.acoes)} concluídas
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {checkup.observacoes || 'Nenhuma observação'}
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                    Nenhum check-up registrado para esta empresa.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Strategic Analysis */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-petrol" />
-            🔍 Análise Estratégica
-          </CardTitle>
-          <CardDescription>
-            Sinais extraídos automaticamente da jornada da empresa.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Variação de Score</h4>
-              <p className="text-2xl font-bold text-blue-600">{formatPercentage(metricasDerivadas.variacaoScore)}</p>
-              <p className="text-sm text-gray-600">Crescimento total</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Variação de ROI</h4>
-              <p className="text-2xl font-bold text-yellow-600">{formatPercentage(metricasDerivadas.variacaoROI)}</p>
-              <p className="text-sm text-gray-600">Evolução do retorno</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Check-ups sem ação</h4>
-              <p className="text-2xl font-bold text-red-600">{metricasDerivadas.checkupsSemAcao}</p>
-              <p className="text-sm text-gray-600">Meses sem implementação</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Tempo Inativo</h4>
-              <p className="text-2xl font-bold text-orange-600">{metricasDerivadas.tempoInativo}</p>
-              <p className="text-sm text-gray-600">Dias desde último check-up</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h4 className="font-semibold mb-2">Ações por mês</h4>
-              <p className="text-2xl font-bold text-green-600">{metricasDerivadas.mediaAcoesPorMes}</p>
-              <p className="text-sm text-gray-600">Média de implementações</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Strategic Summary */}
+      <EmpresaHeader empresaNome={empresaSelecionada.nome} />
+      
+      <EmpresaMetricCards 
+        totalCheckups={checkupsEmpresa?.length || 0}
+        metricasDerivadas={metricasDerivadas}
+      />
+      
+      <EmpresaCharts checkupsEmpresa={checkupsEmpresa || []} />
+      
+      <EmpresaCheckupsTable checkupsEmpresa={checkupsEmpresa || []} />
+      
+      <EmpresaStrategicAnalysis metricasDerivadas={metricasDerivadas} />
+      
       {ultimoCheckup && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-petrol" />
-              📌 Resumo Estratégico
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Pontos Fortes Desenvolvidos</h4>
-                <p className="text-sm text-gray-700">
-                  {ultimoCheckup.pontos_fortes_desenvolvidos || 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Gargalos Atuais</h4>
-                <p className="text-sm text-gray-700">
-                  {ultimoCheckup.gargalos_atuais || 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Estratégias Validadas</h4>
-                <p className="text-sm text-gray-700">
-                  {ultimoCheckup.estrategias_validadas || 'Não informado'}
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2 flex items-center gap-2">
-                  <Award className="h-4 w-4" />
-                  Projeto virou um case?
-                </h4>
-                <div className="flex items-center gap-2">
-                  <Badge variant={ultimoCheckup.virou_case ? "default" : "secondary"}>
-                    {ultimoCheckup.virou_case ? "Sim" : "Não"}
-                  </Badge>
-                </div>
-                {ultimoCheckup.virou_case && ultimoCheckup.destaque_case && (
-                  <div className="mt-3">
-                    <h5 className="font-medium text-sm mb-1">Destaques do Case:</h5>
-                    <p className="text-sm text-gray-700">
-                      {ultimoCheckup.destaque_case}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <EmpresaStrategicSummary ultimoCheckup={ultimoCheckup} />
       )}
 
-      {/* Back Button */}
       <div className="flex justify-center">
         <Button 
           onClick={() => navigate('/acompanhamento')} 
