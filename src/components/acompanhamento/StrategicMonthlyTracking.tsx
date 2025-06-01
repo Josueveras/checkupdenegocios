@@ -22,6 +22,9 @@ const StrategicMonthlyTracking = () => {
     evolucao_categorias: [{ categoria: '', score_anterior: '', score_atual: '', observacoes: '' }],
     acoes_mes: [{ acao: '', status: 'pendente' }],
     observacoes_consultor: '',
+    pontos_fortes_desenvolvidos: '',
+    gargalos_atuais: '',
+    estrategias_validadas: '',
     is_case: false,
     destaques_case: ''
   });
@@ -43,6 +46,9 @@ const StrategicMonthlyTracking = () => {
       evolucao_categorias: [{ categoria: '', score_anterior: '', score_atual: '', observacoes: '' }],
       acoes_mes: [{ acao: '', status: 'pendente' }],
       observacoes_consultor: '',
+      pontos_fortes_desenvolvidos: '',
+      gargalos_atuais: '',
+      estrategias_validadas: '',
       is_case: false,
       destaques_case: ''
     });
@@ -67,10 +73,10 @@ const StrategicMonthlyTracking = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Target className="h-5 w-5 text-petrol" />
-          📈 Acompanhamento Estratégico Mensal
+          Acompanhamento Estratégico
         </CardTitle>
         <CardDescription>
-          Registre e acompanhe mensalmente a evolução dos projetos dos clientes com base nos diagnósticos e ações implementadas.
+          Registre mensalmente a evolução dos clientes com base nos diagnósticos, ações executadas e indicadores de resultado.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -79,12 +85,12 @@ const StrategicMonthlyTracking = () => {
           className="bg-petrol hover:bg-petrol/90 text-white"
         >
           <Plus className="mr-2 h-4 w-4" />
-          ➕ Novo Check-up Mensal
+          Novo Check-up Mensal
         </Button>
 
         {showCheckupForm && (
           <div className="mt-6 space-y-6 p-6 border rounded-lg bg-gray-50">
-            <h3 className="text-lg font-semibold">➕ Novo Check-up Mensal</h3>
+            <h3 className="text-lg font-semibold">Novo Check-up Mensal</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -271,6 +277,39 @@ const StrategicMonthlyTracking = () => {
                 rows={4}
                 value={checkupData.observacoes_consultor}
                 onChange={(e) => setCheckupData(prev => ({ ...prev, observacoes_consultor: e.target.value }))}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="pontos_fortes_desenvolvidos">Pontos Fortes Desenvolvidos</Label>
+              <Textarea
+                id="pontos_fortes_desenvolvidos"
+                rows={4}
+                value={checkupData.pontos_fortes_desenvolvidos}
+                onChange={(e) => setCheckupData(prev => ({ ...prev, pontos_fortes_desenvolvidos: e.target.value }))}
+                placeholder="Descreva os principais pontos fortes que foram desenvolvidos..."
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="gargalos_atuais">Gargalos Atuais</Label>
+              <Textarea
+                id="gargalos_atuais"
+                rows={4}
+                value={checkupData.gargalos_atuais}
+                onChange={(e) => setCheckupData(prev => ({ ...prev, gargalos_atuais: e.target.value }))}
+                placeholder="Identifique os principais gargalos encontrados..."
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="estrategias_validadas">Estratégias Validadas</Label>
+              <Textarea
+                id="estrategias_validadas"
+                rows={4}
+                value={checkupData.estrategias_validadas}
+                onChange={(e) => setCheckupData(prev => ({ ...prev, estrategias_validadas: e.target.value }))}
+                placeholder="Liste as estratégias que foram validadas e tiveram sucesso..."
               />
             </div>
 
