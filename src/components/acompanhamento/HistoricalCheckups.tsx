@@ -29,9 +29,23 @@ const HistoricalCheckups = ({ selectedCompany }: HistoricalCheckupsProps) => {
     return format(new Date(date), 'MMMM/yyyy', { locale: ptBR });
   };
 
-  const getAcoesConcluidasCount = (acoes: any[]) => {
-    if (!acoes || !Array.isArray(acoes)) return 0;
-    return acoes.filter(acao => acao.status === 'concluido').length;
+  const getAcoesConcluidasCount = (acoes: any) => {
+    if (!acoes) return 0;
+    
+    // Handle if acoes is a JSON string
+    let parsedAcoes = acoes;
+    if (typeof acoes === 'string') {
+      try {
+        parsedAcoes = JSON.parse(acoes);
+      } catch {
+        return 0;
+      }
+    }
+    
+    // Check if it's an array
+    if (!Array.isArray(parsedAcoes)) return 0;
+    
+    return parsedAcoes.filter(acao => acao && acao.status === 'concluido').length;
   };
 
   const handleVerDetalhes = (checkup: any) => {
