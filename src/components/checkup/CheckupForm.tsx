@@ -1,4 +1,4 @@
-
+import { useEmpresas } from '@/hooks/useEmpresas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,33 +51,44 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
     updateField('acoes', newAcoes);
   };
 
+  const { data: empresas } = useEmpresas();
+
   return (
     <div className="space-y-6">
       {/* Informações Básicas */}
       <Card>
-        <CardHeader>
-          <CardTitle>Informações Básicas</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Informações Básicas</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="empresa">Empresa</Label>
-            <Input
-              id="empresa"
-              value={empresaNome || ''}
-              disabled
-              className="bg-gray-100 mt-1"
-            />
-          </div>
+          {empresaNome ? (
+            <div>
+              <Label htmlFor="empresa">Empresa</Label>
+              <Input id="empresa" value={empresaNome} disabled className="bg-gray-100 mt-1" />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="empresa_id">Empresa</Label>
+              <select
+                id="empresa_id"
+                value={formData.empresa_id}
+                onChange={(e) => updateField('empresa_id', e.target.value)}
+                className="w-full border rounded p-2 mt-1"
+              >
+                <option value="">Selecione uma empresa</option>
+                {empresas?.map((empresa) => (
+                  <option key={empresa.id} value={empresa.id}>{empresa.nome}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="mes">Mês de Referência *</Label>
+              <Label htmlFor="mes">Mês *</Label>
               <Input
                 id="mes"
                 type="month"
                 value={formData.mes}
                 onChange={(e) => updateField('mes', e.target.value)}
-                className="mt-1"
               />
             </div>
             <div>
@@ -89,23 +100,19 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
                 max="100"
                 value={formData.score_geral}
                 onChange={(e) => updateField('score_geral', parseInt(e.target.value) || 0)}
-                className="mt-1"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="roi">ROI Estimado (ex: 2.5)</Label>
+              <Label htmlFor="roi">ROI Estimado</Label>
               <Input
                 id="roi"
                 type="number"
                 step="0.1"
-                min="0"
                 value={formData.roi}
                 onChange={(e) => updateField('roi', parseFloat(e.target.value) || 0)}
-                placeholder="2.5"
-                className="mt-1"
               />
             </div>
             <div>
@@ -113,21 +120,17 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
               <Input
                 id="faturamento"
                 type="number"
-                min="0"
                 value={formData.faturamento}
                 onChange={(e) => updateField('faturamento', parseFloat(e.target.value) || 0)}
-                className="mt-1"
               />
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Destaque e Recomendações */}
+      {/* Destaques e Recomendações */}
       <Card>
-        <CardHeader>
-          <CardTitle>Destaque e Recomendações</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Destaques e Recomendações</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="destaque">Destaque do Mês</Label>
@@ -135,21 +138,14 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
               id="destaque"
               value={formData.destaque}
               onChange={(e) => updateField('destaque', e.target.value)}
-              placeholder="Principal conquista ou marco do mês..."
-              rows={3}
-              className="mt-1"
             />
           </div>
-
           <div>
             <Label htmlFor="recomendacoes">Recomendações</Label>
             <Textarea
               id="recomendacoes"
               value={formData.recomendacoes}
               onChange={(e) => updateField('recomendacoes', e.target.value)}
-              placeholder="• Primeira recomendação&#10;• Segunda recomendação&#10;• Terceira recomendação"
-              rows={5}
-              className="mt-1"
             />
           </div>
         </CardContent>
@@ -157,9 +153,7 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
 
       {/* Evolução por Categoria */}
       <Card>
-        <CardHeader>
-          <CardTitle>Evolução por Categoria</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Evolução por Categoria</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {formData.score_por_categoria.map((categoria, index) => (
             <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
@@ -167,27 +161,19 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
                 <Label>{categoria.categoria}</Label>
               </div>
               <div>
-                <Label htmlFor={`score_anterior_${index}`}>Score Anterior</Label>
+                <Label>Score Anterior</Label>
                 <Input
-                  id={`score_anterior_${index}`}
                   type="number"
-                  min="0"
-                  max="100"
                   value={categoria.score_anterior}
                   onChange={(e) => updateCategoria(index, 'score_anterior', parseInt(e.target.value) || 0)}
-                  className="mt-1"
                 />
               </div>
               <div>
-                <Label htmlFor={`score_atual_${index}`}>Score Atual</Label>
+                <Label>Score Atual</Label>
                 <Input
-                  id={`score_atual_${index}`}
                   type="number"
-                  min="0"
-                  max="100"
                   value={categoria.score_atual}
                   onChange={(e) => updateCategoria(index, 'score_atual', parseInt(e.target.value) || 0)}
-                  className="mt-1"
                 />
               </div>
             </div>
@@ -198,17 +184,10 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
       {/* Ações do Mês */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex justify-between items-center">
             Ações do Mês
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={addAcao}
-              className="flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Adicionar Ação
+            <Button type="button" size="sm" variant="outline" onClick={addAcao}>
+              <Plus className="w-4 h-4 mr-1" /> Adicionar
             </Button>
           </CardTitle>
         </CardHeader>
@@ -216,26 +195,22 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
           {formData.acoes.map((acao, index) => (
             <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg">
               <div className="md:col-span-2">
-                <Label htmlFor={`acao_${index}`}>Ação</Label>
+                <Label>Ação</Label>
                 <Input
-                  id={`acao_${index}`}
                   value={acao.acao}
                   onChange={(e) => updateAcao(index, 'acao', e.target.value)}
-                  placeholder="Descreva a ação realizada..."
-                  className="mt-1"
                 />
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
-                  <Label htmlFor={`status_${index}`}>Status</Label>
+                  <Label>Status</Label>
                   <select
-                    id={`status_${index}`}
                     value={acao.status}
                     onChange={(e) => updateAcao(index, 'status', e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1"
+                    className="w-full h-10 border rounded px-2"
                   >
                     <option value="pendente">Pendente</option>
-                    <option value="em_andamento">Em Andamento</option>
+                    <option value="em_andamento">Em andamento</option>
                     <option value="concluida">Concluída</option>
                     <option value="cancelada">Cancelada</option>
                   </select>
@@ -248,7 +223,7 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
                     onClick={() => removeAcao(index)}
                     className="mt-6"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="w-4 h-4" />
                   </Button>
                 )}
               </div>
@@ -257,17 +232,15 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
         </CardContent>
       </Card>
 
-      {/* Observações */}
+      {/* Observações Finais */}
       <Card>
-        <CardHeader>
-          <CardTitle>Observações do Consultor</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Observações Finais</CardTitle></CardHeader>
         <CardContent>
           <Textarea
             value={formData.observacoes}
             onChange={(e) => updateField('observacoes', e.target.value)}
-            placeholder="Observações adicionais sobre o desempenho da empresa no mês..."
             rows={4}
+            placeholder="Análises adicionais sobre o mês, contexto ou plano de ação futuro..."
           />
         </CardContent>
       </Card>
