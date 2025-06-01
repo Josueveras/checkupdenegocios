@@ -1,9 +1,10 @@
+
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Download, Edit } from 'lucide-react';
+import { ArrowLeft, Download, Edit, Calendar } from 'lucide-react';
 import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
 import { ShareButton } from '@/components/ShareButton';
 import { toast } from '@/hooks/use-toast';
@@ -300,10 +301,11 @@ const DiagnosticoView = () => {
               </Button>
             )}
             <Button
-              onClick={() => handleSendWhatsApp(diagnostic)}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => handleScheduleCalendar(diagnostic)}
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
             >
-              📤 Enviar via WhatsApp
+              <Calendar className="h-4 w-4" />
+              Agendar Reunião
             </Button>
             <Button
               onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
