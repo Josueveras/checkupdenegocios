@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter } from 'lucide-react';
+import { Filter, Search } from 'lucide-react';
 
 interface AcompanhamentoFiltersProps {
   filters: any;
@@ -32,12 +31,16 @@ const AcompanhamentoFilters = ({ filters, setFilters, clearFilters }: Acompanham
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
           <div className="space-y-2">
             <Label htmlFor="search">Empresa ou Cliente</Label>
-            <Input
-              id="search"
-              placeholder="Buscar..."
-              value={filters.searchTerm}
-              onChange={(e) => updateFilter('searchTerm', e.target.value)}
-            />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <Input
+                id="search"
+                placeholder="Buscar empresa ou cliente..."
+                value={filters.searchTerm}
+                onChange={(e) => updateFilter('searchTerm', e.target.value)}
+                className="pl-10 h-10 border border-input bg-background hover:bg-accent hover:text-accent-foreground focus:bg-background"
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
