@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from '@/hooks/use-toast';
@@ -24,15 +24,15 @@ interface CheckupFormData {
 const NovoCheckup = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const empresaId = searchParams.get('empresa_id');
+  const empresaId = searchParams.get('empresa_id') || '';
   const queryClient = useQueryClient();
-  
+
   const { data: empresas } = useEmpresas();
-  const empresa = empresas?.find(e => e.id === empresaId);
+  const empresa = empresas?.find(e => e.id === empresaId) || null;
 
   const [formData, setFormData] = useState<CheckupFormData>({
-    empresa_id: empresaId || '',
-    mes: new Date().toISOString().slice(0, 7), // YYYY-MM format
+    empresa_id: empresaId,
+    mes: new Date().toISOString().slice(0, 7),
     score_geral: 0,
     roi: 0,
     faturamento: 0,
@@ -54,7 +54,7 @@ const NovoCheckup = () => {
         .from('acompanhamentos')
         .insert({
           empresa_id: data.empresa_id,
-          mes: data.mes + '-01', // Convert YYYY-MM to YYYY-MM-DD
+          mes: data.mes + '-01',
           score_geral: data.score_geral,
           roi: data.roi,
           faturamento: data.faturamento,
@@ -64,7 +64,7 @@ const NovoCheckup = () => {
           acoes: data.acoes,
           observacoes: data.observacoes
         });
-      
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -110,28 +110,6 @@ const NovoCheckup = () => {
   const handleCancel = () => {
     navigate('/acompanhamento');
   };
-
-  useEffect(() => {
-    if (!empresaId) {
-      toast({
-        title: "Empresa não encontrada",
-        description: "ID da empresa não foi fornecido.",
-        variant: "destructive"
-      });
-      navigate('/acompanhamento');
-    }
-  }, [empresaId, navigate]);
-
-  if (!empresa && empresaId) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-petrol mx-auto mb-4"></div>
-          <p>Carregando empresa...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 animate-fade-in">
