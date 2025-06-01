@@ -158,17 +158,18 @@ const NovoDiagnostico = () => {
         </div>
       )}
 
-      {/* Navegação - Só mostrar se não estiver na etapa 3 */}
-      {currentStep < 3 && (
-        <div className="flex justify-between">
-          <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={currentStep === 1}
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar
-          </Button>
+      {/* Navegação */}
+      <div className="flex justify-between">
+        <Button
+          variant="outline"
+          onClick={handleBack}
+          disabled={currentStep === 1}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Voltar
+        </Button>
+        
+        {currentStep < 3 && (
           <Button
             onClick={handleNext}
             className="bg-petrol hover:bg-petrol/90 text-white"
@@ -177,8 +178,8 @@ const NovoDiagnostico = () => {
             Próximo
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
