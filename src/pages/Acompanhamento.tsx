@@ -22,11 +22,16 @@ const Acompanhamento = () => {
     clearFilters
   } = useEmpresasConsolidadas();
 
-  const handleNovoCheckup = () => {
-    toast({
-      title: "Em desenvolvimento",
-      description: "Modal de novo check-up será implementado em breve.",
-    });
+  const handleNovoCheckup = (empresaId?: string) => {
+    if (empresaId) {
+      navigate(`/checkup/novo?empresa_id=${empresaId}`);
+    } else {
+      toast({
+        title: "Empresa obrigatória",
+        description: "Selecione uma empresa para criar um novo check-up.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleEdit = (id: string) => {
@@ -69,7 +74,7 @@ const Acompanhamento = () => {
           <h1 className="text-3xl font-bold text-gray-900">Acompanhamentos</h1>
           <p className="text-gray-600 mt-1">Evolução consolidada dos clientes com check-ups mensais</p>
         </div>
-        <Button onClick={handleNovoCheckup} className="bg-petrol hover:bg-petrol/90 text-white">
+        <Button onClick={() => handleNovoCheckup()} className="bg-petrol hover:bg-petrol/90 text-white">
           <Plus className="mr-2 h-4 w-4" />
           Novo Check-up Mensal
         </Button>
@@ -102,6 +107,7 @@ const Acompanhamento = () => {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onGeneratePDF={handleGeneratePDF}
+                onNovoCheckup={handleNovoCheckup}
               />
             ))}
           </div>
@@ -115,7 +121,7 @@ const Acompanhamento = () => {
               <p className="text-gray-600 mb-6">
                 ⚠️ Nenhuma empresa com check-ups registrados no momento.
               </p>
-              <Button onClick={handleNovoCheckup} className="bg-petrol hover:bg-petrol/90 text-white">
+              <Button onClick={() => handleNovoCheckup()} className="bg-petrol hover:bg-petrol/90 text-white">
                 <Plus className="mr-2 h-4 w-4" />
                 Novo Check-up
               </Button>
@@ -135,7 +141,7 @@ const Acompanhamento = () => {
                 <Button variant="outline" onClick={clearFilters}>
                   Limpar Filtros
                 </Button>
-                <Button onClick={handleNovoCheckup} className="bg-petrol hover:bg-petrol/90 text-white">
+                <Button onClick={() => handleNovoCheckup()} className="bg-petrol hover:bg-petrol/90 text-white">
                   <Plus className="mr-2 h-4 w-4" />
                   Novo Check-up
                 </Button>
