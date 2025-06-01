@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import StrategicMonthlyTracking from '@/components/acompanhamento/StrategicMonthlyTracking';
 import HistoricalCheckups from '@/components/acompanhamento/HistoricalCheckups';
@@ -29,7 +30,7 @@ const Acompanhamento = () => {
       {/* Company Selector */}
       <CompanySelector 
         selectedCompany={selectedCompany}
-        setSelectedCompany={setSelectedCompany}
+        onCompanyChange={setSelectedCompany}
       />
 
       {/* Historical Check-ups */}
