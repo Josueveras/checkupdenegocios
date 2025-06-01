@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,10 +22,7 @@ const Acompanhamento = () => {
   } = useEmpresasConsolidadas();
 
   const handleNovoCheckup = () => {
-    toast({
-      title: "Em desenvolvimento",
-      description: "Modal de novo check-up será implementado em breve.",
-    });
+    navigate('/checkup/novo');
   };
 
   const handleEdit = (id: string) => {

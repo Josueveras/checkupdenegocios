@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,7 +9,8 @@ import {
   FileText, 
   Edit, 
   Trash2,
-  Eye
+  Eye,
+  Plus
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -64,6 +64,10 @@ const EmpresaConsolidadaCard = ({
 
   const handleVerMais = () => {
     navigate(`/empresa/${empresa.id}`);
+  };
+
+  const handleNovoCheckup = () => {
+    navigate(`/checkup/novo?empresa_id=${empresa.id}`);
   };
 
   return (
@@ -122,6 +126,14 @@ const EmpresaConsolidadaCard = ({
           >
             <Eye className="mr-1 h-4 w-4" />
             Ver Mais
+          </Button>
+          <Button 
+            size="sm" 
+            className="bg-green-600 hover:bg-green-700 text-white"
+            onClick={handleNovoCheckup}
+          >
+            <Plus className="mr-1 h-4 w-4" />
+            Novo Check-up
           </Button>
           <Button size="sm" variant="outline" onClick={() => onEdit(empresa.id)}>
             <Edit className="mr-1 h-4 w-4" />
