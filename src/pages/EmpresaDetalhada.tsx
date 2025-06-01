@@ -101,26 +101,45 @@ const EmpresaDetalhada = () => {
     }
   };
 
-  // Funções de cálculo para os cards
-  const calcularVariacao = (checkups: any[], campo: string) => {
-    if (!checkups || checkups.length < 2) return 0;
-    const primeiro = checkups[0][campo] || 0;
-    const ultimo = checkups[checkups.length - 1][campo] || 0;
-    if (primeiro === 0) return 0;
-    return Math.round(((ultimo - primeiro) / primeiro) * 100);
-  };
-
-  const calcularMedia = (checkups: any[], campo: string) => {
-    if (!checkups || checkups.length === 0) return 0;
-    const valores = checkups.filter(c => c[campo]).map(c => Number(c[campo]));
-    if (valores.length === 0) return 0;
-    return Number((valores.reduce((sum, val) => sum + val, 0) / valores.length).toFixed(2));
-  };
-
-  const calcularSomaAcoes = (checkups: any[]) => {
-    if (!checkups) return 0;
+  // Calcular métricas derivadas
+  const metricasDerivadas = {
+    scoreMedio: checkupsEmpresa && checkupsEmpresa.length > 0 
+      ? Math.round(checkupsEmpresa.reduce((sum, c) => sum + (c.score_geral || 0), 0) / checkupsEmpresa.length)
+      : 0,
     
-    return checkups.reduce((total, checkup) => {
+    roiMedio: checkupsEmpresa && checkupsEmpresa.length > 0
+      ? Number((checkupsEmpresa
+          .filter(c => c.roi)
+          .reduce((sum, c) => sum + (c.roi || 0), 0) / 
+        checkupsEmpresa.filter(c => c.roi).length || 0).toFixed(2))
+      : 0,
+    
+    faturamentoMedio: checkupsEmpresa && checkupsEmpresa.length > 0
+      ? checkupsEmpresa
+          .filter(c => c.faturamento)
+          .reduce((sum, c) => sum + (Number(c.faturamento) || 0), 0) / 
+        checkupsEmpresa.filter(c => c.faturamento).length || 0
+      : 0,
+    
+    variacaoScore: checkupsEmpresa && checkupsEmpresa.length >= 2
+      ? (() => {
+          const primeiro = checkupsEmpresa[0].score_geral || 0;
+          const ultimo = checkupsEmpresa[checkupsEmpresa.length - 1].score_geral || 0;
+          return primeiro === 0 ? 0 : Math.round(((ultimo - primeiro) / primeiro) * 100);
+        })()
+      : 0,
+    
+    variacaoROI: checkupsEmpresa && checkupsEmpresa.length >= 2
+      ? (() => {
+          const checkupsComROI = checkupsEmpresa.filter(c => c.roi);
+          if (checkupsComROI.length < 2) return 0;
+          const primeiro = checkupsComROI[0].roi || 0;
+          const ultimo = checkupsComROI[checkupsComROI.length - 1].roi || 0;
+          return primeiro === 0 ? 0 : Math.round(((ultimo - primeiro) / primeiro) * 100);
+        })()
+      : 0,
+    
+    acoesConcluidasTotal: checkupsEmpresa ? checkupsEmpresa.reduce((total, checkup) => {
       if (!checkup.acoes) return total;
       
       let parsedAcoes = checkup.acoes;
@@ -141,7 +160,65 @@ const EmpresaDetalhada = () => {
                'status' in acao && 
                acao.status === 'concluido';
       }).length;
-    }, 0);
+    }, 0) : 0,
+    
+    tempoInativo: checkupsEmpresa && checkupsEmpresa.length > 0
+      ? (() => {
+          const ultimoCheckup = checkupsEmpresa[checkupsEmpresa.length - 1];
+          const ultimaData = new Date(ultimoCheckup.mes);
+          const agora = new Date();
+          const diffTime = Math.abs(agora.getTime() - ultimaData.getTime());
+          return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        })()
+      : 0,
+    
+    checkupsSemAcao: checkupsEmpresa ? checkupsEmpresa.filter(checkup => {
+      if (!checkup.acoes) return true;
+      
+      let parsedAcoes = checkup.acoes;
+      if (typeof checkup.acoes === 'string') {
+        try {
+          parsedAcoes = JSON.parse(checkup.acoes);
+        } catch {
+          return true;
+        }
+      }
+      
+      if (!Array.isArray(parsedAcoes) || parsedAcoes.length === 0) return true;
+      
+      return parsedAcoes.filter(acao => {
+        return acao && 
+               typeof acao === 'object' && 
+               acao !== null && 
+               'status' in acao && 
+               acao.status === 'concluido';
+      }).length === 0;
+    }).length : 0,
+    
+    mediaAcoesPorMes: checkupsEmpresa && checkupsEmpresa.length > 0
+      ? Number((checkupsEmpresa.reduce((total, checkup) => {
+          if (!checkup.acoes) return total;
+          
+          let parsedAcoes = checkup.acoes;
+          if (typeof checkup.acoes === 'string') {
+            try {
+              parsedAcoes = JSON.parse(checkup.acoes);
+            } catch {
+              return total;
+            }
+          }
+          
+          if (!Array.isArray(parsedAcoes)) return total;
+          
+          return total + parsedAcoes.filter(acao => {
+            return acao && 
+                   typeof acao === 'object' && 
+                   acao !== null && 
+                   'status' in acao && 
+                   acao.status === 'concluido';
+          }).length;
+        }, 0) / checkupsEmpresa.length).toFixed(1))
+      : 0
   };
 
   const getAcoesCount = (acoes: any) => {
@@ -211,7 +288,7 @@ const EmpresaDetalhada = () => {
             🏢 Empresa: {empresaSelecionada.nome}
           </h1>
           <p className="text-gray-600 mt-1">
-            Acompanhe todos os dados de evolução do projeto deste cliente de forma centralizada.
+            Acompanhe a jornada real do projeto com dados comparativos, evolução mensal e sinais estratégicos de valor.
           </p>
         </div>
         <BackButton fallbackRoute="/acompanhamento" />
@@ -223,9 +300,9 @@ const EmpresaDetalhada = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Check-ups</p>
+                <p className="text-sm font-medium text-gray-600">Check-ups Realizados</p>
                 <p className="text-2xl font-bold text-petrol">{checkupsEmpresa?.length || 0}</p>
-                <p className="text-xs text-gray-500">Check-ups realizados</p>
+                <p className="text-xs text-gray-500">Check-ups registrados</p>
               </div>
               <FileText className="h-8 w-8 text-petrol" />
             </div>
@@ -238,7 +315,7 @@ const EmpresaDetalhada = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Crescimento do Score</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {calcularVariacao(checkupsEmpresa || [], 'score_geral')}%
+                  {metricasDerivadas.variacaoScore}%
                 </p>
                 <p className="text-xs text-gray-500">Desde o primeiro check-up</p>
               </div>
@@ -253,7 +330,7 @@ const EmpresaDetalhada = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">ROI Médio</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {calcularMedia(checkupsEmpresa || [], 'roi')}x
+                  {metricasDerivadas.roiMedio}x
                 </p>
                 <p className="text-xs text-gray-500">Retorno sobre investimento</p>
               </div>
@@ -268,9 +345,9 @@ const EmpresaDetalhada = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Ações Concluídas</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {calcularSomaAcoes(checkupsEmpresa || [])}
+                  {metricasDerivadas.acoesConcluidasTotal}
                 </p>
-                <p className="text-xs text-gray-500">Ações estratégicas finalizadas</p>
+                <p className="text-xs text-gray-500">Estratégias finalizadas</p>
               </div>
               <Settings className="h-8 w-8 text-green-600" />
             </div>
@@ -285,7 +362,7 @@ const EmpresaDetalhada = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <LineChart className="h-5 w-5 text-petrol" />
-              Evolução do Score Geral
+              📈 Evolução do Score Geral
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -308,7 +385,7 @@ const EmpresaDetalhada = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-petrol" />
-              Faturamento Mensal
+              💰 Faturamento Mensal
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -332,7 +409,7 @@ const EmpresaDetalhada = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-petrol" />
-            Histórico de Check-ups
+            📆 Histórico de Check-ups
           </CardTitle>
           <CardDescription>
             Todos os check-ups registrados para esta empresa em formato tabular.
@@ -392,13 +469,55 @@ const EmpresaDetalhada = () => {
         </CardContent>
       </Card>
 
+      {/* Análise Estratégica */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5 text-petrol" />
+            🔍 Análise Estratégica
+          </CardTitle>
+          <CardDescription>
+            Sinais extraídos automaticamente da jornada da empresa.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Variação de Score</h4>
+              <p className="text-2xl font-bold text-blue-600">{metricasDerivadas.variacaoScore}%</p>
+              <p className="text-sm text-gray-600">Crescimento total</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Variação de ROI</h4>
+              <p className="text-2xl font-bold text-yellow-600">{metricasDerivadas.variacaoROI}%</p>
+              <p className="text-sm text-gray-600">Evolução do retorno</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Check-ups sem ação</h4>
+              <p className="text-2xl font-bold text-red-600">{metricasDerivadas.checkupsSemAcao}</p>
+              <p className="text-sm text-gray-600">Meses sem implementação</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Tempo Inativo</h4>
+              <p className="text-2xl font-bold text-orange-600">{metricasDerivadas.tempoInativo}</p>
+              <p className="text-sm text-gray-600">Dias desde último check-up</p>
+            </div>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h4 className="font-semibold mb-2">Ações por mês</h4>
+              <p className="text-2xl font-bold text-green-600">{metricasDerivadas.mediaAcoesPorMes}</p>
+              <p className="text-sm text-gray-600">Média de implementações</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Resumo Estratégico */}
       {ultimoCheckup && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-petrol" />
-              🔎 Resumo Estratégico
+              📌 Resumo Estratégico
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -452,7 +571,7 @@ const EmpresaDetalhada = () => {
           className="bg-petrol hover:bg-petrol/90 text-white"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Acompanhamento
+          ⬅ Voltar para Acompanhamento
         </Button>
       </div>
     </div>
