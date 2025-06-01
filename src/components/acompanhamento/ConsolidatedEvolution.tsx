@@ -2,29 +2,24 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { BarChart } from 'lucide-react';
+import { BarChart, Loader2 } from 'lucide-react';
+import { useAllAcompanhamentos } from '@/hooks/useAcompanhamentos';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const ConsolidatedEvolution = () => {
-  const mockCheckups = [
-    {
-      id: '1',
-      mes_referencia: '2024-01',
-      nome_empresa: 'Tech Solutions LTDA',
-      score_geral: 85,
-      faturamento_atual: 150000,
-      roi_estimado: 2.5,
-      destaque_mes: 'Implementação do novo CRM aumentou conversão em 30%'
-    },
-    {
-      id: '2',
-      mes_referencia: '2024-02',
-      nome_empresa: 'Marketing Digital Pro',
-      score_geral: 78,
-      faturamento_atual: 95000,
-      roi_estimado: 1.8,
-      destaque_mes: 'Campanhas de mídia paga geraram 40% mais leads'
-    }
-  ];
+  const { data: acompanhamentos, isLoading, error } = useAllAcompanhamentos();
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const formatDate = (date: string) => {
+    return format(new Date(date), 'MMM/yyyy', { locale: ptBR });
+  };
 
   return (
     <Card>
@@ -38,34 +33,53 @@ const ConsolidatedEvolution = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Empresa</TableHead>
-              <TableHead>Mês</TableHead>
-              <TableHead>Score Geral</TableHead>
-              <TableHead>Faturamento</TableHead>
-              <TableHead>ROI</TableHead>
-              <TableHead>Destaque</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mockCheckups.map((checkup) => (
-              <TableRow key={checkup.id}>
-                <TableCell className="font-medium">{checkup.nome_empresa}</TableCell>
-                <TableCell>{checkup.mes_referencia}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-petrol">
-                    {checkup.score_geral}%
-                  </Badge>
-                </TableCell>
-                <TableCell>R$ {checkup.faturamento_atual.toLocaleString()}</TableCell>
-                <TableCell>{checkup.roi_estimado}x</TableCell>
-                <TableCell className="max-w-xs truncate">{checkup.destaque_mes}</TableCell>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            Carregando dados...
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">
+            Erro ao carregar os dados. Tente novamente.
+          </div>
+        ) : acompanhamentos && acompanhamentos.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Empresa</TableHead>
+                <TableHead>Mês</TableHead>
+                <TableHead>Score Geral</TableHead>
+                <TableHead>Faturamento</TableHead>
+                <TableHead>ROI</TableHead>
+                <TableHead>Destaque</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {acompanhamentos.map((acompanhamento) => (
+                <TableRow key={acompanhamento.id}>
+                  <TableCell className="font-medium">{acompanhamento.empresas?.nome}</TableCell>
+                  <TableCell>{formatDate(acompanhamento.mes)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-petrol">
+                      {acompanhamento.score_geral}%
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {acompanhamento.faturamento ? formatCurrency(acompanhamento.faturamento) : 'N/A'}
+                  </TableCell>
+                  <TableCell>{acompanhamento.roi || 'N/A'}x</TableCell>
+                  <TableCell className="max-w-xs truncate">
+                    {acompanhamento.destaque || 'Sem destaque registrado'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            Nenhum acompanhamento encontrado
+          </div>
+        )}
       </CardContent>
     </Card>
   );

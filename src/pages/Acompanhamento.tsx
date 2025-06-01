@@ -23,21 +23,22 @@ const Acompanhamento = () => {
       {/* Strategic Monthly Tracking */}
       <StrategicMonthlyTracking />
 
-      {/* Historical Check-ups */}
-      <HistoricalCheckups />
-
       {/* Consolidated Evolution Table */}
       <ConsolidatedEvolution />
 
-      {/* Strategic Summary */}
-      <StrategicSummary />
-
-      {/* Existing diagnostic tracking components */}
+      {/* Company Selector */}
       <CompanySelector 
         selectedCompany={selectedCompany}
         setSelectedCompany={setSelectedCompany}
       />
 
+      {/* Historical Check-ups */}
+      <HistoricalCheckups selectedCompany={selectedCompany} />
+
+      {/* Strategic Summary */}
+      <StrategicSummary />
+
+      {/* Existing diagnostic tracking components */}
       {/* Timeline */}
       <DiagnosticTimeline 
         selectedCompany={selectedCompany}

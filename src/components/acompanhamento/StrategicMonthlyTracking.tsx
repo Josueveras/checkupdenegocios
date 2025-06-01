@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,64 +6,100 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Target, Plus } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { useEmpresasComDiagnosticos, useSaveAcompanhamento } from '@/hooks/useAcompanhamentos';
 
 const StrategicMonthlyTracking = () => {
   const [showCheckupForm, setShowCheckupForm] = useState(false);
+  const { data: empresas } = useEmpresasComDiagnosticos();
+  const saveAcompanhamento = useSaveAcompanhamento();
+  
   const [checkupData, setCheckupData] = useState({
-    mes_referencia: '',
-    nome_empresa: '',
+    empresa_id: '',
+    mes: '',
     score_geral: '',
-    faturamento_atual: '',
-    roi_estimado: '',
-    destaque_mes: '',
+    faturamento: '',
+    roi: '',
+    destaque: '',
     recomendacoes: '',
-    evolucao_categorias: [{ categoria: '', score_anterior: '', score_atual: '', observacoes: '' }],
-    acoes_mes: [{ acao: '', status: 'pendente' }],
-    observacoes_consultor: '',
+    score_por_categoria: [{ categoria: '', score_anterior: '', score_atual: '', observacoes: '' }],
+    acoes: [{ acao: '', status: 'pendente' }],
+    observacoes: '',
     pontos_fortes_desenvolvidos: '',
     gargalos_atuais: '',
     estrategias_validadas: '',
-    is_case: false,
-    destaques_case: ''
+    virou_case: false,
+    destaque_case: ''
   });
 
-  const handleSaveCheckup = () => {
-    toast({
-      title: "Check-up salvo",
-      description: "Acompanhamento mensal registrado com sucesso!"
-    });
-    setShowCheckupForm(false);
-    setCheckupData({
-      mes_referencia: '',
-      nome_empresa: '',
-      score_geral: '',
-      faturamento_atual: '',
-      roi_estimado: '',
-      destaque_mes: '',
-      recomendacoes: '',
-      evolucao_categorias: [{ categoria: '', score_anterior: '', score_atual: '', observacoes: '' }],
-      acoes_mes: [{ acao: '', status: 'pendente' }],
-      observacoes_consultor: '',
-      pontos_fortes_desenvolvidos: '',
-      gargalos_atuais: '',
-      estrategias_validadas: '',
-      is_case: false,
-      destaques_case: ''
-    });
+  const handleSaveCheckup = async () => {
+    // Validações básicas
+    if (!checkupData.empresa_id || !checkupData.mes || !checkupData.score_geral) {
+      return;
+    }
+
+    // Preparar dados para salvamento
+    const acompanhamentoData = {
+      empresa_id: checkupData.empresa_id,
+      mes: checkupData.mes + '-01', // Converter para formato de data
+      score_geral: parseInt(checkupData.score_geral),
+      faturamento: checkupData.faturamento ? parseFloat(checkupData.faturamento) : null,
+      roi: checkupData.roi ? parseFloat(checkupData.roi) : null,
+      destaque: checkupData.destaque || null,
+      recomendacoes: checkupData.recomendacoes || null,
+      score_por_categoria: checkupData.score_por_categoria.filter(item => item.categoria).reduce((acc, item) => {
+        acc[item.categoria] = {
+          score_anterior: item.score_anterior ? parseInt(item.score_anterior) : null,
+          score_atual: item.score_atual ? parseInt(item.score_atual) : null,
+          observacoes: item.observacoes || null
+        };
+        return acc;
+      }, {} as any),
+      acoes: checkupData.acoes.filter(item => item.acao),
+      observacoes: checkupData.observacoes || null,
+      pontos_fortes_desenvolvidos: checkupData.pontos_fortes_desenvolvidos || null,
+      gargalos_atuais: checkupData.gargalos_atuais || null,
+      estrategias_validadas: checkupData.estrategias_validadas || null,
+      virou_case: checkupData.virou_case,
+      destaque_case: checkupData.virou_case ? checkupData.destaque_case : null
+    };
+
+    try {
+      await saveAcompanhamento.mutateAsync(acompanhamentoData);
+      setShowCheckupForm(false);
+      // Reset form
+      setCheckupData({
+        empresa_id: '',
+        mes: '',
+        score_geral: '',
+        faturamento: '',
+        roi: '',
+        destaque: '',
+        recomendacoes: '',
+        score_por_categoria: [{ categoria: '', score_anterior: '', score_atual: '', observacoes: '' }],
+        acoes: [{ acao: '', status: 'pendente' }],
+        observacoes: '',
+        pontos_fortes_desenvolvidos: '',
+        gargalos_atuais: '',
+        estrategias_validadas: '',
+        virou_case: false,
+        destaque_case: ''
+      });
+    } catch (error) {
+      console.error('Erro ao salvar acompanhamento:', error);
+    }
   };
 
   const addEvolucaoCategoria = () => {
     setCheckupData(prev => ({
       ...prev,
-      evolucao_categorias: [...prev.evolucao_categorias, { categoria: '', score_anterior: '', score_atual: '', observacoes: '' }]
+      score_por_categoria: [...prev.score_por_categoria, { categoria: '', score_anterior: '', score_atual: '', observacoes: '' }]
     }));
   };
 
   const addAcaoMes = () => {
     setCheckupData(prev => ({
       ...prev,
-      acoes_mes: [...prev.acoes_mes, { acao: '', status: 'pendente' }]
+      acoes: [...prev.acoes, { acao: '', status: 'pendente' }]
     }));
   };
 
@@ -94,20 +129,30 @@ const StrategicMonthlyTracking = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="mes_referencia">Mês de Referência</Label>
-                <Input
-                  id="mes_referencia"
-                  type="month"
-                  value={checkupData.mes_referencia}
-                  onChange={(e) => setCheckupData(prev => ({ ...prev, mes_referencia: e.target.value }))}
-                />
+                <Label htmlFor="empresa_id">Empresa</Label>
+                <Select
+                  value={checkupData.empresa_id}
+                  onValueChange={(value) => setCheckupData(prev => ({ ...prev, empresa_id: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma empresa..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {empresas?.map(empresa => (
+                      <SelectItem key={empresa.id} value={empresa.id}>
+                        {empresa.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
-                <Label htmlFor="nome_empresa">Nome da Empresa</Label>
+                <Label htmlFor="mes">Mês de Referência</Label>
                 <Input
-                  id="nome_empresa"
-                  value={checkupData.nome_empresa}
-                  onChange={(e) => setCheckupData(prev => ({ ...prev, nome_empresa: e.target.value }))}
+                  id="mes"
+                  type="month"
+                  value={checkupData.mes}
+                  onChange={(e) => setCheckupData(prev => ({ ...prev, mes: e.target.value }))}
                 />
               </div>
               <div>
@@ -122,30 +167,30 @@ const StrategicMonthlyTracking = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="faturamento_atual">Faturamento Atual (R$)</Label>
+                <Label htmlFor="faturamento">Faturamento Atual (R$)</Label>
                 <Input
-                  id="faturamento_atual"
+                  id="faturamento"
                   type="number"
-                  value={checkupData.faturamento_atual}
-                  onChange={(e) => setCheckupData(prev => ({ ...prev, faturamento_atual: e.target.value }))}
+                  value={checkupData.faturamento}
+                  onChange={(e) => setCheckupData(prev => ({ ...prev, faturamento: e.target.value }))}
                 />
               </div>
               <div>
-                <Label htmlFor="roi_estimado">ROI Estimado (ex: 2.5x)</Label>
+                <Label htmlFor="roi">ROI Estimado (ex: 2.5x)</Label>
                 <Input
-                  id="roi_estimado"
+                  id="roi"
                   type="number"
                   step="0.1"
-                  value={checkupData.roi_estimado}
-                  onChange={(e) => setCheckupData(prev => ({ ...prev, roi_estimado: e.target.value }))}
+                  value={checkupData.roi}
+                  onChange={(e) => setCheckupData(prev => ({ ...prev, roi: e.target.value }))}
                 />
               </div>
               <div>
-                <Label htmlFor="destaque_mes">Destaque do Mês</Label>
+                <Label htmlFor="destaque">Destaque do Mês</Label>
                 <Input
-                  id="destaque_mes"
-                  value={checkupData.destaque_mes}
-                  onChange={(e) => setCheckupData(prev => ({ ...prev, destaque_mes: e.target.value }))}
+                  id="destaque"
+                  value={checkupData.destaque}
+                  onChange={(e) => setCheckupData(prev => ({ ...prev, destaque: e.target.value }))}
                 />
               </div>
             </div>
@@ -169,16 +214,16 @@ const StrategicMonthlyTracking = () => {
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              {checkupData.evolucao_categorias.map((item, index) => (
+              {checkupData.score_por_categoria.map((item, index) => (
                 <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 p-4 border rounded">
                   <div>
                     <Label>Categoria</Label>
                     <Input
                       value={item.categoria}
                       onChange={(e) => {
-                        const newItems = [...checkupData.evolucao_categorias];
+                        const newItems = [...checkupData.score_por_categoria];
                         newItems[index].categoria = e.target.value;
-                        setCheckupData(prev => ({ ...prev, evolucao_categorias: newItems }));
+                        setCheckupData(prev => ({ ...prev, score_por_categoria: newItems }));
                       }}
                     />
                   </div>
@@ -190,9 +235,9 @@ const StrategicMonthlyTracking = () => {
                       max="100"
                       value={item.score_anterior}
                       onChange={(e) => {
-                        const newItems = [...checkupData.evolucao_categorias];
+                        const newItems = [...checkupData.score_por_categoria];
                         newItems[index].score_anterior = e.target.value;
-                        setCheckupData(prev => ({ ...prev, evolucao_categorias: newItems }));
+                        setCheckupData(prev => ({ ...prev, score_por_categoria: newItems }));
                       }}
                     />
                   </div>
@@ -204,9 +249,9 @@ const StrategicMonthlyTracking = () => {
                       max="100"
                       value={item.score_atual}
                       onChange={(e) => {
-                        const newItems = [...checkupData.evolucao_categorias];
+                        const newItems = [...checkupData.score_por_categoria];
                         newItems[index].score_atual = e.target.value;
-                        setCheckupData(prev => ({ ...prev, evolucao_categorias: newItems }));
+                        setCheckupData(prev => ({ ...prev, score_por_categoria: newItems }));
                       }}
                     />
                   </div>
@@ -215,9 +260,9 @@ const StrategicMonthlyTracking = () => {
                     <Input
                       value={item.observacoes}
                       onChange={(e) => {
-                        const newItems = [...checkupData.evolucao_categorias];
+                        const newItems = [...checkupData.score_por_categoria];
                         newItems[index].observacoes = e.target.value;
-                        setCheckupData(prev => ({ ...prev, evolucao_categorias: newItems }));
+                        setCheckupData(prev => ({ ...prev, score_por_categoria: newItems }));
                       }}
                     />
                   </div>
@@ -233,16 +278,16 @@ const StrategicMonthlyTracking = () => {
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              {checkupData.acoes_mes.map((item, index) => (
+              {checkupData.acoes.map((item, index) => (
                 <div key={index} className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 border rounded">
                   <div>
                     <Label>Ação</Label>
                     <Input
                       value={item.acao}
                       onChange={(e) => {
-                        const newItems = [...checkupData.acoes_mes];
+                        const newItems = [...checkupData.acoes];
                         newItems[index].acao = e.target.value;
-                        setCheckupData(prev => ({ ...prev, acoes_mes: newItems }));
+                        setCheckupData(prev => ({ ...prev, acoes: newItems }));
                       }}
                     />
                   </div>
@@ -251,9 +296,9 @@ const StrategicMonthlyTracking = () => {
                     <Select
                       value={item.status}
                       onValueChange={(value) => {
-                        const newItems = [...checkupData.acoes_mes];
+                        const newItems = [...checkupData.acoes];
                         newItems[index].status = value;
-                        setCheckupData(prev => ({ ...prev, acoes_mes: newItems }));
+                        setCheckupData(prev => ({ ...prev, acoes: newItems }));
                       }}
                     >
                       <SelectTrigger>
@@ -271,12 +316,12 @@ const StrategicMonthlyTracking = () => {
             </div>
 
             <div>
-              <Label htmlFor="observacoes_consultor">Observações do Consultor</Label>
+              <Label htmlFor="observacoes">Observações do Consultor</Label>
               <Textarea
-                id="observacoes_consultor"
+                id="observacoes"
                 rows={4}
-                value={checkupData.observacoes_consultor}
-                onChange={(e) => setCheckupData(prev => ({ ...prev, observacoes_consultor: e.target.value }))}
+                value={checkupData.observacoes}
+                onChange={(e) => setCheckupData(prev => ({ ...prev, observacoes: e.target.value }))}
               />
             </div>
 
@@ -317,28 +362,32 @@ const StrategicMonthlyTracking = () => {
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  id="is_case"
-                  checked={checkupData.is_case}
-                  onChange={(e) => setCheckupData(prev => ({ ...prev, is_case: e.target.checked }))}
+                  id="virou_case"
+                  checked={checkupData.virou_case}
+                  onChange={(e) => setCheckupData(prev => ({ ...prev, virou_case: e.target.checked }))}
                 />
-                <Label htmlFor="is_case">Este projeto virou um case?</Label>
+                <Label htmlFor="virou_case">Este projeto virou um case?</Label>
               </div>
 
-              {checkupData.is_case && (
+              {checkupData.virou_case && (
                 <div>
-                  <Label htmlFor="destaques_case">Destaques do Case</Label>
+                  <Label htmlFor="destaque_case">Destaques do Case</Label>
                   <Textarea
-                    id="destaques_case"
+                    id="destaque_case"
                     rows={4}
-                    value={checkupData.destaques_case}
-                    onChange={(e) => setCheckupData(prev => ({ ...prev, destaques_case: e.target.value }))}
+                    value={checkupData.destaque_case}
+                    onChange={(e) => setCheckupData(prev => ({ ...prev, destaque_case: e.target.value }))}
                   />
                 </div>
               )}
             </div>
 
-            <Button onClick={handleSaveCheckup} className="bg-petrol hover:bg-petrol/90 text-white">
-              Salvar Check-up
+            <Button 
+              onClick={handleSaveCheckup} 
+              className="bg-petrol hover:bg-petrol/90 text-white"
+              disabled={saveAcompanhamento.isPending}
+            >
+              {saveAcompanhamento.isPending ? 'Salvando...' : 'Salvar Check-up'}
             </Button>
           </div>
         )}

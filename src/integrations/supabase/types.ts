@@ -9,6 +9,77 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      acompanhamentos: {
+        Row: {
+          acoes: Json | null
+          created_at: string
+          destaque: string | null
+          destaque_case: string | null
+          empresa_id: string
+          estrategias_validadas: string | null
+          faturamento: number | null
+          gargalos_atuais: string | null
+          id: string
+          mes: string
+          observacoes: string | null
+          pontos_fortes_desenvolvidos: string | null
+          recomendacoes: string | null
+          roi: number | null
+          score_geral: number
+          score_por_categoria: Json | null
+          updated_at: string
+          virou_case: boolean | null
+        }
+        Insert: {
+          acoes?: Json | null
+          created_at?: string
+          destaque?: string | null
+          destaque_case?: string | null
+          empresa_id: string
+          estrategias_validadas?: string | null
+          faturamento?: number | null
+          gargalos_atuais?: string | null
+          id?: string
+          mes: string
+          observacoes?: string | null
+          pontos_fortes_desenvolvidos?: string | null
+          recomendacoes?: string | null
+          roi?: number | null
+          score_geral: number
+          score_por_categoria?: Json | null
+          updated_at?: string
+          virou_case?: boolean | null
+        }
+        Update: {
+          acoes?: Json | null
+          created_at?: string
+          destaque?: string | null
+          destaque_case?: string | null
+          empresa_id?: string
+          estrategias_validadas?: string | null
+          faturamento?: number | null
+          gargalos_atuais?: string | null
+          id?: string
+          mes?: string
+          observacoes?: string | null
+          pontos_fortes_desenvolvidos?: string | null
+          recomendacoes?: string | null
+          roi?: number | null
+          score_geral?: number
+          score_por_categoria?: Json | null
+          updated_at?: string
+          virou_case?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "acompanhamentos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       configuracoes: {
         Row: {
           cor_primaria: string | null
