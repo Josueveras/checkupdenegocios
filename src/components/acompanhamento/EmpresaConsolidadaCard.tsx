@@ -10,8 +10,7 @@ import {
   FileText, 
   Edit, 
   Trash2,
-  Eye,
-  Plus
+  Eye
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -38,15 +37,13 @@ interface EmpresaConsolidadaCardProps {
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
   onGeneratePDF: (id: string) => void;
-  onNovoCheckup: (empresaId: string) => void;
 }
 
 const EmpresaConsolidadaCard = ({
   empresa,
   onEdit,
   onDelete,
-  onGeneratePDF,
-  onNovoCheckup
+  onGeneratePDF
 }: EmpresaConsolidadaCardProps) => {
   const navigate = useNavigate();
 
@@ -121,14 +118,6 @@ const EmpresaConsolidadaCard = ({
           <Button 
             size="sm" 
             className="bg-petrol hover:bg-petrol/90 text-white"
-            onClick={() => onNovoCheckup(empresa.id)}
-          >
-            <Plus className="mr-1 h-4 w-4" />
-            Novo Check-up
-          </Button>
-          <Button 
-            size="sm" 
-            variant="outline"
             onClick={handleVerMais}
           >
             <Eye className="mr-1 h-4 w-4" />
