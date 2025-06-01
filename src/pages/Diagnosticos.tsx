@@ -209,7 +209,8 @@ const Diagnosticos = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-2 min-w-fit">
+                <div className="flex flex-col gap-3 min-w-fit">
+                  {/* Linha 1: PDF e Agendar */}
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -218,7 +219,7 @@ const Diagnosticos = () => {
                       className="flex items-center gap-2"
                     >
                       <Download className="h-4 w-4" />
-                      Baixar PDF
+                      PDF
                     </Button>
                     <Button
                       variant="outline"
@@ -231,6 +232,7 @@ const Diagnosticos = () => {
                     </Button>
                   </div>
                   
+                  {/* Linha 2: Ver e Editar */}
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
@@ -252,13 +254,14 @@ const Diagnosticos = () => {
                     </Button>
                   </div>
 
+                  {/* Linha 3: Excluir */}
                   <div className="flex gap-2">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
+                          className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white w-full"
                         >
                           <Trash2 className="h-4 w-4" />
                           Excluir
