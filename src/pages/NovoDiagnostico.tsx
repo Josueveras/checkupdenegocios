@@ -1,12 +1,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import { CompanyDataStep } from '@/components/diagnostic-steps/CompanyDataStep';
 import { DiagnosticQuestionsStep } from '@/components/diagnostic-steps/DiagnosticQuestionsStep';
 import { ResultsStep } from '@/components/diagnostic-steps/ResultsStep';
-import { FinalizeStep } from '@/components/diagnostic-steps/FinalizeStep';
 import { useDiagnosticData } from '@/hooks/useDiagnosticData';
 import { useDiagnosticNavigation } from '@/hooks/useDiagnosticNavigation';
 import { useDiagnosticOperationsHandler } from '@/hooks/useDiagnosticOperationsHandler';
@@ -83,6 +82,21 @@ const NovoDiagnostico = () => {
     );
   }
 
+  const handleConcludeDiagnostic = async () => {
+    // Preencher dados mínimos obrigatórios se não existirem
+    if (!diagnosticData.planos) {
+      setDiagnosticData(prev => ({
+        ...prev,
+        planos: 'Planos personalizados baseados no diagnóstico realizado.',
+        valores: '0',
+        observacoes: 'Diagnóstico concluído automaticamente.'
+      }));
+    }
+    
+    // Executar o salvamento
+    await handleSaveDiagnostic();
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header com Progress */}
@@ -92,10 +106,10 @@ const NovoDiagnostico = () => {
         </h1>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>Etapa {currentStep} de 4</span>
-            <span>{Math.round((currentStep / 4) * 100)}% Concluído</span>
+            <span>Etapa {currentStep} de 3</span>
+            <span>{Math.round((currentStep / 3) * 100)}% Concluído</span>
           </div>
-          <Progress value={(currentStep / 4) * 100} className="h-2" />
+          <Progress value={(currentStep / 3) * 100} className="h-2" />
         </div>
         <div className="flex gap-4 text-sm">
           <span className={currentStep === 1 ? "text-petrol font-medium" : "text-gray-500"}>
@@ -106,9 +120,6 @@ const NovoDiagnostico = () => {
           </span>
           <span className={currentStep === 3 ? "text-petrol font-medium" : "text-gray-500"}>
             3. Resultado
-          </span>
-          <span className={currentStep === 4 ? "text-petrol font-medium" : "text-gray-500"}>
-            4. Finalizar
           </span>
         </div>
       </div>
@@ -129,21 +140,26 @@ const NovoDiagnostico = () => {
         />
       )}
       {currentStep === 3 && results && (
-        <ResultsStep results={results} />
-      )}
-      {currentStep === 4 && (
-        <FinalizeStep
-          diagnosticData={diagnosticData}
-          setDiagnosticData={setDiagnosticData}
-          onSaveDiagnostic={handleSaveDiagnostic}
-          onDownloadPDF={handleDownloadPDF}
-          onGenerateProposal={handleGenerateProposal}
-          isSaving={isSaving}
-        />
+        <div className="space-y-6">
+          <ResultsStep results={results} />
+          
+          {/* Botão Concluir Diagnóstico */}
+          <div className="flex justify-center pt-6">
+            <Button
+              onClick={handleConcludeDiagnostic}
+              disabled={isSaving}
+              className="bg-petrol hover:bg-petrol/90 text-white px-8 py-3 text-lg"
+              size="lg"
+            >
+              <CheckCircle className="mr-2 h-5 w-5" />
+              {isSaving ? 'Salvando...' : 'Concluir Diagnóstico'}
+            </Button>
+          </div>
+        </div>
       )}
 
-      {/* Navegação */}
-      {currentStep < 4 && (
+      {/* Navegação - Só mostrar se não estiver na etapa 3 */}
+      {currentStep < 3 && (
         <div className="flex justify-between">
           <Button
             variant="outline"
@@ -158,7 +174,7 @@ const NovoDiagnostico = () => {
             className="bg-petrol hover:bg-petrol/90 text-white"
             disabled={currentStep === 2 && questionsLoading}
           >
-            {currentStep === 3 ? "Finalizar" : "Próximo"}
+            Próximo
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>

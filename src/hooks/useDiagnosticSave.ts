@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
 import { detectBot, addSpamProtectionDelay } from '@/utils/botProtection';
@@ -45,15 +44,12 @@ export const useDiagnosticSave = () => {
       // Delay artificial para proteção anti-spam
       await addSpamProtectionDelay();
 
-      // Validar campos obrigatórios
-      if (!diagnosticData.planos || !diagnosticData.valores || !diagnosticData.observacoes) {
-        toast({
-          title: "Campos obrigatórios",
-          description: "Preencha planos, valores e observações antes de salvar.",
-          variant: "destructive"
-        });
-        return;
-      }
+      // Preencher dados padrão se não existirem
+      const finalDiagnosticData = {
+        planos: diagnosticData.planos || 'Planos personalizados baseados no diagnóstico realizado.',
+        valores: diagnosticData.valores || '0',
+        observacoes: diagnosticData.observacoes || 'Diagnóstico concluído automaticamente.'
+      };
 
       if (isEditing) {
         toast({
@@ -92,9 +88,9 @@ export const useDiagnosticSave = () => {
         pontos_fortes: results.strongPoints,
         pontos_atencao: results.attentionPoints,
         recomendacoes: results.recommendations,
-        planos: diagnosticData.planos,
-        valores: parseFloat(diagnosticData.valores),
-        observacoes: diagnosticData.observacoes,
+        planos: finalDiagnosticData.planos,
+        valores: parseFloat(finalDiagnosticData.valores),
+        observacoes: finalDiagnosticData.observacoes,
         status: 'concluido',
         // Nota: IP seria adicionado aqui se a coluna existisse na tabela
         // ip: userIP

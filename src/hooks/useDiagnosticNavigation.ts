@@ -50,7 +50,7 @@ export const useDiagnosticNavigation = ({
       onCalculateResults();
     }
 
-    setCurrentStep(prev => Math.min(prev + 1, 4));
+    setCurrentStep(prev => Math.min(prev + 1, 3)); // Máximo 3 etapas agora
   };
 
   const handleBack = () => {
