@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,7 +76,7 @@ const ResultadoAcompanhamento = () => {
     return (
       <div className="space-y-6 animate-fade-in px-4 pb-10">
         <BackButton fallbackRoute="/acompanhamento" />
-        <h1 className="text-3xl font-bold">Carregando...</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Carregando...</h1>
       </div>
     );
   }
@@ -84,7 +85,7 @@ const ResultadoAcompanhamento = () => {
     return (
       <div className="space-y-6 animate-fade-in px-4 pb-10">
         <BackButton fallbackRoute="/acompanhamento" />
-        <h1 className="text-3xl font-bold text-red-600">Erro ao carregar</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-red-600">Erro ao carregar</h1>
       </div>
     );
   }
