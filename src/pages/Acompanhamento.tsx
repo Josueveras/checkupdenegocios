@@ -22,13 +22,7 @@ const Acompanhamento = () => {
   } = useEmpresasConsolidadas();
 
   const handleNovoCheckup = () => {
-    // Se há uma empresa específica selecionada no filtro, adicionar como parâmetro
-    if (filters.empresaId && filters.empresaId !== 'all') {
-      navigate(`/checkup/novo?empresa_id=${filters.empresaId}`);
-    } else {
-      // Navegar sem parâmetros se nenhuma empresa específica está selecionada
-      navigate('/checkup/novo');
-    }
+    navigate('/checkup/novo'); // Sem parâmetros
   };
 
   const handleEdit = (id: string) => {
