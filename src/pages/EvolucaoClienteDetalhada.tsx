@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,19 +21,28 @@ import {
   Calendar,
   Users,
   Target,
-  Award
+  Award,
+  Edit,
+  Trash2
 } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart as RechartsLineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
+import EditClientModal from '@/components/acompanhamento/EditClientModal';
+import DeleteConfirmModal from '@/components/acompanhamento/DeleteConfirmModal';
+import { generateClientEvolutionPDF } from '@/utils/pdf/clientEvolutionPDF';
+import { toast } from '@/hooks/use-toast';
 
 const EvolucaoClienteDetalhada = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
   // Buscar dados da empresa
   const { data: empresa, isLoading: loadingEmpresa } = useQuery({
@@ -70,6 +78,43 @@ const EvolucaoClienteDetalhada = () => {
       return data || [];
     },
     enabled: !!id
+  });
+
+  // Mutation para deletar empresa e acompanhamentos
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      if (!id) throw new Error('ID da empresa não encontrado');
+      
+      // Primeiro deletar todos os acompanhamentos
+      const { error: acompError } = await supabase
+        .from('acompanhamentos')
+        .delete()
+        .eq('empresa_id', id);
+      
+      if (acompError) throw acompError;
+      
+      // Depois deletar a empresa
+      const { error: empresaError } = await supabase
+        .from('empresas')
+        .delete()
+        .eq('id', id);
+      
+      if (empresaError) throw empresaError;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sucesso",
+        description: "Cliente e todos os check-ups foram excluídos com sucesso!"
+      });
+      navigate('/acompanhamento');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao excluir cliente",
+        variant: "destructive"
+      });
+    }
   });
 
   const formatCurrency = (value: number) => {
@@ -173,6 +218,48 @@ const EvolucaoClienteDetalhada = () => {
     }
   };
 
+  const handleEdit = () => {
+    setEditModalOpen(true);
+  };
+
+  const handleGeneratePDF = () => {
+    if (!empresa || !acompanhamentos) {
+      toast({
+        title: "Erro",
+        description: "Dados não carregados completamente",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const ultimoAcompanhamento = acompanhamentos[acompanhamentos.length - 1];
+    
+    const pdfData = {
+      empresa,
+      acompanhamentos,
+      indicadores,
+      ultimoAcompanhamento
+    };
+
+    const doc = generateClientEvolutionPDF(pdfData);
+    const fileName = `Relatório-${empresa.nome.replace(/[^a-zA-Z0-9]/g, '')}-${format(new Date(), 'MM-yyyy')}.pdf`;
+    doc.save(fileName);
+
+    toast({
+      title: "PDF Gerado",
+      description: "Relatório baixado com sucesso!"
+    });
+  };
+
+  const handleDelete = () => {
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    deleteMutation.mutate();
+    setDeleteModalOpen(false);
+  };
+
   if (loadingEmpresa || loadingAcompanhamentos) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -240,9 +327,17 @@ const EvolucaoClienteDetalhada = () => {
               <Plus className="mr-2 h-4 w-4" />
               Novo Check-up
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleGeneratePDF}>
               <FileText className="mr-2 h-4 w-4" />
-              Gerar Relatório
+              Gerar PDF
+            </Button>
+            <Button variant="outline" onClick={handleEdit}>
+              <Edit className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+            <Button variant="outline" onClick={handleDelete}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              Excluir
             </Button>
             <Button variant="outline" onClick={() => navigate('/acompanhamento')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
@@ -475,13 +570,30 @@ const EvolucaoClienteDetalhada = () => {
         </Card>
       )}
 
+      {/* Modais */}
+      {ultimoAcompanhamento && (
+        <EditClientModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          acompanhamento={ultimoAcompanhamento}
+        />
+      )}
+
+      <DeleteConfirmModal
+        open={deleteModalOpen}
+        onOpenChange={setDeleteModalOpen}
+        onConfirm={confirmDelete}
+        isLoading={deleteMutation.isPending}
+        empresaNome={empresa?.nome || ''}
+      />
+
       {/* Botões Finais */}
       <div className="flex flex-wrap gap-3 justify-center">
-        <Button className="bg-petrol hover:bg-petrol/90 text-white">
+        <Button onClick={handleGeneratePDF} className="bg-petrol hover:bg-petrol/90 text-white">
           <Download className="mr-2 h-4 w-4" />
           Baixar PDF
         </Button>
-        <Button variant="outline">
+        <Button variant="outline" onClick={handleEdit}>
           <FileText className="mr-2 h-4 w-4" />
           Editar
         </Button>
