@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -17,6 +16,7 @@ import DiagnosticoView from "./pages/DiagnosticoView";
 import Acompanhamento from "./pages/Acompanhamento";
 import ResultadoAcompanhamento from "./pages/ResultadoAcompanhamento";
 import EvolucaoCliente from "./pages/EvolucaoCliente";
+import EvolucaoClienteDetalhada from "./pages/EvolucaoClienteDetalhada";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
@@ -82,7 +82,7 @@ const App = () => (
             <AppLayout><EvolucaoCliente /></AppLayout>
           } />
           <Route path="/clientes/:id" element={
-            <AppLayout><EvolucaoCliente /></AppLayout>
+            <AppLayout><EvolucaoClienteDetalhada /></AppLayout>
           } />
           <Route path="/empresas" element={
             <AppLayout><Empresas /></AppLayout>
