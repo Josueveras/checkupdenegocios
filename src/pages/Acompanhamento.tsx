@@ -3,25 +3,24 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar, TrendingUp } from 'lucide-react';
-import { useAcompanhamentosWithFilters } from '@/hooks/useAcompanhamentosWithFilters';
-import AcompanhamentoCard from '@/components/acompanhamento/AcompanhamentoCard';
+import { Plus, Calendar, Building2 } from 'lucide-react';
+import { useEmpresasConsolidadas } from '@/hooks/useEmpresasConsolidadas';
 import AcompanhamentoFilters from '@/components/acompanhamento/AcompanhamentoFilters';
+import EmpresaConsolidadaCard from '@/components/acompanhamento/EmpresaConsolidadaCard';
 import { toast } from '@/hooks/use-toast';
 
 const Acompanhamento = () => {
   const navigate = useNavigate();
   const {
-    acompanhamentos,
-    allAcompanhamentos,
+    empresas,
+    allEmpresas,
     empresasComAcompanhamentos,
     isLoading,
-    error,
     filters,
     setFilters,
     applyFilters,
     clearFilters
-  } = useAcompanhamentosWithFilters();
+  } = useEmpresasConsolidadas();
 
   const handleNovoCheckup = () => {
     toast({
@@ -33,14 +32,14 @@ const Acompanhamento = () => {
   const handleEdit = (id: string) => {
     toast({
       title: "Em desenvolvimento",
-      description: "Edição de acompanhamento será implementada em breve.",
+      description: "Edição de empresa será implementada em breve.",
     });
   };
 
   const handleDelete = (id: string) => {
     toast({
       title: "Em desenvolvimento",
-      description: "Exclusão de acompanhamento será implementada em breve.",
+      description: "Exclusão de empresa será implementada em breve.",
     });
   };
 
@@ -51,33 +50,13 @@ const Acompanhamento = () => {
     });
   };
 
-  // Log any errors for debugging
-  if (error) {
-    console.error('Erro na página de acompanhamento:', error);
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-petrol mx-auto mb-4"></div>
-          <p>Carregando acompanhamentos...</p>
+          <p>Carregando empresas...</p>
         </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro ao carregar dados</h2>
-        <p className="text-gray-600">{error.message}</p>
-        <Button 
-          onClick={() => window.location.reload()} 
-          className="mt-4 bg-petrol hover:bg-petrol/90 text-white"
-        >
-          Tentar Novamente
-        </Button>
       </div>
     );
   }
@@ -88,7 +67,7 @@ const Acompanhamento = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Acompanhamentos</h1>
-          <p className="text-gray-600 mt-1">Histórico dos check-ups mensais e evolução dos clientes</p>
+          <p className="text-gray-600 mt-1">Evolução consolidada dos clientes com check-ups mensais</p>
         </div>
         <Button onClick={handleNovoCheckup} className="bg-petrol hover:bg-petrol/90 text-white">
           <Plus className="mr-2 h-4 w-4" />
@@ -108,31 +87,49 @@ const Acompanhamento = () => {
       {/* Contador de resultados */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Mostrando {acompanhamentos?.length || 0} de {allAcompanhamentos?.length || 0} acompanhamentos
+          Mostrando {empresas?.length || 0} de {allEmpresas?.length || 0} empresas com check-ups
         </p>
       </div>
 
-      {/* Lista de acompanhamentos */}
+      {/* Lista de empresas */}
       <div className="space-y-6">
-        {acompanhamentos && acompanhamentos.length > 0 ? (
-          acompanhamentos.map((acompanhamento) => (
-            <AcompanhamentoCard
-              key={acompanhamento.id}
-              acompanhamento={acompanhamento}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onGeneratePDF={handleGeneratePDF}
-            />
-          ))
+        {empresas && empresas.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {empresas.map((empresa) => (
+              <EmpresaConsolidadaCard
+                key={empresa.id}
+                empresa={empresa}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onGeneratePDF={handleGeneratePDF}
+              />
+            ))}
+          </div>
+        ) : allEmpresas && allEmpresas.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-12">
+              <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Nenhuma empresa com check-ups registrados
+              </h3>
+              <p className="text-gray-600 mb-6">
+                ⚠️ Nenhuma empresa com check-ups registrados no momento.
+              </p>
+              <Button onClick={handleNovoCheckup} className="bg-petrol hover:bg-petrol/90 text-white">
+                <Plus className="mr-2 h-4 w-4" />
+                Novo Check-up
+              </Button>
+            </CardContent>
+          </Card>
         ) : (
           <Card>
             <CardContent className="text-center py-12">
               <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Nenhum acompanhamento encontrado
+                Nenhuma empresa encontrada
               </h3>
               <p className="text-gray-600 mb-6">
-                Nenhum acompanhamento encontrado para os filtros selecionados.
+                Nenhuma empresa encontrada para os filtros selecionados.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
                 <Button variant="outline" onClick={clearFilters}>

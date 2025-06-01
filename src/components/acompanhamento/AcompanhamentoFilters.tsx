@@ -42,10 +42,10 @@ const AcompanhamentoFilters = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-petrol" />
-          Filtros
+          Filtros de Empresas
         </CardTitle>
         <CardDescription>
-          Filtre os acompanhamentos por empresa, período ou métricas
+          Filtre as empresas por nome, período do último check-up ou métricas consolidadas
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -68,7 +68,7 @@ const AcompanhamentoFilters = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="mes">Mês de Referência</Label>
+            <Label htmlFor="mes">Último Check-up</Label>
             <Input
               id="mes"
               type="month"
@@ -78,7 +78,7 @@ const AcompanhamentoFilters = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="scoreMin">Score Mínimo</Label>
+            <Label htmlFor="scoreMin">Score Médio Mín.</Label>
             <Input
               id="scoreMin"
               type="number"
@@ -89,7 +89,7 @@ const AcompanhamentoFilters = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="scoreMax">Score Máximo</Label>
+            <Label htmlFor="scoreMax">Score Médio Máx.</Label>
             <Input
               id="scoreMax"
               type="number"
@@ -100,7 +100,7 @@ const AcompanhamentoFilters = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="roiMin">ROI Mínimo</Label>
+            <Label htmlFor="roiMin">ROI Médio Mín.</Label>
             <Input
               id="roiMin"
               type="number"
@@ -112,7 +112,7 @@ const AcompanhamentoFilters = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="roiMax">ROI Máximo</Label>
+            <Label htmlFor="roiMax">ROI Médio Máx.</Label>
             <Input
               id="roiMax"
               type="number"
@@ -124,7 +124,7 @@ const AcompanhamentoFilters = ({
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="status">Status do Projeto</Label>
+            <Label htmlFor="status">Status da Empresa</Label>
             <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
               <SelectTrigger className="bg-background border shadow-sm z-50">
                 <SelectValue />
@@ -132,7 +132,7 @@ const AcompanhamentoFilters = ({
               <SelectContent className="bg-background border shadow-md z-50">
                 <SelectItem value="todos">Todos</SelectItem>
                 <SelectItem value="ativo">Ativo</SelectItem>
-                <SelectItem value="case">Case</SelectItem>
+                <SelectItem value="inativo">Inativo</SelectItem>
               </SelectContent>
             </Select>
           </div>
