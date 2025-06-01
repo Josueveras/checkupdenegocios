@@ -34,7 +34,7 @@ export const useAcompanhamentosByEmpresa = (empresaId: string) => {
         .from('acompanhamentos')
         .select(`
           *,
-          empresas(nome)
+          empresas(nome, cliente_nome)
         `)
         .eq('empresa_id', empresaId)
         .order('mes', { ascending: false });
@@ -55,7 +55,7 @@ export const useAllAcompanhamentos = () => {
         .from('acompanhamentos')
         .select(`
           *,
-          empresas(nome)
+          empresas(nome, cliente_nome)
         `)
         .order('mes', { ascending: false });
       
