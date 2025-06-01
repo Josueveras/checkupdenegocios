@@ -57,7 +57,7 @@ const AcompanhamentoFilters = ({
                 <SelectValue placeholder="Selecione uma empresa..." />
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-md z-50">
-                <SelectItem value="">Todas as empresas</SelectItem>
+                <SelectItem value="all">Todas as empresas</SelectItem>
                 {empresasComAcompanhamentos && empresasComAcompanhamentos.map((empresa) => (
                   <SelectItem key={empresa.id} value={empresa.id}>
                     {empresa.nome} {empresa.cliente_nome && `(${empresa.cliente_nome})`}

@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from 'react';
 import { useAllAcompanhamentos } from '@/hooks/useAcompanhamentos';
 import { useQuery } from '@tanstack/react-query';
@@ -43,7 +42,7 @@ export const useAcompanhamentosWithFilters = () => {
   const { data: empresasComAcompanhamentos = [] } = useEmpresasComAcompanhamentos();
   
   const [filters, setFilters] = useState<AcompanhamentoFilters>({
-    empresaId: '',
+    empresaId: 'all',
     mes: '',
     scoreMinimo: '',
     scoreMaximo: '',
@@ -53,7 +52,7 @@ export const useAcompanhamentosWithFilters = () => {
   });
 
   const [appliedFilters, setAppliedFilters] = useState<AcompanhamentoFilters>({
-    empresaId: '',
+    empresaId: 'all',
     mes: '',
     scoreMinimo: '',
     scoreMaximo: '',
@@ -70,7 +69,7 @@ export const useAcompanhamentosWithFilters = () => {
     return acompanhamentos.filter(acomp => {
       try {
         // Filtro por empresa
-        if (appliedFilters.empresaId && acomp.empresa_id !== appliedFilters.empresaId) {
+        if (appliedFilters.empresaId && appliedFilters.empresaId !== 'all' && acomp.empresa_id !== appliedFilters.empresaId) {
           return false;
         }
 
@@ -120,7 +119,7 @@ export const useAcompanhamentosWithFilters = () => {
 
   const clearFilters = () => {
     const emptyFilters = {
-      empresaId: '',
+      empresaId: 'all',
       mes: '',
       scoreMinimo: '',
       scoreMaximo: '',
