@@ -6,6 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BackButton } from '@/components/ui/back-button';
 import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { 
   ArrowLeft, 
   Building2, 
   CheckCircle, 
@@ -15,14 +23,18 @@ import {
   LineChart, 
   Calendar,
   Target,
-  Award
+  Award,
+  FileText,
+  BarChart,
+  TrendingUp,
+  Settings
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart as RechartsLineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { LineChart as RechartsLineChart, Line, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 const EmpresaDetalhada = () => {
   const { id } = useParams<{ id: string }>();
@@ -74,13 +86,65 @@ const EmpresaDetalhada = () => {
   const formatDate = (date: string | Date) => {
     try {
       const dateObj = typeof date === 'string' ? new Date(date) : date;
-      return format(dateObj, 'MMMM/yyyy', { locale: ptBR });
+      return format(dateObj, 'MMM/yyyy', { locale: ptBR });
     } catch {
       return 'Data inválida';
     }
   };
 
-  const getAcoesConcluidasCount = (acoes: any) => {
+  const formatDateFull = (date: string | Date) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return format(dateObj, 'dd/MM/yyyy', { locale: ptBR });
+    } catch {
+      return 'Data inválida';
+    }
+  };
+
+  // Funções de cálculo para os cards
+  const calcularVariacao = (checkups: any[], campo: string) => {
+    if (!checkups || checkups.length < 2) return 0;
+    const primeiro = checkups[0][campo] || 0;
+    const ultimo = checkups[checkups.length - 1][campo] || 0;
+    if (primeiro === 0) return 0;
+    return Math.round(((ultimo - primeiro) / primeiro) * 100);
+  };
+
+  const calcularMedia = (checkups: any[], campo: string) => {
+    if (!checkups || checkups.length === 0) return 0;
+    const valores = checkups.filter(c => c[campo]).map(c => Number(c[campo]));
+    if (valores.length === 0) return 0;
+    return Number((valores.reduce((sum, val) => sum + val, 0) / valores.length).toFixed(2));
+  };
+
+  const calcularSomaAcoes = (checkups: any[]) => {
+    if (!checkups) return 0;
+    
+    return checkups.reduce((total, checkup) => {
+      if (!checkup.acoes) return total;
+      
+      let parsedAcoes = checkup.acoes;
+      if (typeof checkup.acoes === 'string') {
+        try {
+          parsedAcoes = JSON.parse(checkup.acoes);
+        } catch {
+          return total;
+        }
+      }
+      
+      if (!Array.isArray(parsedAcoes)) return total;
+      
+      return total + parsedAcoes.filter(acao => {
+        return acao && 
+               typeof acao === 'object' && 
+               acao !== null && 
+               'status' in acao && 
+               acao.status === 'concluido';
+      }).length;
+    }, 0);
+  };
+
+  const getAcoesCount = (acoes: any) => {
     if (!acoes) return 0;
     
     let parsedAcoes = acoes;
@@ -101,36 +165,6 @@ const EmpresaDetalhada = () => {
              'status' in acao && 
              acao.status === 'concluido';
     }).length;
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'concluido':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'em_andamento':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'pendente':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-600" />;
-    }
-  };
-
-  const getAcoesList = (acoes: any) => {
-    if (!acoes) return [];
-    
-    let parsedAcoes = acoes;
-    if (typeof acoes === 'string') {
-      try {
-        parsedAcoes = JSON.parse(acoes);
-      } catch {
-        return [];
-      }
-    }
-    
-    if (!Array.isArray(parsedAcoes)) return [];
-    
-    return parsedAcoes.filter(acao => acao && typeof acao === 'object' && acao !== null);
   };
 
   // Preparar dados para gráficos
@@ -174,13 +208,74 @@ const EmpresaDetalhada = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <Building2 className="h-8 w-8 text-petrol" />
-            Empresa: {empresaSelecionada.nome}
+            🏢 Empresa: {empresaSelecionada.nome}
           </h1>
           <p className="text-gray-600 mt-1">
-            Acompanhe os dados evolutivos de forma individual. Tudo o que foi registrado ao longo do projeto está aqui.
+            Acompanhe todos os dados de evolução do projeto deste cliente de forma centralizada.
           </p>
         </div>
         <BackButton fallbackRoute="/acompanhamento" />
+      </div>
+
+      {/* Cards de Métricas - 4 colunas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="border-l-4 border-l-petrol">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Check-ups</p>
+                <p className="text-2xl font-bold text-petrol">{checkupsEmpresa?.length || 0}</p>
+                <p className="text-xs text-gray-500">Check-ups realizados</p>
+              </div>
+              <FileText className="h-8 w-8 text-petrol" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-blue-400">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Crescimento do Score</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {calcularVariacao(checkupsEmpresa || [], 'score_geral')}%
+                </p>
+                <p className="text-xs text-gray-500">Desde o primeiro check-up</p>
+              </div>
+              <BarChart className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-yellow-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">ROI Médio</p>
+                <p className="text-2xl font-bold text-yellow-600">
+                  {calcularMedia(checkupsEmpresa || [], 'roi')}x
+                </p>
+                <p className="text-xs text-gray-500">Retorno sobre investimento</p>
+              </div>
+              <TrendingUp className="h-8 w-8 text-yellow-600" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-l-4 border-l-green-500">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Ações Concluídas</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {calcularSomaAcoes(checkupsEmpresa || [])}
+                </p>
+                <p className="text-xs text-gray-500">Ações estratégicas finalizadas</p>
+              </div>
+              <Settings className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Gráficos */}
@@ -208,108 +303,92 @@ const EmpresaDetalhada = () => {
           </CardContent>
         </Card>
 
-        {/* Faturamento por Mês */}
+        {/* Faturamento Mensal */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5 text-petrol" />
-              Faturamento por Mês
+              Faturamento Mensal
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer config={{ faturamento: { label: "Faturamento", color: "#3C9CD6" } }} className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dadosGraficoFaturamento}>
+                <RechartsBarChart data={dadosGraficoFaturamento}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="mes" />
                   <YAxis />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="faturamento" fill="var(--color-faturamento)" />
-                </BarChart>
+                </RechartsBarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </CardContent>
         </Card>
       </div>
 
-      {/* Detalhes dos Check-ups */}
+      {/* Tabela de Histórico de Check-ups */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5 text-petrol" />
-            Detalhes dos Check-ups
+            Histórico de Check-ups
           </CardTitle>
           <CardDescription>
-            Cada entrada registrada mensalmente com dados estratégicos.
+            Todos os check-ups registrados para esta empresa em formato tabular.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {checkupsEmpresa && checkupsEmpresa.length > 0 ? (
-              checkupsEmpresa.map((checkup, index) => (
-                <div key={checkup.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Mês de Referência</span>
-                      <p className="text-lg font-semibold text-petrol">{formatDate(checkup.mes)}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Score Geral</span>
-                      <p className="text-lg font-semibold">{checkup.score_geral}%</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">ROI Estimado</span>
-                      <p className="text-lg font-semibold">{checkup.roi ? `${checkup.roi}x` : 'N/A'}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-600">Faturamento</span>
-                      <p className="text-lg font-semibold">
-                        {checkup.faturamento ? formatCurrency(Number(checkup.faturamento)) : 'N/A'}
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <span className="text-sm font-medium text-gray-600">Destaque do Mês</span>
-                      <p className="text-sm mt-1">{checkup.destaque || 'Nenhum destaque registrado'}</p>
-                    </div>
-                  </div>
-
-                  {/* Ações do Mês */}
-                  <div className="mb-4">
-                    <span className="text-sm font-medium text-gray-600 mb-2 block">Ações do Mês</span>
-                    <div className="space-y-2">
-                      {getAcoesList(checkup.acoes).map((acao, acaoIndex) => (
-                        <div key={acaoIndex} className="flex items-center gap-2 text-sm">
-                          {getStatusIcon(acao.status)}
-                          <span className={acao.status === 'concluido' ? 'text-green-700' : 'text-gray-700'}>
-                            {acao.descricao || 'Ação sem descrição'}
-                          </span>
-                          <Badge variant={acao.status === 'concluido' ? 'default' : 'secondary'}>
-                            {acao.status === 'concluido' ? 'Concluído' : 
-                             acao.status === 'em_andamento' ? 'Em Andamento' : 'Pendente'}
-                          </Badge>
-                        </div>
-                      ))}
-                      {getAcoesList(checkup.acoes).length === 0 && (
-                        <p className="text-sm text-gray-500">Nenhuma ação registrada para este mês</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Observações do Consultor */}
-                  <div>
-                    <span className="text-sm font-medium text-gray-600">Observações do Consultor</span>
-                    <p className="text-sm mt-1 text-gray-700">
-                      {checkup.observacoes || 'Nenhuma observação registrada'}
-                    </p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Nenhum check-up registrado para esta empresa.</p>
-              </div>
-            )}
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Mês</TableHead>
+                <TableHead>Score</TableHead>
+                <TableHead>ROI</TableHead>
+                <TableHead>Faturamento</TableHead>
+                <TableHead>Destaque</TableHead>
+                <TableHead>Ações</TableHead>
+                <TableHead>Observações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {checkupsEmpresa && checkupsEmpresa.length > 0 ? (
+                checkupsEmpresa.map((checkup) => (
+                  <TableRow key={checkup.id}>
+                    <TableCell className="font-medium">
+                      {formatDateFull(checkup.mes)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="default">{checkup.score_geral}%</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {checkup.roi ? `${checkup.roi}x` : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      {checkup.faturamento ? formatCurrency(Number(checkup.faturamento)) : 'N/A'}
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {checkup.destaque || 'Não informado'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">
+                        {getAcoesCount(checkup.acoes)} concluídas
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="max-w-xs truncate">
+                      {checkup.observacoes || 'Nenhuma observação'}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                    Nenhum check-up registrado para esta empresa.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
