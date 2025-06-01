@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,10 +22,13 @@ const Acompanhamento = () => {
   } = useEmpresasConsolidadas();
 
   const handleNovoCheckup = () => {
-    toast({
-      title: "Em desenvolvimento",
-      description: "Modal de novo check-up será implementado em breve.",
-    });
+    // Se há uma empresa específica selecionada no filtro, adicionar como parâmetro
+    if (filters.empresaId && filters.empresaId !== 'all') {
+      navigate(`/checkup/novo?empresa_id=${filters.empresaId}`);
+    } else {
+      // Navegar sem parâmetros se nenhuma empresa específica está selecionada
+      navigate('/checkup/novo');
+    }
   };
 
   const handleEdit = (id: string) => {
