@@ -22,6 +22,7 @@ import EmpresaDetalhada from "./pages/EmpresaDetalhada";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
+import NovoCheckup from "./pages/NovoCheckup";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
@@ -94,6 +95,9 @@ const App = () => (
           } />
           <Route path="/editar-proposta" element={
             <AppLayout><EditarProposta /></AppLayout>
+          } />
+          <Route path="/checkup/novo" element={
+            <AppLayout><NovoCheckup /></AppLayout>
           } />
           <Route path="/planos" element={
             <AppLayout><Planos /></AppLayout>
