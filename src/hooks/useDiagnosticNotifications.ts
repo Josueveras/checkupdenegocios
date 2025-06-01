@@ -20,7 +20,7 @@ export const useDiagnosticNotifications = () => {
       descricao: `Proposta para ${empresaNome} está pronta`,
       tipo: 'proposta', 
       lida: false,
-      link_pdf: pdfUrl
+      link_pdf: pdfUrl || `/propostas`
     });
   };
 

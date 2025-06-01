@@ -9,13 +9,14 @@ import { ProposalCard } from '@/components/ProposalCard';
 import { ProposalViewModal } from '@/components/ProposalViewModal';
 import { ProposalFilters } from '@/components/ProposalFilters';
 import { ProposalStats } from '@/components/ProposalStats';
+import { useNavigate } from 'react-router-dom';
 
 const Propostas = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [selectedProposta, setSelectedProposta] = useState<any>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const { data: propostas = [], isLoading } = usePropostas();
 
@@ -34,12 +35,22 @@ const Propostas = () => {
   };
 
   const handleEditProposta = (proposta: any) => {
-    setSelectedProposta(proposta);
-    setIsEditDialogOpen(true);
+    navigate(`/editar-proposta?id=${proposta.id}`);
+  };
+
+  const handleCreateNewProposal = () => {
+    navigate('/novo-diagnostico');
   };
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-64">Carregando propostas...</div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-petrol mx-auto mb-4"></div>
+          <p>Carregando propostas...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -50,7 +61,10 @@ const Propostas = () => {
           <h1 className="text-3xl font-bold text-gray-900">Propostas Comerciais</h1>
           <p className="text-gray-600 mt-1">Gerencie suas propostas baseadas nos diagnósticos</p>
         </div>
-        <Button className="bg-petrol hover:bg-petrol/90 text-white">
+        <Button 
+          onClick={handleCreateNewProposal}
+          className="bg-petrol hover:bg-petrol/90 text-white"
+        >
           <FileText className="mr-2 h-4 w-4" />
           Nova Proposta
         </Button>
@@ -67,7 +81,7 @@ const Propostas = () => {
         setStatusFilter={setStatusFilter}
       />
 
-      {/* Propostas List */}
+      {/* Proposals List */}
       <div className="grid gap-6">
         {filteredPropostas.map((proposta) => (
           <ProposalCard
@@ -85,45 +99,37 @@ const Propostas = () => {
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma proposta encontrada</h3>
             <p className="text-gray-600 mb-6">
-              Não há propostas que correspondam aos filtros selecionados.
+              {propostas.length === 0 
+                ? "Você ainda não tem propostas criadas. Crie um diagnóstico para gerar sua primeira proposta."
+                : "Não há propostas que correspondam aos filtros selecionados."
+              }
             </p>
-            <Button variant="outline" onClick={() => {
-              setSearchTerm('');
-              setStatusFilter('todos');
-            }}>
-              Limpar Filtros
-            </Button>
+            <div className="flex justify-center gap-4">
+              {propostas.length === 0 ? (
+                <Button onClick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Criar Primeira Proposta
+                </Button>
+              ) : (
+                <Button variant="outline" onClick={() => {
+                  setSearchTerm('');
+                  setStatusFilter('todos');
+                }}>
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Modal para Visualizar Proposta */}
+      {/* View Proposal Modal */}
       <ProposalViewModal
         isOpen={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
         proposta={selectedProposta}
         onEdit={handleEditProposta}
       />
-
-      {/* Dialog para Editar Proposta */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Proposta</DialogTitle>
-            <DialogDescription>
-              Funcionalidade de edição em desenvolvimento
-            </DialogDescription>
-          </DialogHeader>
-          <div className="text-center py-8">
-            <p className="text-gray-600">A funcionalidade de edição de propostas será implementada em breve.</p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Fechar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

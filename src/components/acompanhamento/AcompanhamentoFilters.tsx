@@ -37,6 +37,14 @@ const AcompanhamentoFilters = ({
     setFilters((prev: any) => ({ ...prev, [key]: value }));
   };
 
+  const handleClearFilters = () => {
+    clearFilters();
+  };
+
+  const handleApplyFilters = () => {
+    applyFilters();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -58,7 +66,7 @@ const AcompanhamentoFilters = ({
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-md z-50">
                 <SelectItem value="all">Todas as empresas</SelectItem>
-                {empresasComAcompanhamentos && empresasComAcompanhamentos.map((empresa) => (
+                {empresasComAcompanhamentos?.map((empresa) => (
                   <SelectItem key={empresa.id} value={empresa.id}>
                     {empresa.nome} {empresa.cliente_nome && `(${empresa.cliente_nome})`}
                   </SelectItem>
@@ -82,6 +90,8 @@ const AcompanhamentoFilters = ({
             <Input
               id="scoreMin"
               type="number"
+              min="0"
+              max="100"
               placeholder="Ex: 70"
               value={filters.scoreMinimo}
               onChange={(e) => updateFilter('scoreMinimo', e.target.value)}
@@ -93,6 +103,8 @@ const AcompanhamentoFilters = ({
             <Input
               id="scoreMax"
               type="number"
+              min="0"
+              max="100"
               placeholder="Ex: 100"
               value={filters.scoreMaximo}
               onChange={(e) => updateFilter('scoreMaximo', e.target.value)}
@@ -105,6 +117,7 @@ const AcompanhamentoFilters = ({
               id="roiMin"
               type="number"
               step="0.1"
+              min="0"
               placeholder="Ex: 1.5"
               value={filters.roiMinimo}
               onChange={(e) => updateFilter('roiMinimo', e.target.value)}
@@ -117,6 +130,7 @@ const AcompanhamentoFilters = ({
               id="roiMax"
               type="number"
               step="0.1"
+              min="0"
               placeholder="Ex: 5.0"
               value={filters.roiMaximo}
               onChange={(e) => updateFilter('roiMaximo', e.target.value)}
@@ -139,11 +153,11 @@ const AcompanhamentoFilters = ({
         </div>
         
         <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleClearFilters} className="flex items-center gap-2">
             <X className="h-4 w-4" />
             Limpar Filtros
           </Button>
-          <Button onClick={applyFilters} className="bg-petrol hover:bg-petrol/90 text-white flex items-center gap-2">
+          <Button onClick={handleApplyFilters} className="bg-petrol hover:bg-petrol/90 text-white flex items-center gap-2">
             <Search className="h-4 w-4" />
             Filtrar
           </Button>

@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,9 +15,6 @@ import {
 import { 
   ArrowLeft, 
   Building2, 
-  CheckCircle, 
-  Clock, 
-  AlertCircle, 
   BarChart3, 
   LineChart, 
   Calendar,
@@ -31,16 +27,28 @@ import {
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart as RechartsLineChart, Line, BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+
+// Import utility functions
+import { formatCurrency, formatDate, formatDateShort, formatPercentage, formatROI } from '@/utils/formatters';
+import { 
+  calculateScoreVariation, 
+  calculateROIVariation, 
+  calculateAverageScore, 
+  calculateAverageROI, 
+  calculateAverageRevenue,
+  getTotalCompletedActions,
+  getCompletedActionsCount,
+  getDaysSinceLastCheckup,
+  getCheckupsWithoutActions,
+  getAverageActionsPerMonth
+} from '@/utils/calculations';
 
 const EmpresaDetalhada = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Buscar dados da empresa
   const { data: empresaSelecionada, isLoading: loadingEmpresa } = useQuery({
     queryKey: ['empresa', id],
     queryFn: async () => {
@@ -58,7 +66,6 @@ const EmpresaDetalhada = () => {
     enabled: !!id
   });
 
-  // Buscar check-ups da empresa
   const { data: checkupsEmpresa, isLoading: loadingCheckups } = useQuery({
     queryKey: ['checkups-empresa', id],
     queryFn: async () => {
@@ -76,186 +83,30 @@ const EmpresaDetalhada = () => {
     enabled: !!id
   });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
-
-  const formatDate = (date: string | Date) => {
-    try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
-      return format(dateObj, 'MMM/yyyy', { locale: ptBR });
-    } catch {
-      return 'Data inválida';
-    }
-  };
-
-  const formatDateFull = (date: string | Date) => {
-    try {
-      const dateObj = typeof date === 'string' ? new Date(date) : date;
-      return format(dateObj, 'dd/MM/yyyy', { locale: ptBR });
-    } catch {
-      return 'Data inválida';
-    }
-  };
-
-  // Calcular métricas derivadas
+  // Calculate derived metrics
   const metricasDerivadas = {
-    scoreMedio: checkupsEmpresa && checkupsEmpresa.length > 0 
-      ? Math.round(checkupsEmpresa.reduce((sum, c) => sum + (c.score_geral || 0), 0) / checkupsEmpresa.length)
-      : 0,
-    
-    roiMedio: checkupsEmpresa && checkupsEmpresa.length > 0
-      ? Number((checkupsEmpresa
-          .filter(c => c.roi)
-          .reduce((sum, c) => sum + (c.roi || 0), 0) / 
-        checkupsEmpresa.filter(c => c.roi).length || 0).toFixed(2))
-      : 0,
-    
-    faturamentoMedio: checkupsEmpresa && checkupsEmpresa.length > 0
-      ? checkupsEmpresa
-          .filter(c => c.faturamento)
-          .reduce((sum, c) => sum + (Number(c.faturamento) || 0), 0) / 
-        checkupsEmpresa.filter(c => c.faturamento).length || 0
-      : 0,
-    
-    variacaoScore: checkupsEmpresa && checkupsEmpresa.length >= 2
-      ? (() => {
-          const primeiro = checkupsEmpresa[0].score_geral || 0;
-          const ultimo = checkupsEmpresa[checkupsEmpresa.length - 1].score_geral || 0;
-          return primeiro === 0 ? 0 : Math.round(((ultimo - primeiro) / primeiro) * 100);
-        })()
-      : 0,
-    
-    variacaoROI: checkupsEmpresa && checkupsEmpresa.length >= 2
-      ? (() => {
-          const checkupsComROI = checkupsEmpresa.filter(c => c.roi);
-          if (checkupsComROI.length < 2) return 0;
-          const primeiro = checkupsComROI[0].roi || 0;
-          const ultimo = checkupsComROI[checkupsComROI.length - 1].roi || 0;
-          return primeiro === 0 ? 0 : Math.round(((ultimo - primeiro) / primeiro) * 100);
-        })()
-      : 0,
-    
-    acoesConcluidasTotal: checkupsEmpresa ? checkupsEmpresa.reduce((total, checkup) => {
-      if (!checkup.acoes) return total;
-      
-      let parsedAcoes = checkup.acoes;
-      if (typeof checkup.acoes === 'string') {
-        try {
-          parsedAcoes = JSON.parse(checkup.acoes);
-        } catch {
-          return total;
-        }
-      }
-      
-      if (!Array.isArray(parsedAcoes)) return total;
-      
-      return total + parsedAcoes.filter(acao => {
-        return acao && 
-               typeof acao === 'object' && 
-               acao !== null && 
-               'status' in acao && 
-               acao.status === 'concluido';
-      }).length;
-    }, 0) : 0,
-    
-    tempoInativo: checkupsEmpresa && checkupsEmpresa.length > 0
-      ? (() => {
-          const ultimoCheckup = checkupsEmpresa[checkupsEmpresa.length - 1];
-          const ultimaData = new Date(ultimoCheckup.mes);
-          const agora = new Date();
-          const diffTime = Math.abs(agora.getTime() - ultimaData.getTime());
-          return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        })()
-      : 0,
-    
-    checkupsSemAcao: checkupsEmpresa ? checkupsEmpresa.filter(checkup => {
-      if (!checkup.acoes) return true;
-      
-      let parsedAcoes = checkup.acoes;
-      if (typeof checkup.acoes === 'string') {
-        try {
-          parsedAcoes = JSON.parse(checkup.acoes);
-        } catch {
-          return true;
-        }
-      }
-      
-      if (!Array.isArray(parsedAcoes) || parsedAcoes.length === 0) return true;
-      
-      return parsedAcoes.filter(acao => {
-        return acao && 
-               typeof acao === 'object' && 
-               acao !== null && 
-               'status' in acao && 
-               acao.status === 'concluido';
-      }).length === 0;
-    }).length : 0,
-    
-    mediaAcoesPorMes: checkupsEmpresa && checkupsEmpresa.length > 0
-      ? Number((checkupsEmpresa.reduce((total, checkup) => {
-          if (!checkup.acoes) return total;
-          
-          let parsedAcoes = checkup.acoes;
-          if (typeof checkup.acoes === 'string') {
-            try {
-              parsedAcoes = JSON.parse(checkup.acoes);
-            } catch {
-              return total;
-            }
-          }
-          
-          if (!Array.isArray(parsedAcoes)) return total;
-          
-          return total + parsedAcoes.filter(acao => {
-            return acao && 
-                   typeof acao === 'object' && 
-                   acao !== null && 
-                   'status' in acao && 
-                   acao.status === 'concluido';
-          }).length;
-        }, 0) / checkupsEmpresa.length).toFixed(1))
-      : 0
+    scoreMedio: calculateAverageScore(checkupsEmpresa || []),
+    roiMedio: calculateAverageROI(checkupsEmpresa || []),
+    faturamentoMedio: calculateAverageRevenue(checkupsEmpresa || []),
+    variacaoScore: calculateScoreVariation(checkupsEmpresa || []),
+    variacaoROI: calculateROIVariation(checkupsEmpresa || []),
+    acoesConcluidasTotal: getTotalCompletedActions(checkupsEmpresa || []),
+    tempoInativo: getDaysSinceLastCheckup(checkupsEmpresa || []),
+    checkupsSemAcao: getCheckupsWithoutActions(checkupsEmpresa || []),
+    mediaAcoesPorMes: getAverageActionsPerMonth(checkupsEmpresa || [])
   };
 
-  const getAcoesCount = (acoes: any) => {
-    if (!acoes) return 0;
-    
-    let parsedAcoes = acoes;
-    if (typeof acoes === 'string') {
-      try {
-        parsedAcoes = JSON.parse(acoes);
-      } catch {
-        return 0;
-      }
-    }
-    
-    if (!Array.isArray(parsedAcoes)) return 0;
-    
-    return parsedAcoes.filter(acao => {
-      return acao && 
-             typeof acao === 'object' && 
-             acao !== null && 
-             'status' in acao && 
-             acao.status === 'concluido';
-    }).length;
-  };
-
-  // Preparar dados para gráficos
+  // Prepare chart data
   const dadosGraficoScore = checkupsEmpresa?.map(checkup => ({
-    mes: formatDate(checkup.mes),
+    mes: formatDateShort(checkup.mes),
     score: checkup.score_geral
   })) || [];
 
   const dadosGraficoFaturamento = checkupsEmpresa?.map(checkup => ({
-    mes: formatDate(checkup.mes),
+    mes: formatDateShort(checkup.mes),
     faturamento: checkup.faturamento || 0
   })) || [];
 
-  // Dados para resumo estratégico (último check-up)
   const ultimoCheckup = checkupsEmpresa?.[checkupsEmpresa.length - 1];
 
   if (loadingEmpresa || loadingCheckups) {
@@ -280,7 +131,7 @@ const EmpresaDetalhada = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Cabeçalho */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
@@ -294,7 +145,7 @@ const EmpresaDetalhada = () => {
         <BackButton fallbackRoute="/acompanhamento" />
       </div>
 
-      {/* Cards de Métricas - 4 colunas */}
+      {/* Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="border-l-4 border-l-petrol">
           <CardContent className="p-6">
@@ -315,7 +166,7 @@ const EmpresaDetalhada = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Crescimento do Score</p>
                 <p className="text-2xl font-bold text-blue-600">
-                  {metricasDerivadas.variacaoScore}%
+                  {formatPercentage(metricasDerivadas.variacaoScore)}
                 </p>
                 <p className="text-xs text-gray-500">Desde o primeiro check-up</p>
               </div>
@@ -330,7 +181,7 @@ const EmpresaDetalhada = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">ROI Médio</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {metricasDerivadas.roiMedio}x
+                  {formatROI(metricasDerivadas.roiMedio)}
                 </p>
                 <p className="text-xs text-gray-500">Retorno sobre investimento</p>
               </div>
@@ -355,9 +206,8 @@ const EmpresaDetalhada = () => {
         </Card>
       </div>
 
-      {/* Gráficos */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Evolução do Score Geral */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -380,7 +230,6 @@ const EmpresaDetalhada = () => {
           </CardContent>
         </Card>
 
-        {/* Faturamento Mensal */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -404,7 +253,7 @@ const EmpresaDetalhada = () => {
         </Card>
       </div>
 
-      {/* Tabela de Histórico de Check-ups */}
+      {/* Check-ups History Table */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -433,13 +282,13 @@ const EmpresaDetalhada = () => {
                 checkupsEmpresa.map((checkup) => (
                   <TableRow key={checkup.id}>
                     <TableCell className="font-medium">
-                      {formatDateFull(checkup.mes)}
+                      {formatDate(checkup.mes)}
                     </TableCell>
                     <TableCell>
                       <Badge variant="default">{checkup.score_geral}%</Badge>
                     </TableCell>
                     <TableCell>
-                      {checkup.roi ? `${checkup.roi}x` : 'N/A'}
+                      {checkup.roi ? formatROI(checkup.roi) : 'N/A'}
                     </TableCell>
                     <TableCell>
                       {checkup.faturamento ? formatCurrency(Number(checkup.faturamento)) : 'N/A'}
@@ -449,7 +298,7 @@ const EmpresaDetalhada = () => {
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary">
-                        {getAcoesCount(checkup.acoes)} concluídas
+                        {getCompletedActionsCount(checkup.acoes)} concluídas
                       </Badge>
                     </TableCell>
                     <TableCell className="max-w-xs truncate">
@@ -469,7 +318,7 @@ const EmpresaDetalhada = () => {
         </CardContent>
       </Card>
 
-      {/* Análise Estratégica */}
+      {/* Strategic Analysis */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -484,12 +333,12 @@ const EmpresaDetalhada = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold mb-2">Variação de Score</h4>
-              <p className="text-2xl font-bold text-blue-600">{metricasDerivadas.variacaoScore}%</p>
+              <p className="text-2xl font-bold text-blue-600">{formatPercentage(metricasDerivadas.variacaoScore)}</p>
               <p className="text-sm text-gray-600">Crescimento total</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold mb-2">Variação de ROI</h4>
-              <p className="text-2xl font-bold text-yellow-600">{metricasDerivadas.variacaoROI}%</p>
+              <p className="text-2xl font-bold text-yellow-600">{formatPercentage(metricasDerivadas.variacaoROI)}</p>
               <p className="text-sm text-gray-600">Evolução do retorno</p>
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
@@ -511,7 +360,7 @@ const EmpresaDetalhada = () => {
         </CardContent>
       </Card>
 
-      {/* Resumo Estratégico */}
+      {/* Strategic Summary */}
       {ultimoCheckup && (
         <Card>
           <CardHeader>
@@ -564,7 +413,7 @@ const EmpresaDetalhada = () => {
         </Card>
       )}
 
-      {/* Botão Voltar */}
+      {/* Back Button */}
       <div className="flex justify-center">
         <Button 
           onClick={() => navigate('/acompanhamento')} 

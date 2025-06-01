@@ -54,6 +54,7 @@ export const useProposalOperations = () => {
         description: "A proposta foi baixada com sucesso."
       });
     } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
       toast({
         title: "Erro ao gerar PDF",
         description: "Não foi possível gerar o PDF da proposta.",
@@ -93,6 +94,7 @@ export const useProposalOperations = () => {
         description: "A proposta foi preparada para envio via WhatsApp."
       });
     } catch (error) {
+      console.error('Erro ao enviar WhatsApp:', error);
       toast({
         title: "Erro ao enviar WhatsApp",
         description: "Não foi possível preparar o envio via WhatsApp.",
@@ -119,11 +121,22 @@ export const useProposalOperations = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['propostas'] });
-      // Criar notificação quando proposta for gerada
       const empresaNome = data?.diagnosticos?.empresas?.nome;
       if (empresaNome) {
         notifyProposalGenerated(empresaNome, data.id);
       }
+      toast({
+        title: "Proposta criada",
+        description: "A proposta foi criada com sucesso."
+      });
+    },
+    onError: (error) => {
+      console.error('Erro ao criar proposta:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar a proposta.",
+        variant: "destructive"
+      });
     }
   });
 
