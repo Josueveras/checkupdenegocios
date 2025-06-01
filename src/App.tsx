@@ -15,6 +15,7 @@ import NovoDiagnostico from "./pages/NovoDiagnostico";
 import Diagnosticos from "./pages/Diagnosticos";
 import DiagnosticoView from "./pages/DiagnosticoView";
 import Acompanhamento from "./pages/Acompanhamento";
+import ResultadoAcompanhamento from "./pages/ResultadoAcompanhamento";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
@@ -72,6 +73,9 @@ const App = () => (
           } />
           <Route path="/acompanhamento" element={
             <AppLayout><Acompanhamento /></AppLayout>
+          } />
+          <Route path="/acompanhamento/resultado/:id" element={
+            <AppLayout><ResultadoAcompanhamento /></AppLayout>
           } />
           <Route path="/empresas" element={
             <AppLayout><Empresas /></AppLayout>
