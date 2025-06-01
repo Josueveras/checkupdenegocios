@@ -103,7 +103,7 @@ export const useEmpresasConsolidadas = () => {
               .reduce((sum, acomp) => sum + (Number(acomp.faturamento) || 0), 0) / 
             acompanhamentos.filter(acomp => acomp.faturamento).length || 0;
 
-          // Contar ações concluídas
+          // Contar ações concluídas com verificação de tipo
           const acoesConcluidasTotal = acompanhamentos.reduce((total, acomp) => {
             if (!acomp.acoes) return total;
             
@@ -118,7 +118,13 @@ export const useEmpresasConsolidadas = () => {
             
             if (!Array.isArray(parsedAcoes)) return total;
             
-            return total + parsedAcoes.filter(acao => acao && acao.status === 'concluido').length;
+            return total + parsedAcoes.filter(acao => {
+              return acao && 
+                     typeof acao === 'object' && 
+                     acao !== null && 
+                     'status' in acao && 
+                     acao.status === 'concluido';
+            }).length;
           }, 0);
 
           // Último check-up
