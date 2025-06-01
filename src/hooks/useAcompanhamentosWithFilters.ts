@@ -1,9 +1,11 @@
 
 import { useState, useMemo } from 'react';
 import { useAllAcompanhamentos } from '@/hooks/useAcompanhamentos';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AcompanhamentoFilters {
-  searchTerm: string;
+  empresaId: string;
   mes: string;
   scoreMinimo: string;
   scoreMaximo: string;
@@ -12,11 +14,43 @@ interface AcompanhamentoFilters {
   status: string;
 }
 
+// Hook para buscar empresas que têm acompanhamentos
+const useEmpresasComAcompanhamentos = () => {
+  return useQuery({
+    queryKey: ['empresas-com-acompanhamentos'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('empresas')
+        .select(`
+          id,
+          nome,
+          cliente_nome,
+          acompanhamentos!inner(id)
+        `)
+        .order('nome');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+};
+
 export const useAcompanhamentosWithFilters = () => {
   const { data: acompanhamentos = [], isLoading, error } = useAllAcompanhamentos();
+  const { data: empresasComAcompanhamentos = [] } = useEmpresasComAcompanhamentos();
   
   const [filters, setFilters] = useState<AcompanhamentoFilters>({
-    searchTerm: '',
+    empresaId: '',
+    mes: '',
+    scoreMinimo: '',
+    scoreMaximo: '',
+    roiMinimo: '',
+    roiMaximo: '',
+    status: 'todos'
+  });
+
+  const [appliedFilters, setAppliedFilters] = useState<AcompanhamentoFilters>({
+    empresaId: '',
     mes: '',
     scoreMinimo: '',
     scoreMaximo: '',
@@ -29,71 +63,74 @@ export const useAcompanhamentosWithFilters = () => {
     return acompanhamentos.filter(acomp => {
       const empresa = acomp.empresas;
       
-      // Filtro por texto (empresa ou cliente)
-      if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase();
-        const nomeEmpresa = empresa?.nome?.toLowerCase() || '';
-        const nomeCliente = empresa?.cliente_nome?.toLowerCase() || '';
-        if (!nomeEmpresa.includes(searchLower) && !nomeCliente.includes(searchLower)) {
-          return false;
-        }
+      // Filtro por empresa
+      if (appliedFilters.empresaId && acomp.empresa_id !== appliedFilters.empresaId) {
+        return false;
       }
 
       // Filtro por mês
-      if (filters.mes) {
+      if (appliedFilters.mes) {
         const mesAcomp = new Date(acomp.mes).toISOString().slice(0, 7);
-        if (mesAcomp !== filters.mes) return false;
+        if (mesAcomp !== appliedFilters.mes) return false;
       }
 
       // Filtro por score mínimo
-      if (filters.scoreMinimo && acomp.score_geral < parseInt(filters.scoreMinimo)) {
+      if (appliedFilters.scoreMinimo && acomp.score_geral < parseInt(appliedFilters.scoreMinimo)) {
         return false;
       }
 
       // Filtro por score máximo
-      if (filters.scoreMaximo && acomp.score_geral > parseInt(filters.scoreMaximo)) {
+      if (appliedFilters.scoreMaximo && acomp.score_geral > parseInt(appliedFilters.scoreMaximo)) {
         return false;
       }
 
       // Filtro por ROI mínimo
-      if (filters.roiMinimo && (!acomp.roi || acomp.roi < parseFloat(filters.roiMinimo))) {
+      if (appliedFilters.roiMinimo && (!acomp.roi || acomp.roi < parseFloat(appliedFilters.roiMinimo))) {
         return false;
       }
 
       // Filtro por ROI máximo
-      if (filters.roiMaximo && (!acomp.roi || acomp.roi > parseFloat(filters.roiMaximo))) {
+      if (appliedFilters.roiMaximo && (!acomp.roi || acomp.roi > parseFloat(appliedFilters.roiMaximo))) {
         return false;
       }
 
       // Filtro por status
-      if (filters.status !== 'todos') {
-        if (filters.status === 'case' && !acomp.virou_case) return false;
-        if (filters.status === 'ativo' && acomp.virou_case) return false;
+      if (appliedFilters.status !== 'todos') {
+        if (appliedFilters.status === 'case' && !acomp.virou_case) return false;
+        if (appliedFilters.status === 'ativo' && acomp.virou_case) return false;
       }
 
       return true;
     });
-  }, [acompanhamentos, filters]);
+  }, [acompanhamentos, appliedFilters]);
+
+  const applyFilters = () => {
+    setAppliedFilters({ ...filters });
+  };
 
   const clearFilters = () => {
-    setFilters({
-      searchTerm: '',
+    const emptyFilters = {
+      empresaId: '',
       mes: '',
       scoreMinimo: '',
       scoreMaximo: '',
       roiMinimo: '',
       roiMaximo: '',
       status: 'todos'
-    });
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
   };
 
   return {
     acompanhamentos: filteredAcompanhamentos,
     allAcompanhamentos: acompanhamentos,
+    empresasComAcompanhamentos,
     isLoading,
     error,
     filters,
     setFilters,
+    applyFilters,
     clearFilters
   };
 };

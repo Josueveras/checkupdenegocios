@@ -1,17 +1,26 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, X } from 'lucide-react';
 
 interface AcompanhamentoFiltersProps {
   filters: any;
   setFilters: (filters: any) => void;
+  applyFilters: () => void;
   clearFilters: () => void;
+  empresasComAcompanhamentos: any[];
 }
 
-const AcompanhamentoFilters = ({ filters, setFilters, clearFilters }: AcompanhamentoFiltersProps) => {
+const AcompanhamentoFilters = ({ 
+  filters, 
+  setFilters, 
+  applyFilters,
+  clearFilters,
+  empresasComAcompanhamentos 
+}: AcompanhamentoFiltersProps) => {
   const updateFilter = (key: string, value: string) => {
     setFilters((prev: any) => ({ ...prev, [key]: value }));
   };
@@ -30,17 +39,20 @@ const AcompanhamentoFilters = ({ filters, setFilters, clearFilters }: Acompanham
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="search">Empresa ou Cliente</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-              <Input
-                id="search"
-                placeholder="Buscar empresa ou cliente..."
-                value={filters.searchTerm}
-                onChange={(e) => updateFilter('searchTerm', e.target.value)}
-                className="pl-10 h-10 border border-input bg-background hover:bg-accent hover:text-accent-foreground focus:bg-background"
-              />
-            </div>
+            <Label htmlFor="empresa">Empresa ou Cliente</Label>
+            <Select value={filters.empresaId} onValueChange={(value) => updateFilter('empresaId', value)}>
+              <SelectTrigger className="h-10 border border-input bg-background hover:bg-accent hover:text-accent-foreground focus:bg-background">
+                <SelectValue placeholder="Selecione uma empresa..." />
+              </SelectTrigger>
+              <SelectContent className="bg-background border shadow-md z-50">
+                <SelectItem value="">Todas as empresas</SelectItem>
+                {empresasComAcompanhamentos.map((empresa) => (
+                  <SelectItem key={empresa.id} value={empresa.id}>
+                    {empresa.nome} {empresa.cliente_nome && `(${empresa.cliente_nome})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           <div className="space-y-2">
@@ -102,10 +114,10 @@ const AcompanhamentoFilters = ({ filters, setFilters, clearFilters }: Acompanham
           <div className="space-y-2">
             <Label htmlFor="status">Status do Projeto</Label>
             <Select value={filters.status} onValueChange={(value) => updateFilter('status', value)}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-background border shadow-sm z-50">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-background border shadow-md z-50">
                 <SelectItem value="todos">Todos</SelectItem>
                 <SelectItem value="ativo">Ativo</SelectItem>
                 <SelectItem value="case">Case</SelectItem>
@@ -115,9 +127,14 @@ const AcompanhamentoFilters = ({ filters, setFilters, clearFilters }: Acompanham
           </div>
         </div>
         
-        <div className="flex justify-end mt-4">
-          <Button variant="outline" onClick={clearFilters}>
+        <div className="flex justify-end gap-3 mt-6">
+          <Button variant="outline" onClick={clearFilters} className="flex items-center gap-2">
+            <X className="h-4 w-4" />
             Limpar Filtros
+          </Button>
+          <Button onClick={applyFilters} className="bg-petrol hover:bg-petrol/90 text-white flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Filtrar
           </Button>
         </div>
       </CardContent>

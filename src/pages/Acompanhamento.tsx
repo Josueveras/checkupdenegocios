@@ -14,10 +14,12 @@ const Acompanhamento = () => {
   const {
     acompanhamentos,
     allAcompanhamentos,
+    empresasComAcompanhamentos,
     isLoading,
     error,
     filters,
     setFilters,
+    applyFilters,
     clearFilters
   } = useAcompanhamentosWithFilters();
 
@@ -91,7 +93,9 @@ const Acompanhamento = () => {
       <AcompanhamentoFilters
         filters={filters}
         setFilters={setFilters}
+        applyFilters={applyFilters}
         clearFilters={clearFilters}
+        empresasComAcompanhamentos={empresasComAcompanhamentos}
       />
 
       {/* Contador de resultados */}
