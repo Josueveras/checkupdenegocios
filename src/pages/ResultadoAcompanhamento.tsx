@@ -95,10 +95,10 @@ const ResultadoAcompanhamento = () => {
   return (
     <div className="space-y-6 animate-fade-in px-4 pb-10">
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-4">
         <BackButton fallbackRoute="/acompanhamento" />
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Resultado do Acompanhamento</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Resultado do Acompanhamento</h1>
           <p className="text-gray-600">
             {acompanhamento.empresas?.nome} – {formatDate(acompanhamento.mes)}
           </p>
@@ -108,25 +108,25 @@ const ResultadoAcompanhamento = () => {
       {/* Score, ROI, Faturamento */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-petrol mb-2">{acompanhamento.score_geral}%</div>
-            <p className="text-gray-600">Score Geral</p>
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-petrol mb-2">{acompanhamento.score_geral}%</div>
+            <p className="text-sm text-gray-600">Score Geral</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-2xl sm:text-3xl font-bold text-green-600 mb-2">
               {acompanhamento.roi ? `${acompanhamento.roi}x` : 'N/A'}
             </div>
-            <p className="text-gray-600">ROI</p>
+            <p className="text-sm text-gray-600">ROI</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-2">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <div className="text-xl sm:text-2xl font-bold text-blue-600 mb-2">
               {acompanhamento.faturamento ? formatCurrency(acompanhamento.faturamento) : 'N/A'}
             </div>
-            <p className="text-gray-600">Faturamento</p>
+            <p className="text-sm text-gray-600">Faturamento</p>
           </CardContent>
         </Card>
       </div>
@@ -150,7 +150,7 @@ const ResultadoAcompanhamento = () => {
             <CardTitle>📊 Score por Categoria</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(scorePorCategoria).map(([categoria, score]) => (
                 <div key={categoria} className="text-center p-4 bg-gray-50 rounded-lg">
                   <div className="text-2xl font-bold text-petrol mb-1">{score as number}%</div>
@@ -170,7 +170,7 @@ const ResultadoAcompanhamento = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             {acoes.map((acao: any, index: number) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="flex flex-wrap items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   {getStatusIcon(acao.status)}
                   <span className="font-medium">{acao.titulo || `Ação ${index + 1}`}</span>
