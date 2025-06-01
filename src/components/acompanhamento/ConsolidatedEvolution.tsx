@@ -34,7 +34,7 @@ const ConsolidatedEvolution = () => {
           📊 Evolução Consolidada
         </CardTitle>
         <CardDescription>
-          Comparativo mês a mês da performance dos projetos acompanhados.
+          Comparação mês a mês da performance dos clientes acompanhados.
         </CardDescription>
       </CardHeader>
       <CardContent>
