@@ -46,7 +46,7 @@ const AcompanhamentoFilters = ({
               </SelectTrigger>
               <SelectContent className="bg-background border shadow-md z-50">
                 <SelectItem value="">Todas as empresas</SelectItem>
-                {empresasComAcompanhamentos.map((empresa) => (
+                {empresasComAcompanhamentos && empresasComAcompanhamentos.map((empresa) => (
                   <SelectItem key={empresa.id} value={empresa.id}>
                     {empresa.nome} {empresa.cliente_nome && `(${empresa.cliente_nome})`}
                   </SelectItem>
@@ -121,7 +121,6 @@ const AcompanhamentoFilters = ({
                 <SelectItem value="todos">Todos</SelectItem>
                 <SelectItem value="ativo">Ativo</SelectItem>
                 <SelectItem value="case">Case</SelectItem>
-                <SelectItem value="encerrado">Encerrado</SelectItem>
               </SelectContent>
             </Select>
           </div>

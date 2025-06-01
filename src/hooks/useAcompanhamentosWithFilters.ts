@@ -29,7 +29,10 @@ const useEmpresasComAcompanhamentos = () => {
         `)
         .order('nome');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao buscar empresas:', error);
+        return [];
+      }
       return data || [];
     }
   });
@@ -60,47 +63,54 @@ export const useAcompanhamentosWithFilters = () => {
   });
 
   const filteredAcompanhamentos = useMemo(() => {
+    if (!acompanhamentos || acompanhamentos.length === 0) {
+      return [];
+    }
+
     return acompanhamentos.filter(acomp => {
-      const empresa = acomp.empresas;
-      
-      // Filtro por empresa
-      if (appliedFilters.empresaId && acomp.empresa_id !== appliedFilters.empresaId) {
-        return false;
-      }
+      try {
+        // Filtro por empresa
+        if (appliedFilters.empresaId && acomp.empresa_id !== appliedFilters.empresaId) {
+          return false;
+        }
 
-      // Filtro por mês
-      if (appliedFilters.mes) {
-        const mesAcomp = new Date(acomp.mes).toISOString().slice(0, 7);
-        if (mesAcomp !== appliedFilters.mes) return false;
-      }
+        // Filtro por mês
+        if (appliedFilters.mes) {
+          const mesAcomp = new Date(acomp.mes).toISOString().slice(0, 7);
+          if (mesAcomp !== appliedFilters.mes) return false;
+        }
 
-      // Filtro por score mínimo
-      if (appliedFilters.scoreMinimo && acomp.score_geral < parseInt(appliedFilters.scoreMinimo)) {
-        return false;
-      }
+        // Filtro por score mínimo
+        if (appliedFilters.scoreMinimo && acomp.score_geral < parseInt(appliedFilters.scoreMinimo)) {
+          return false;
+        }
 
-      // Filtro por score máximo
-      if (appliedFilters.scoreMaximo && acomp.score_geral > parseInt(appliedFilters.scoreMaximo)) {
-        return false;
-      }
+        // Filtro por score máximo
+        if (appliedFilters.scoreMaximo && acomp.score_geral > parseInt(appliedFilters.scoreMaximo)) {
+          return false;
+        }
 
-      // Filtro por ROI mínimo
-      if (appliedFilters.roiMinimo && (!acomp.roi || acomp.roi < parseFloat(appliedFilters.roiMinimo))) {
-        return false;
-      }
+        // Filtro por ROI mínimo
+        if (appliedFilters.roiMinimo && (!acomp.roi || acomp.roi < parseFloat(appliedFilters.roiMinimo))) {
+          return false;
+        }
 
-      // Filtro por ROI máximo
-      if (appliedFilters.roiMaximo && (!acomp.roi || acomp.roi > parseFloat(appliedFilters.roiMaximo))) {
-        return false;
-      }
+        // Filtro por ROI máximo
+        if (appliedFilters.roiMaximo && (!acomp.roi || acomp.roi > parseFloat(appliedFilters.roiMaximo))) {
+          return false;
+        }
 
-      // Filtro por status
-      if (appliedFilters.status !== 'todos') {
-        if (appliedFilters.status === 'case' && !acomp.virou_case) return false;
-        if (appliedFilters.status === 'ativo' && acomp.virou_case) return false;
-      }
+        // Filtro por status
+        if (appliedFilters.status !== 'todos') {
+          if (appliedFilters.status === 'case' && !acomp.virou_case) return false;
+          if (appliedFilters.status === 'ativo' && acomp.virou_case) return false;
+        }
 
-      return true;
+        return true;
+      } catch (error) {
+        console.error('Erro ao filtrar acompanhamento:', error);
+        return true;
+      }
     });
   }, [acompanhamentos, appliedFilters]);
 

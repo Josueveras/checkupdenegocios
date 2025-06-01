@@ -24,7 +24,6 @@ const Acompanhamento = () => {
   } = useAcompanhamentosWithFilters();
 
   const handleNovoCheckup = () => {
-    // TODO: Implementar modal para novo check-up
     toast({
       title: "Em desenvolvimento",
       description: "Modal de novo check-up será implementado em breve.",
@@ -32,7 +31,6 @@ const Acompanhamento = () => {
   };
 
   const handleEdit = (id: string) => {
-    // TODO: Implementar edição
     toast({
       title: "Em desenvolvimento",
       description: "Edição de acompanhamento será implementada em breve.",
@@ -40,7 +38,6 @@ const Acompanhamento = () => {
   };
 
   const handleDelete = (id: string) => {
-    // TODO: Implementar exclusão
     toast({
       title: "Em desenvolvimento",
       description: "Exclusão de acompanhamento será implementada em breve.",
@@ -48,12 +45,16 @@ const Acompanhamento = () => {
   };
 
   const handleGeneratePDF = (id: string) => {
-    // TODO: Implementar geração de PDF
     toast({
       title: "Em desenvolvimento",
       description: "Geração de PDF será implementada em breve.",
     });
   };
+
+  // Log any errors for debugging
+  if (error) {
+    console.error('Erro na página de acompanhamento:', error);
+  }
 
   if (isLoading) {
     return (
@@ -71,6 +72,12 @@ const Acompanhamento = () => {
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Erro ao carregar dados</h2>
         <p className="text-gray-600">{error.message}</p>
+        <Button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 bg-petrol hover:bg-petrol/90 text-white"
+        >
+          Tentar Novamente
+        </Button>
       </div>
     );
   }
@@ -95,19 +102,19 @@ const Acompanhamento = () => {
         setFilters={setFilters}
         applyFilters={applyFilters}
         clearFilters={clearFilters}
-        empresasComAcompanhamentos={empresasComAcompanhamentos}
+        empresasComAcompanhamentos={empresasComAcompanhamentos || []}
       />
 
       {/* Contador de resultados */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-gray-600">
-          Mostrando {acompanhamentos.length} de {allAcompanhamentos.length} acompanhamentos
+          Mostrando {acompanhamentos?.length || 0} de {allAcompanhamentos?.length || 0} acompanhamentos
         </p>
       </div>
 
       {/* Lista de acompanhamentos */}
       <div className="space-y-6">
-        {acompanhamentos.length > 0 ? (
+        {acompanhamentos && acompanhamentos.length > 0 ? (
           acompanhamentos.map((acompanhamento) => (
             <AcompanhamentoCard
               key={acompanhamento.id}
