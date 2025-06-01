@@ -102,7 +102,7 @@ const ResultadoAcompanhamento = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in px-4 pb-10">
         <div className="flex items-center gap-4">
           <BackButton fallbackRoute="/acompanhamento" />
           <div>
@@ -115,7 +115,7 @@ const ResultadoAcompanhamento = () => {
 
   if (error || !acompanhamento) {
     return (
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in px-4 pb-10">
         <div className="flex items-center gap-4">
           <BackButton fallbackRoute="/acompanhamento" />
           <div>
@@ -131,7 +131,7 @@ const ResultadoAcompanhamento = () => {
   const scorePorCategoria = parseScorePorCategoria(acompanhamento.score_por_categoria);
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in px-4 pb-10">
       {/* Header */}
       <div className="flex items-center gap-4">
         <BackButton fallbackRoute="/acompanhamento" />
@@ -144,8 +144,7 @@ const ResultadoAcompanhamento = () => {
       </div>
 
       {/* Score Geral, ROI, Faturamento */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <CardContent className="p-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-petrol mb-2">{acompanhamento.score_geral}%</div>
