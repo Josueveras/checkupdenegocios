@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useEmpresasComDiagnosticos } from '@/hooks/useAcompanhamentos';
+import { useEmpresas } from '@/hooks/useEmpresas';
 import { Loader2 } from 'lucide-react';
 
 interface CompanySelectorProps {
@@ -10,7 +10,7 @@ interface CompanySelectorProps {
 }
 
 const CompanySelector = ({ selectedCompany, setSelectedCompany }: CompanySelectorProps) => {
-  const { data: empresas, isLoading, error } = useEmpresasComDiagnosticos();
+  const { data: empresas, isLoading, error } = useEmpresas();
 
   return (
     <Card>
@@ -28,7 +28,7 @@ const CompanySelector = ({ selectedCompany, setSelectedCompany }: CompanySelecto
           </div>
         ) : error ? (
           <div className="text-red-600 p-4">
-            Erro ao carregar empresas. Tente novamente.
+            Erro ao carregar empresas. Verifique sua conexão e tente novamente.
           </div>
         ) : (
           <Select value={selectedCompany} onValueChange={setSelectedCompany}>

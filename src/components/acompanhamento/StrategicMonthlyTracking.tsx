@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,11 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Target, Plus } from 'lucide-react';
-import { useEmpresasComDiagnosticos, useSaveAcompanhamento } from '@/hooks/useAcompanhamentos';
+import { useEmpresas } from '@/hooks/useEmpresas';
+import { useSaveAcompanhamento } from '@/hooks/useAcompanhamentos';
+import { toast } from '@/hooks/use-toast';
 
 const StrategicMonthlyTracking = () => {
   const [showCheckupForm, setShowCheckupForm] = useState(false);
-  const { data: empresas } = useEmpresasComDiagnosticos();
+  const { data: empresas } = useEmpresas();
   const saveAcompanhamento = useSaveAcompanhamento();
   
   const [checkupData, setCheckupData] = useState({
@@ -33,7 +36,30 @@ const StrategicMonthlyTracking = () => {
 
   const handleSaveCheckup = async () => {
     // Validações básicas
-    if (!checkupData.empresa_id || !checkupData.mes || !checkupData.score_geral) {
+    if (!checkupData.empresa_id) {
+      toast({
+        title: "Empresa obrigatória",
+        description: "Por favor, selecione uma empresa antes de continuar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!checkupData.mes) {
+      toast({
+        title: "Mês obrigatório",
+        description: "Por favor, selecione o mês de referência.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!checkupData.score_geral) {
+      toast({
+        title: "Score obrigatório",
+        description: "Por favor, informe o score geral.",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -129,7 +155,7 @@ const StrategicMonthlyTracking = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="empresa_id">Empresa</Label>
+                <Label htmlFor="empresa_id">Empresa *</Label>
                 <Select
                   value={checkupData.empresa_id}
                   onValueChange={(value) => setCheckupData(prev => ({ ...prev, empresa_id: value }))}
@@ -145,18 +171,22 @@ const StrategicMonthlyTracking = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {!checkupData.empresa_id && (
+                  <p className="text-sm text-red-600 mt-1">Campo obrigatório</p>
+                )}
               </div>
               <div>
-                <Label htmlFor="mes">Mês de Referência</Label>
+                <Label htmlFor="mes">Mês de Referência *</Label>
                 <Input
                   id="mes"
                   type="month"
                   value={checkupData.mes}
                   onChange={(e) => setCheckupData(prev => ({ ...prev, mes: e.target.value }))}
+                  required
                 />
               </div>
               <div>
-                <Label htmlFor="score_geral">Score Geral (%)</Label>
+                <Label htmlFor="score_geral">Score Geral (%) *</Label>
                 <Input
                   id="score_geral"
                   type="number"
@@ -164,6 +194,7 @@ const StrategicMonthlyTracking = () => {
                   max="100"
                   value={checkupData.score_geral}
                   onChange={(e) => setCheckupData(prev => ({ ...prev, score_geral: e.target.value }))}
+                  required
                 />
               </div>
               <div>
