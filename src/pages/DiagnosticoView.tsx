@@ -13,7 +13,7 @@ const DiagnosticoView = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { diagnostic } = location.state || {};
-  const { handleGenerateAndDownloadPDF, handleSendWhatsApp, generatePDFForSharing } = useDiagnosticOperations();
+  const { handleGenerateAndDownloadPDF, handleSendWhatsApp, generatePDFForSharing, handleScheduleCalendar } = useDiagnosticOperations();
   const [pdfData, setPdfData] = useState<{ blob: Blob; url?: string } | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
