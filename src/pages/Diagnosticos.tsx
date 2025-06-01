@@ -1,24 +1,13 @@
+
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Calendar, Eye, Edit, Trash2 } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDiagnosticos } from '@/hooks/useSupabase';
-import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { DiagnosticCard } from '@/components/DiagnosticCard';
 
 const Diagnosticos = () => {
   const navigate = useNavigate();
@@ -27,36 +16,8 @@ const Diagnosticos = () => {
   const [scoreFilter, setScoreFilter] = useState('todos');
   
   const { data: diagnosticos = [], isLoading, error } = useDiagnosticos();
-  const { 
-    deleteDiagnostic, 
-    handleGenerateAndDownloadPDF, 
-    handleScheduleCalendar 
-  } = useDiagnosticOperations();
 
   console.log('Diagnósticos do Supabase:', diagnosticos);
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600 bg-green-50";
-    if (score >= 60) return "text-yellow-600 bg-yellow-50";
-    if (score >= 40) return "text-orange-600 bg-orange-50";
-    return "text-red-600 bg-red-50";
-  };
-
-  const getLevelBadge = (level: string) => {
-    const colors = {
-      "Avançado": "bg-green-100 text-green-800",
-      "Intermediário": "bg-yellow-100 text-yellow-800",
-      "Emergente": "bg-orange-100 text-orange-800",
-      "Iniciante": "bg-red-100 text-red-800"
-    };
-    return colors[level as keyof typeof colors] || colors["Iniciante"];
-  };
-
-  const getStatusBadge = (status: string) => {
-    return status === "concluido" 
-      ? "bg-blue-100 text-blue-800" 
-      : "bg-gray-100 text-gray-800";
-  };
 
   const filteredDiagnostics = diagnosticos.filter(diagnostic => {
     const empresa = diagnostic.empresas;
@@ -72,7 +33,6 @@ const Diagnosticos = () => {
   });
 
   const handleViewDiagnostic = (diagnostic: any) => {
-    // Navegar para uma página de visualização com os dados do diagnóstico
     navigate('/diagnostico-view', { state: { diagnostic } });
   };
 
@@ -175,121 +135,14 @@ const Diagnosticos = () => {
       </div>
 
       {/* Diagnostics List */}
-      <div className="grid gap-4">
+      <div className="grid gap-6">
         {filteredDiagnostics.map((diagnostic) => (
-          <Card key={diagnostic.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                {/* Company Info */}
-                <div className="flex-1 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                    <h3 className="font-semibold text-lg text-gray-900">{diagnostic.empresas?.nome || 'Empresa não informada'}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <Badge className={getStatusBadge(diagnostic.status)}>
-                        {diagnostic.status === 'concluido' ? 'Concluído' : 'Pendente'}
-                      </Badge>
-                      <Badge className={getLevelBadge(diagnostic.nivel)}>
-                        {diagnostic.nivel}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
-                    <p><strong>Cliente:</strong> {diagnostic.empresas?.cliente_nome || 'N/A'}</p>
-                    <p><strong>Data:</strong> {new Date(diagnostic.created_at).toLocaleDateString('pt-BR')}</p>
-                    <p><strong>E-mail:</strong> {diagnostic.empresas?.cliente_email || 'N/A'}</p>
-                    <p><strong>WhatsApp:</strong> {diagnostic.empresas?.cliente_telefone || 'N/A'}</p>
-                  </div>
-                </div>
-
-                {/* Score */}
-                <div className="text-center">
-                  <div className={`text-3xl font-bold p-4 rounded-lg ${getScoreColor(diagnostic.score_total)}`}>
-                    {diagnostic.score_total}%
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-3 min-w-fit">
-                  {/* Linha 1: PDF e Agendar */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      PDF
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleScheduleCalendar(diagnostic)}
-                      className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
-                    >
-                      <Calendar className="h-4 w-4" />
-                      Agendar
-                    </Button>
-                  </div>
-                  
-                  {/* Linha 2: Ver e Editar */}
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewDiagnostic(diagnostic)}
-                      className="flex items-center gap-2"
-                    >
-                      <Eye className="h-4 w-4" />
-                      Ver
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEditDiagnostic(diagnostic.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <Edit className="h-4 w-4" />
-                      Editar
-                    </Button>
-                  </div>
-
-                  {/* Linha 3: Excluir */}
-                  <div className="flex gap-2">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white w-full"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Excluir
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Tem certeza que deseja excluir este diagnóstico? Esta ação não pode ser desfeita.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => deleteDiagnostic.mutate(diagnostic.id)}
-                            className="bg-red-600 hover:bg-red-700"
-                          >
-                            Excluir
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <DiagnosticCard
+            key={diagnostic.id}
+            diagnostic={diagnostic}
+            onView={handleViewDiagnostic}
+            onEdit={handleEditDiagnostic}
+          />
         ))}
       </div>
 
