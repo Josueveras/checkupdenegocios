@@ -90,8 +90,13 @@ const EvolucaoCliente = () => {
     }).format(value);
   };
 
-  const formatDate = (date: string) => {
-    return format(new Date(date), 'MMMM/yyyy', { locale: ptBR });
+  const formatDate = (date: string | Date) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return format(dateObj, 'MMMM/yyyy', { locale: ptBR });
+    } catch {
+      return 'Data inválida';
+    }
   };
 
   const getAcoesConcluidasCount = (acoes: any) => {
@@ -387,7 +392,7 @@ const EvolucaoCliente = () => {
                           <div>
                             <span className="text-gray-600">Faturamento:</span>
                             <div className="font-semibold">
-                              {acomp.faturamento ? formatCurrency(acomp.faturamento) : 'N/A'}
+                              {acomp.faturamento ? formatCurrency(Number(acomp.faturamento)) : 'N/A'}
                             </div>
                           </div>
                           <div>
@@ -450,7 +455,7 @@ const EvolucaoCliente = () => {
                     <div>
                       <span className="text-sm text-gray-600">Ações do Mês:</span>
                       <div className="mt-2 space-y-2">
-                        {JSON.parse(acomp.acoes).map((acao: any, index: number) => (
+                        {JSON.parse(String(acomp.acoes)).map((acao: any, index: number) => (
                           <div key={index} className="flex items-center gap-2 text-sm">
                             {acao.status === 'concluido' ? (
                               <CheckCircle className="h-4 w-4 text-green-600" />
