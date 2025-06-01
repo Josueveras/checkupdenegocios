@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,7 +30,6 @@ const Diagnosticos = () => {
   const { 
     deleteDiagnostic, 
     handleGenerateAndDownloadPDF, 
-    handleSendWhatsApp, 
     handleScheduleCalendar 
   } = useDiagnosticOperations();
 
@@ -225,23 +223,15 @@ const Diagnosticos = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleSendWhatsApp(diagnostic)}
-                      className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
-                    >
-                      📤 WhatsApp
-                    </Button>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => handleScheduleCalendar(diagnostic)}
                       className="flex items-center gap-2 text-blue-600 border-blue-600 hover:bg-blue-600 hover:text-white"
                     >
                       <Calendar className="h-4 w-4" />
                       Agendar
                     </Button>
+                  </div>
+                  
+                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -251,9 +241,6 @@ const Diagnosticos = () => {
                       <Eye className="h-4 w-4" />
                       Ver
                     </Button>
-                  </div>
-
-                  <div className="flex gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -263,6 +250,9 @@ const Diagnosticos = () => {
                       <Edit className="h-4 w-4" />
                       Editar
                     </Button>
+                  </div>
+
+                  <div className="flex gap-2">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
