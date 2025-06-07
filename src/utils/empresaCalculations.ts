@@ -3,25 +3,42 @@ import { EmpresaConsolidada, EmpresaRawData, AcompanhamentoData } from '@/types/
 
 export const calculateConsolidatedMetrics = (empresa: EmpresaRawData): EmpresaConsolidada => {
   const acompanhamentos = empresa.acompanhamentos || [];
-  
+
   // Calcular métricas consolidadas
   const totalCheckups = acompanhamentos.length;
-  const scoreGeral = Math.round(
-    acompanhamentos.reduce((sum, acomp) => sum + (acomp.score_geral || 0), 0) / totalCheckups
+  const scoreGeral = totalCheckups > 0
+    ? Math.round(
+        acompanhamentos.reduce(
+          (sum, acomp) => sum + (acomp.score_geral || 0),
+          0
+        ) / totalCheckups
+      )
+    : 0;
+  
+  const acompanhamentosComROI = acompanhamentos.filter(
+    acomp => acomp.roi !== undefined && acomp.roi !== null
   );
+  const roiMedio = acompanhamentosComROI.length > 0
+    ? Number(
+        (
+          acompanhamentosComROI.reduce(
+            (sum, acomp) => sum + (acomp.roi || 0),
+            0
+          ) / acompanhamentosComROI.length
+        ).toFixed(2)
+      )
+    : 0;
   
-  const roiMedio = Number((
-    acompanhamentos
-      .filter(acomp => acomp.roi)
-      .reduce((sum, acomp) => sum + (acomp.roi || 0), 0) / 
-    acompanhamentos.filter(acomp => acomp.roi).length || 0
-  ).toFixed(2));
-  
-  const faturamentoMedio = 
-    acompanhamentos
-      .filter(acomp => acomp.faturamento)
-      .reduce((sum, acomp) => sum + (Number(acomp.faturamento) || 0), 0) / 
-    acompanhamentos.filter(acomp => acomp.faturamento).length || 0;
+  const acompanhamentosComFaturamento = acompanhamentos.filter(
+    acomp => acomp.faturamento !== undefined && acomp.faturamento !== null
+  );
+  const faturamentoMedio =
+    acompanhamentosComFaturamento.length > 0
+      ? acompanhamentosComFaturamento.reduce(
+          (sum, acomp) => sum + (Number(acomp.faturamento) || 0),
+          0
+        ) / acompanhamentosComFaturamento.length
+      : 0;
 
   // Contar ações concluídas com verificação de tipo
   const acoesConcluidasTotal = calculateCompletedActions(acompanhamentos);

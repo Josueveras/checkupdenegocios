@@ -18,13 +18,15 @@ export const calculateScoreVariation = (checkups: CheckupData[]): number => {
 
 export const calculateROIVariation = (checkups: CheckupData[]): number => {
   if (!checkups || checkups.length < 2) return 0;
-  
-  const checkupsWithROI = checkups.filter(c => c.roi);
+
+  const checkupsWithROI = checkups.filter(
+    c => c.roi !== undefined && c.roi !== null
+  );
   if (checkupsWithROI.length < 2) return 0;
-  
+
   const first = checkupsWithROI[0].roi || 0;
   const last = checkupsWithROI[checkupsWithROI.length - 1].roi || 0;
-  
+
   return first === 0 ? 0 : Math.round(((last - first) / first) * 100);
 };
 
@@ -37,27 +39,32 @@ export const calculateAverageScore = (checkups: CheckupData[]): number => {
 
 export const calculateAverageROI = (checkups: CheckupData[]): number => {
   if (!checkups || checkups.length === 0) return 0;
-  
-  const checkupsWithROI = checkups.filter(c => c.roi);
+
+  const checkupsWithROI = checkups.filter(
+    c => c.roi !== undefined && c.roi !== null
+  );
   if (checkupsWithROI.length === 0) return 0;
-  
+
   const total = checkupsWithROI.reduce((sum, c) => sum + (c.roi || 0), 0);
   return Number((total / checkupsWithROI.length).toFixed(2));
 };
 
 export const calculateAverageRevenue = (checkups: CheckupData[]): number => {
   if (!checkups || checkups.length === 0) return 0;
-  
-  const checkupsWithRevenue = checkups.filter(c => c.faturamento);
+
+  const checkupsWithRevenue = checkups.filter(
+    c => c.faturamento !== undefined && c.faturamento !== null
+  );
   if (checkupsWithRevenue.length === 0) return 0;
-  
+
   const total = checkupsWithRevenue.reduce((sum, c) => {
-    const revenue = typeof c.faturamento === 'string' 
-      ? parseFloat(c.faturamento) 
-      : c.faturamento || 0;
+    const revenue =
+      typeof c.faturamento === 'string'
+        ? parseFloat(c.faturamento)
+        : c.faturamento || 0;
     return sum + revenue;
   }, 0);
-  
+
   return total / checkupsWithRevenue.length;
 };
 
