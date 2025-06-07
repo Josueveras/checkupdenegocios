@@ -9,22 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-// 🔧 Função movida para fora do componente para evitar erro no Vite
-const parseJSON = <T,>(input: unknown, fallback: T): T => {
-  if (!input) return fallback;
-  if (typeof input === 'string') {
-    try {
-      return JSON.parse(input) as T;
-    } catch {
-      return fallback;
-    }
-  }
-  if (typeof input === 'object') {
-    return input as T;
-  }
-  return fallback;
-};
-
 const ResultadoAcompanhamento = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -75,6 +59,21 @@ const ResultadoAcompanhamento = () => {
     }
   };
 
+  function parseJSON<T>(input: unknown, fallback: T): T {
+    if (!input) return fallback;
+    if (typeof input === 'string') {
+      try {
+        return JSON.parse(input) as T;
+      } catch {
+        return fallback;
+      }
+    }
+    if (typeof input === 'object') {
+      return input as T;
+    }
+    return fallback;
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in px-4 pb-10">
@@ -98,6 +97,7 @@ const ResultadoAcompanhamento = () => {
 
   return (
     <div className="space-y-6 animate-fade-in px-4 pb-10">
+      {/* Header */}
       <div className="flex flex-wrap items-center gap-4">
         <BackButton fallbackRoute="/acompanhamento" />
         <div>
@@ -108,6 +108,7 @@ const ResultadoAcompanhamento = () => {
         </div>
       </div>
 
+      {/* Score, ROI, Faturamento */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 sm:p-6 text-center">
@@ -133,6 +134,7 @@ const ResultadoAcompanhamento = () => {
         </Card>
       </div>
 
+      {/* Destaque do Mês */}
       {acompanhamento.destaque && (
         <Card>
           <CardHeader>
@@ -144,6 +146,7 @@ const ResultadoAcompanhamento = () => {
         </Card>
       )}
 
+      {/* Score por Categoria */}
       {Object.keys(scorePorCategoria).length > 0 && (
         <Card>
           <CardHeader>
@@ -162,6 +165,7 @@ const ResultadoAcompanhamento = () => {
         </Card>
       )}
 
+      {/* Ações do Mês */}
       {acoes.length > 0 && (
         <Card>
           <CardHeader>
@@ -187,6 +191,7 @@ const ResultadoAcompanhamento = () => {
         </Card>
       )}
 
+      {/* Recomendações */}
       {acompanhamento.recomendacoes && (
         <Card>
           <CardHeader>
@@ -198,6 +203,7 @@ const ResultadoAcompanhamento = () => {
         </Card>
       )}
 
+      {/* Resumo Estratégico */}
       <Card>
         <CardHeader>
           <CardTitle>🧠 Resumo Estratégico</CardTitle>
@@ -230,6 +236,7 @@ const ResultadoAcompanhamento = () => {
         </CardContent>
       </Card>
 
+      {/* Observações */}
       {acompanhamento.observacoes && (
         <Card>
           <CardHeader>
@@ -241,6 +248,7 @@ const ResultadoAcompanhamento = () => {
         </Card>
       )}
 
+      {/* Botões finais */}
       <div className="flex flex-wrap gap-4 justify-center">
         <Button className="bg-petrol hover:bg-petrol/90 text-white">
           <FileText className="mr-2 h-4 w-4" />
