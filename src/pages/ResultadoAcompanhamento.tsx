@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const parseJSON = <T,>(input: unknown, fallback: T): T => {
+function parseJSON<T>(input: unknown, fallback: T): T {
   if (!input) return fallback;
   if (typeof input === 'string') {
     try {
@@ -22,7 +22,7 @@ const parseJSON = <T,>(input: unknown, fallback: T): T => {
     return input as T;
   }
   return fallback;
-};
+}
 
 const ResultadoAcompanhamento = () => {
   const { id } = useParams();
@@ -60,7 +60,6 @@ const ResultadoAcompanhamento = () => {
         return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'concluido':
