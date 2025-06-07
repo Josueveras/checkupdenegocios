@@ -124,7 +124,7 @@ const EmpresaDetalhada = () => {
           className="bg-petrol hover:bg-petrol/90 text-white w-full sm:w-auto"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          ⬅️ Voltar para Acompanhamento
+          ⬅ Voltar para Acompanhamento
         </Button>
       </div>
     </div>
