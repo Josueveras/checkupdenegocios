@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { BarChart, FileText, Calendar, Settings, Edit, File } from "lucide-react";
+import { BarChart, FileText, Calendar, Settings, Edit, File, Target } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
@@ -24,6 +24,10 @@ const menuItems = [{
   title: "Propostas",
   url: "/propostas",
   icon: FileText
+}, {
+  title: "Planos",
+  url: "/planos",
+  icon: Target
 }, {
   title: "Perguntas",
   url: "/perguntas",
