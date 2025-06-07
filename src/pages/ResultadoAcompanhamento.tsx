@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-const parseJSON = <T>(input: unknown, fallback: T): T => {
+const parseJSON = <T,>(input: unknown, fallback: T): T => {
   if (!input) return fallback;
   if (typeof input === 'string') {
     try {
