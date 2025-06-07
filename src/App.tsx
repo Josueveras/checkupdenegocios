@@ -19,6 +19,7 @@ import ResultadoAcompanhamento from "./pages/ResultadoAcompanhamento";
 import EvolucaoCliente from "./pages/EvolucaoCliente";
 import EvolucaoClienteDetalhada from "./pages/EvolucaoClienteDetalhada";
 import EmpresaDetalhada from "./pages/EmpresaDetalhada";
+import EmpresaVisaoGeral from "./pages/EmpresaVisaoGeral";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
@@ -83,6 +84,10 @@ const App = () => (
           <Route path="/empresa/:id" element={
             <AppLayout><EmpresaDetalhada /></AppLayout>
           } />
+          <Route path="/empresa-visao/:id" element={
+  <AppLayout><EmpresaVisaoGeral /></AppLayout>
+} />
+
           <Route path="/clientes/:id" element={
             <AppLayout><EvolucaoClienteDetalhada /></AppLayout>
           } />
