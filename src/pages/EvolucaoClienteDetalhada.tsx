@@ -214,7 +214,6 @@ const EvolucaoClienteDetalhada = () => {
   const compareMonths = () => {
     if (selectedMonths.length === 2) {
       // Implementar comparação entre meses
-      console.log('Comparando meses:', selectedMonths);
     }
   };
 

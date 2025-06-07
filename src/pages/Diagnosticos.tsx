@@ -17,7 +17,6 @@ const Diagnosticos = () => {
   
   const { data: diagnosticos = [], isLoading, error } = useDiagnosticos();
 
-  console.log('Diagnósticos do Supabase:', diagnosticos);
 
   const filteredDiagnostics = diagnosticos.filter(diagnostic => {
     const empresa = diagnostic.empresas;

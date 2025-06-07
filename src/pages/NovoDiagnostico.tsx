@@ -62,10 +62,6 @@ const NovoDiagnostico = () => {
     isEditing
   });
 
-  console.log('Questions loaded:', questions);
-  console.log('Current answers:', answers);
-  console.log('Questions loading:', questionsLoading);
-  console.log('Questions error:', questionsError);
 
   if (editLoading) {
     return <div className="flex items-center justify-center h-64">Carregando dados para edição...</div>;

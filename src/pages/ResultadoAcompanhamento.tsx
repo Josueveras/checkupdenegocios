@@ -60,16 +60,16 @@ const ResultadoAcompanhamento = () => {
     }
   };
 
-  const parseJSON = (input: any, fallback: any) => {
+  const parseJSON = <T>(input: unknown, fallback: T): T => {
     if (!input) return fallback;
     if (typeof input === 'string') {
       try {
-        return JSON.parse(input);
+        return JSON.parse(input) as T;
       } catch {
         return fallback;
       }
     }
-    return input;
+    return input as T;
   };
 
   if (isLoading) {
