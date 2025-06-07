@@ -252,5 +252,5 @@ const ResultadoAcompanhamento = () => {
     </div>
   );
 };
-
-export default ResultadoAcompanhamento;
+// export default ResultadoAcompanhamento;
+export default () => null;
