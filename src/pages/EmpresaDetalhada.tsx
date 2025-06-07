@@ -1,10 +1,10 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-// Import utility functions
 import { 
   calculateScoreVariation, 
   calculateROIVariation, 
@@ -17,7 +17,6 @@ import {
   getAverageActionsPerMonth
 } from '@/utils/calculations';
 
-// Import components
 import { EmpresaHeader } from '@/components/empresa/EmpresaHeader';
 import { EmpresaMetricCards } from '@/components/empresa/EmpresaMetricCards';
 import { EmpresaCharts } from '@/components/empresa/EmpresaCharts';
@@ -33,13 +32,11 @@ const EmpresaDetalhada = () => {
     queryKey: ['empresa', id],
     queryFn: async () => {
       if (!id) return null;
-      
       const { data, error } = await supabase
         .from('empresas')
         .select('*')
         .eq('id', id)
         .single();
-      
       if (error) throw error;
       return data;
     },
@@ -50,20 +47,17 @@ const EmpresaDetalhada = () => {
     queryKey: ['checkups-empresa', id],
     queryFn: async () => {
       if (!id) return [];
-      
       const { data, error } = await supabase
         .from('acompanhamentos')
         .select('*')
         .eq('empresa_id', id)
         .order('mes', { ascending: true });
-      
       if (error) throw error;
       return data || [];
     },
     enabled: !!id
   });
 
-  // Calculate derived metrics
   const metricasDerivadas = {
     scoreMedio: calculateAverageScore(checkupsEmpresa || []),
     roiMedio: calculateAverageROI(checkupsEmpresa || []),
@@ -91,13 +85,10 @@ const EmpresaDetalhada = () => {
 
   if (!empresaSelecionada) {
     return (
-      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+      <div className="w-full max-w-6xl mx-auto px-4 md:px-6 py-6">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h2>
-          <Button 
-            onClick={() => navigate('/acompanhamento')} 
-            className="bg-petrol hover:bg-petrol/90 text-white"
-          >
+          <Button onClick={() => navigate('/acompanhamento')} className="bg-petrol hover:bg-petrol/90 text-white">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar para Acompanhamento
           </Button>
@@ -107,22 +98,22 @@ const EmpresaDetalhada = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in px-4 md:px-6 py-6 max-w-6xl mx-auto">
       <EmpresaHeader empresaNome={empresaSelecionada.nome} />
-      
+
       <EmpresaMetricCards 
         totalCheckups={checkupsEmpresa?.length || 0}
         metricasDerivadas={metricasDerivadas}
       />
-      
+
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <EmpresaCharts checkupsEmpresa={checkupsEmpresa || []} />
       </div>
-      
+
       <EmpresaCheckupsTable checkupsEmpresa={checkupsEmpresa || []} />
-      
+
       <EmpresaStrategicAnalysis metricasDerivadas={metricasDerivadas} />
-      
+
       {ultimoCheckup && (
         <EmpresaStrategicSummary ultimoCheckup={ultimoCheckup} />
       )}
@@ -133,7 +124,7 @@ const EmpresaDetalhada = () => {
           className="bg-petrol hover:bg-petrol/90 text-white w-full sm:w-auto"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          ⬅ Voltar para Acompanhamento
+          ⬅️ Voltar para Acompanhamento
         </Button>
       </div>
     </div>
