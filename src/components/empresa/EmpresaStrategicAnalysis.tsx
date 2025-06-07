@@ -18,42 +18,90 @@ interface EmpresaStrategicAnalysisProps {
 export const EmpresaStrategicAnalysis = ({ metricasDerivadas }: EmpresaStrategicAnalysisProps) => {
   return (
     <Card>
-      <CardHeader className="pb-4">
-        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <Target className="h-4 w-4 sm:h-5 sm:w-5 text-petrol flex-shrink-0" />
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
           🔍 Análise Estratégica
         </CardTitle>
-        <CardDescription className="text-sm">
+        <CardDescription>
           Sinais extraídos automaticamente da jornada da empresa.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 text-sm sm:text-base">Variação de Score</h4>
-            <p className="text-xl sm:text-2xl font-bold text-blue-600">{formatPercentage(metricasDerivadas.variacaoScore)}</p>
-            <p className="text-xs sm:text-sm text-gray-600">Crescimento total</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 text-sm sm:text-base">Variação de ROI</h4>
-            <p className="text-xl sm:text-2xl font-bold text-yellow-600">{formatPercentage(metricasDerivadas.variacaoROI)}</p>
-            <p className="text-xs sm:text-sm text-gray-600">Evolução do retorno</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 text-sm sm:text-base">Check-ups sem ação</h4>
-            <p className="text-xl sm:text-2xl font-bold text-red-600">{metricasDerivadas.checkupsSemAcao}</p>
-            <p className="text-xs sm:text-sm text-gray-600">Meses sem implementação</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 text-sm sm:text-base">Tempo Inativo</h4>
-            <p className="text-xl sm:text-2xl font-bold text-orange-600">{metricasDerivadas.tempoInativo}</p>
-            <p className="text-xs sm:text-sm text-gray-600">Dias desde último check-up</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2 text-sm sm:text-base">Ações por mês</h4>
-            <p className="text-xl sm:text-2xl font-bold text-green-600">{metricasDerivadas.mediaAcoesPorMes}</p>
-            <p className="text-xs sm:text-sm text-gray-600">Média de implementações</p>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-800">
+                Variação de Score
+              </CardTitle>
+              <div className="text-2xl">📊</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">{formatPercentage(metricasDerivadas.variacaoScore)}</div>
+              <p className="text-xs text-blue-600 mt-1">
+                Crescimento total
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-yellow-50 border-yellow-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-yellow-800">
+                Variação de ROI
+              </CardTitle>
+              <div className="text-2xl">💰</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">{formatPercentage(metricasDerivadas.variacaoROI)}</div>
+              <p className="text-xs text-yellow-600 mt-1">
+                Evolução do retorno
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-red-50 border-red-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-red-800">
+                Check-ups sem ação
+              </CardTitle>
+              <div className="text-2xl">⚠️</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{metricasDerivadas.checkupsSemAcao}</div>
+              <p className="text-xs text-red-600 mt-1">
+                Meses sem implementação
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-orange-50 border-orange-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-orange-800">
+                Tempo Inativo
+              </CardTitle>
+              <div className="text-2xl">⏰</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600">{metricasDerivadas.tempoInativo}</div>
+              <p className="text-xs text-orange-600 mt-1">
+                Dias desde último check-up
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-green-50 border-green-200">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-800">
+                Ações por mês
+              </CardTitle>
+              <div className="text-2xl">📈</div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">{metricasDerivadas.mediaAcoesPorMes}</div>
+              <p className="text-xs text-green-600 mt-1">
+                Média de implementações
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </CardContent>
     </Card>
