@@ -22,10 +22,9 @@ import {
 import { Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from 'uuid';
 
 interface Plan {
-  id: string;
+  id?: string;
   nome: string;
   objetivo: string;
   tarefas: string[];
@@ -60,7 +59,6 @@ const Planos = () => {
 
   const handleNewPlan = () => {
     setEditingPlan({
-      id: uuidv4(),
       nome: "",
       objetivo: "",
       tarefas: [""],
@@ -119,7 +117,7 @@ const Planos = () => {
                 <Button variant="outline" onClick={() => handleEditPlan(plan)}>
                   <Edit className="h-4 w-4" />
                 </Button>
-                <Button variant="destructive" onClick={() => handleDeletePlan(plan.id)}>
+                <Button variant="destructive" onClick={() => handleDeletePlan(plan.id!)}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
