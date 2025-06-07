@@ -33,6 +33,11 @@ const menuItems = [
     icon: "📄"
   },
   {
+    title: "Planos",
+    url: "/planos",
+    icon: "🧾"
+  },
+  {
     title: "Perguntas",
     url: "/perguntas",
     icon: "❓"
