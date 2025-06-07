@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -92,21 +91,23 @@ const EmpresaDetalhada = () => {
 
   if (!empresaSelecionada) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h2>
-        <Button 
-          onClick={() => navigate('/acompanhamento')} 
-          className="bg-petrol hover:bg-petrol/90 text-white"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Acompanhamento
-        </Button>
+      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h2>
+          <Button 
+            onClick={() => navigate('/acompanhamento')} 
+            className="bg-petrol hover:bg-petrol/90 text-white"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Voltar para Acompanhamento
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <EmpresaHeader empresaNome={empresaSelecionada.nome} />
       
       <EmpresaMetricCards 

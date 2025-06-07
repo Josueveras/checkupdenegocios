@@ -76,14 +76,16 @@ const EditarProposta = () => {
 
   if (!proposta) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600 mb-4">Proposta não encontrada.</p>
-        <button 
-          onClick={() => navigate('/propostas')} 
-          className="bg-petrol hover:bg-petrol/90 text-white px-4 py-2 rounded"
-        >
-          Voltar às Propostas
-        </button>
+      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+        <div className="text-center py-12">
+          <p className="text-gray-600 mb-4">Proposta não encontrada.</p>
+          <button 
+            onClick={() => navigate('/propostas')} 
+            className="bg-petrol hover:bg-petrol/90 text-white px-4 py-2 rounded"
+          >
+            Voltar às Propostas
+          </button>
+        </div>
       </div>
     );
   }
@@ -91,7 +93,7 @@ const EditarProposta = () => {
   const empresa = proposta.diagnosticos?.empresas;
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <EditProposalHeader
         empresaNome={empresa?.nome}
         onCancel={handleCancel}

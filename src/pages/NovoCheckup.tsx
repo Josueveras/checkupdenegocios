@@ -112,7 +112,7 @@ const NovoCheckup = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <CheckupHeader
         empresaNome={empresa?.nome}
         onCancel={handleCancel}
