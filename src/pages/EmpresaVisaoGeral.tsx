@@ -20,10 +20,10 @@ const EmpresaVisaoGeral = () => {
   if (error) return <div className="p-6 text-red-500">Erro ao carregar dados.</div>;
 
   // Cálculos simples de exemplo
-  const total = diagnosticos.length;
-  const mediaScore = Math.round(
-    diagnosticos.reduce((sum, d) => sum + (d.score_geral || 0), 0) / total
-  );
+const total = diagnosticos.length;
+const mediaScore = total > 0
+  ? Math.round(diagnosticos.reduce((sum, d) => sum + (d.score_geral || 0), 0) / total)
+  : 0;
 
   return (
     <div className="space-y-6 animate-fade-in p-6">
