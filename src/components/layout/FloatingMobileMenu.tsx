@@ -47,11 +47,6 @@ const menuItems = [
     icon: BarChart
   },
   {
-    title: "Onboarding",
-    url: "/onboarding",
-    icon: User
-  },
-  {
     title: "Config",
     url: "/configuracoes",
     icon: Settings

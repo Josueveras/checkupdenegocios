@@ -26,7 +26,6 @@ import NovoCheckup from "./pages/NovoCheckup";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
-import Onboarding from "./pages/Onboarding";
 import Configuracoes from "./pages/Configuracoes";
 import Conta from "./pages/Conta";
 import NotFound from "./pages/NotFound";
@@ -107,9 +106,6 @@ const App = () => (
           } />
           <Route path="/metricas" element={
             <AppLayout><Metricas /></AppLayout>
-          } />
-          <Route path="/onboarding" element={
-            <AppLayout><Onboarding /></AppLayout>
           } />
           <Route path="/configuracoes" element={
             <AppLayout><Configuracoes /></AppLayout>

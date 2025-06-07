@@ -1,7 +1,9 @@
+
 import { useState } from "react";
 import { BarChart, FileText, Calendar, Settings, Edit, File } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+
 const menuItems = [{
   title: "Dashboard",
   url: "/dashboard",
@@ -31,10 +33,6 @@ const menuItems = [{
   url: "/metricas",
   icon: BarChart
 }, {
-  title: "Onboarding",
-  url: "/onboarding",
-  icon: Calendar
-}, {
   title: "Configurações",
   url: "/configuracoes",
   icon: Settings
@@ -43,6 +41,7 @@ const menuItems = [{
   url: "/conta",
   icon: Settings
 }];
+
 export function AppSidebar() {
   const {
     state
