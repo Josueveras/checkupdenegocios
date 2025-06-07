@@ -60,18 +60,20 @@ const ResultadoAcompanhamento = () => {
     }
   };
 
-  const parseJSON = <T>(input: unknown, fallback: T): T => {
-    if (!input) return fallback;
-    if (typeof input === 'string') {
-      try {
-        return JSON.parse(input) as T;
-      } catch {
-        return fallback;
-      }
+ const parseJSON = <T>(input: unknown, fallback: T): T => {
+  if (!input) return fallback;
+  if (typeof input === 'string') {
+    try {
+      return JSON.parse(input) as T;
+    } catch {
+      return fallback;
     }
+  }
+  if (typeof input === 'object') {
     return input as T;
-  };
-
+  }
+  return fallback;
+};
   if (isLoading) {
     return (
       <div className="space-y-6 animate-fade-in px-4 pb-10">
