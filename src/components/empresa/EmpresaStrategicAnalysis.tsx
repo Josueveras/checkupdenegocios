@@ -18,41 +18,41 @@ interface EmpresaStrategicAnalysisProps {
 export const EmpresaStrategicAnalysis = ({ metricasDerivadas }: EmpresaStrategicAnalysisProps) => {
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5 text-petrol" />
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+          <Target className="h-4 w-4 sm:h-5 sm:w-5 text-petrol flex-shrink-0" />
           🔍 Análise Estratégica
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-sm">
           Sinais extraídos automaticamente da jornada da empresa.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Variação de Score</h4>
-            <p className="text-2xl font-bold text-blue-600">{formatPercentage(metricasDerivadas.variacaoScore)}</p>
-            <p className="text-sm text-gray-600">Crescimento total</p>
+            <h4 className="font-semibold mb-2 text-sm sm:text-base">Variação de Score</h4>
+            <p className="text-xl sm:text-2xl font-bold text-blue-600">{formatPercentage(metricasDerivadas.variacaoScore)}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Crescimento total</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Variação de ROI</h4>
-            <p className="text-2xl font-bold text-yellow-600">{formatPercentage(metricasDerivadas.variacaoROI)}</p>
-            <p className="text-sm text-gray-600">Evolução do retorno</p>
+            <h4 className="font-semibold mb-2 text-sm sm:text-base">Variação de ROI</h4>
+            <p className="text-xl sm:text-2xl font-bold text-yellow-600">{formatPercentage(metricasDerivadas.variacaoROI)}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Evolução do retorno</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Check-ups sem ação</h4>
-            <p className="text-2xl font-bold text-red-600">{metricasDerivadas.checkupsSemAcao}</p>
-            <p className="text-sm text-gray-600">Meses sem implementação</p>
+            <h4 className="font-semibold mb-2 text-sm sm:text-base">Check-ups sem ação</h4>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">{metricasDerivadas.checkupsSemAcao}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Meses sem implementação</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Tempo Inativo</h4>
-            <p className="text-2xl font-bold text-orange-600">{metricasDerivadas.tempoInativo}</p>
-            <p className="text-sm text-gray-600">Dias desde último check-up</p>
+            <h4 className="font-semibold mb-2 text-sm sm:text-base">Tempo Inativo</h4>
+            <p className="text-xl sm:text-2xl font-bold text-orange-600">{metricasDerivadas.tempoInativo}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Dias desde último check-up</p>
           </div>
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">Ações por mês</h4>
-            <p className="text-2xl font-bold text-green-600">{metricasDerivadas.mediaAcoesPorMes}</p>
-            <p className="text-sm text-gray-600">Média de implementações</p>
+            <h4 className="font-semibold mb-2 text-sm sm:text-base">Ações por mês</h4>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">{metricasDerivadas.mediaAcoesPorMes}</p>
+            <p className="text-xs sm:text-sm text-gray-600">Média de implementações</p>
           </div>
         </div>
       </CardContent>
