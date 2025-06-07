@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Target, Award } from 'lucide-react';
+import { Award } from 'lucide-react';
 
 interface UltimoCheckup {
   pontos_fortes_desenvolvidos?: string;
@@ -17,17 +17,17 @@ interface EmpresaStrategicSummaryProps {
 
 export const EmpresaStrategicSummary = ({ ultimoCheckup }: EmpresaStrategicSummaryProps) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <Card className="bg-green-50 border-green-200">
         <CardHeader>
           <CardTitle className="text-green-800 flex items-center gap-2">
             📈 Pontos Fortes Desenvolvidos
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-green-700">
+        <CardContent className="space-y-3">
+          <div className="text-sm text-green-700">
             {ultimoCheckup.pontos_fortes_desenvolvidos || 'Não informado'}
-          </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -37,10 +37,10 @@ export const EmpresaStrategicSummary = ({ ultimoCheckup }: EmpresaStrategicSumma
             ⚠️ Gargalos Atuais
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-yellow-700">
+        <CardContent className="space-y-3">
+          <div className="text-sm text-yellow-700">
             {ultimoCheckup.gargalos_atuais || 'Não informado'}
-          </p>
+          </div>
         </CardContent>
       </Card>
 
@@ -50,36 +50,36 @@ export const EmpresaStrategicSummary = ({ ultimoCheckup }: EmpresaStrategicSumma
             💡 Estratégias Validadas
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-blue-700">
+        <CardContent className="space-y-3">
+          <div className="text-sm text-blue-700">
             {ultimoCheckup.estrategias_validadas || 'Não informado'}
-          </p>
+          </div>
         </CardContent>
       </Card>
 
-      <Card className={ultimoCheckup.virou_case ? "bg-purple-50 border-purple-200" : "bg-gray-50 border-gray-200"}>
-        <CardHeader>
-          <CardTitle className={`flex items-center gap-2 ${ultimoCheckup.virou_case ? "text-purple-800" : "text-gray-800"}`}>
-            <Award className="h-4 w-4" />
-            Projeto virou um case?
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Badge variant={ultimoCheckup.virou_case ? "default" : "secondary"}>
-              {ultimoCheckup.virou_case ? "Sim" : "Não"}
-            </Badge>
-          </div>
-          {ultimoCheckup.virou_case && ultimoCheckup.destaque_case && (
-            <div>
-              <h5 className="font-medium text-sm mb-1">Destaques do Case:</h5>
-              <p className="text-sm text-gray-700">
-                {ultimoCheckup.destaque_case}
-              </p>
+      {ultimoCheckup.virou_case && (
+        <Card className="lg:col-span-3 bg-purple-50 border-purple-200">
+          <CardHeader>
+            <CardTitle className="text-purple-800 flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              Projeto virou um case!
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-2">
+              <Badge variant="default">Sim</Badge>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            {ultimoCheckup.destaque_case && (
+              <div>
+                <h5 className="font-medium text-sm mb-1">Destaques do Case:</h5>
+                <p className="text-sm text-purple-700">
+                  {ultimoCheckup.destaque_case}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

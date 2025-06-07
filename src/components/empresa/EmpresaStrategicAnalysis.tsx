@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target } from 'lucide-react';
 import { formatPercentage } from '@/utils/formatters';
 
 interface MetricasDerivadas {

@@ -114,7 +114,9 @@ const EmpresaDetalhada = () => {
         metricasDerivadas={metricasDerivadas}
       />
       
-      <EmpresaCharts checkupsEmpresa={checkupsEmpresa || []} />
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <EmpresaCharts checkupsEmpresa={checkupsEmpresa || []} />
+      </div>
       
       <EmpresaCheckupsTable checkupsEmpresa={checkupsEmpresa || []} />
       

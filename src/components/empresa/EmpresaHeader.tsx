@@ -1,5 +1,4 @@
 
-import { Building2 } from 'lucide-react';
 import { BackButton } from '@/components/ui/back-button';
 
 interface EmpresaHeaderProps {
