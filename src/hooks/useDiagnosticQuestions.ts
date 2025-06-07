@@ -15,11 +15,9 @@ interface Question {
 export const useDiagnosticQuestions = () => {
   const { data: perguntasSupabase, isLoading, error } = usePerguntas();
 
-  console.log('Raw data from Supabase:', perguntasSupabase);
 
   // Transformar dados do Supabase para o formato esperado
   const questions: Question[] = perguntasSupabase?.map((pergunta: any) => {
-    console.log('Processing pergunta:', pergunta);
     
     let options = [];
     
@@ -48,7 +46,6 @@ export const useDiagnosticQuestions = () => {
     };
   }) || [];
 
-  console.log('Processed questions:', questions);
 
   return { 
     questions, 

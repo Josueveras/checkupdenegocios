@@ -28,7 +28,6 @@ export const useDiagnosticSave = () => {
     onSuccess
   }: SaveDiagnosticProps) => {
     try {
-      console.log('Starting diagnostic save process...');
 
       // Verificar proteção anti-bot
       const formElement = document.querySelector('form') || document.body;
