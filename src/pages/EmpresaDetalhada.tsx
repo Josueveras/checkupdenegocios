@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -34,13 +33,13 @@ const EmpresaDetalhada = () => {
     queryKey: ['empresa', id],
     queryFn: async () => {
       if (!id) return null;
-
+      
       const { data, error } = await supabase
         .from('empresas')
         .select('*')
         .eq('id', id)
         .single();
-
+      
       if (error) throw error;
       return data;
     },
@@ -51,19 +50,20 @@ const EmpresaDetalhada = () => {
     queryKey: ['checkups-empresa', id],
     queryFn: async () => {
       if (!id) return [];
-
+      
       const { data, error } = await supabase
         .from('acompanhamentos')
         .select('*')
         .eq('empresa_id', id)
         .order('mes', { ascending: true });
-
+      
       if (error) throw error;
       return data || [];
     },
     enabled: !!id
   });
 
+  // Calculate derived metrics
   const metricasDerivadas = {
     scoreMedio: calculateAverageScore(checkupsEmpresa || []),
     roiMedio: calculateAverageROI(checkupsEmpresa || []),
@@ -91,7 +91,7 @@ const EmpresaDetalhada = () => {
 
   if (!empresaSelecionada) {
     return (
-      <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6">
+      <div className="w-full max-w-7xl mx-auto px-4 py-6">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Empresa não encontrada</h2>
           <Button 
@@ -107,22 +107,22 @@ const EmpresaDetalhada = () => {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 md:px-8 py-6 space-y-6 bg-white shadow-sm rounded-xl animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <EmpresaHeader empresaNome={empresaSelecionada.nome} />
-
+      
       <EmpresaMetricCards 
         totalCheckups={checkupsEmpresa?.length || 0}
         metricasDerivadas={metricasDerivadas}
       />
-
+      
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <EmpresaCharts checkupsEmpresa={checkupsEmpresa || []} />
       </div>
-
+      
       <EmpresaCheckupsTable checkupsEmpresa={checkupsEmpresa || []} />
-
+      
       <EmpresaStrategicAnalysis metricasDerivadas={metricasDerivadas} />
-
+      
       {ultimoCheckup && (
         <EmpresaStrategicSummary ultimoCheckup={ultimoCheckup} />
       )}
