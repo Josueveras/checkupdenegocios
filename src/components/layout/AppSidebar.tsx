@@ -1,4 +1,4 @@
-
+import { LayoutDashboard } from "lucide-react";
 import { useState } from "react";
 import { BarChart, FileText, Calendar, Settings, Edit, File, Target } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -40,6 +40,10 @@ const menuItems = [{
   title: "Configurações",
   url: "/configuracoes",
   icon: Settings
+}, {
+  title: "CRM",
+  url: "/crm",
+  icon: LayoutDashboard,
 }, {
   title: "Conta",
   url: "/conta",
