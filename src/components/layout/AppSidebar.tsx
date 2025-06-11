@@ -1,6 +1,6 @@
 import { LayoutDashboard } from "lucide-react";
 import { useState } from "react";
-import { BarChart, FileText, Calendar, Settings, Edit, File, Target } from "lucide-react";
+import { BarChart, FileText, Calendar, Settings, Edit, File, Target, LayoutDashboard, } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
