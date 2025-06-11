@@ -40,6 +40,10 @@ const menuItems = [{
   title: "Configurações",
   url: "/configuracoes",
   icon: Settings
+},{
+  title: "CRM",
+  url: "/crm",
+  icon: <LayoutDashboard />, // ou qualquer ícone importado do Lucide
 }, {
   title: "Conta",
   url: "/conta",
