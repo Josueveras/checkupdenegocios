@@ -40,8 +40,7 @@ const menuItems = [{
   title: "Configurações",
   url: "/configuracoes",
   icon: Settings
-},import { LayoutDashboard } from "lucide-react";
-{
+}, {
   title: "Conta",
   url: "/conta",
   icon: Settings
