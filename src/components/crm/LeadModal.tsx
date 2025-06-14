@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -31,29 +31,63 @@ interface LeadModalProps {
 
 export function LeadModal({ lead, isOpen, onOpenChange, mode: initialMode }: LeadModalProps) {
   const [mode, setMode] = useState(initialMode);
+  const [isFormLoading, setIsFormLoading] = useState(false);
   const updateLead = useUpdateLead();
   const deleteLead = useDeleteLead();
 
   const form = useForm<LeadFormData>({
     resolver: zodResolver(leadSchema),
-    defaultValues: lead ? {
-      empresa_nome: lead.empresa_nome,
-      contato_nome: lead.contato_nome,
-      email: lead.email,
-      telefone: lead.telefone,
-      setor: lead.setor,
-      tamanho_empresa: lead.tamanho_empresa,
-      fonte_lead: lead.fonte_lead,
-      status: lead.status,
-      score_qualificacao: lead.score_qualificacao,
-      potencial_receita: lead.potencial_receita,
-      observacoes: lead.observacoes,
-      responsavel: lead.responsavel,
-      urgencia: lead.urgencia,
-      necessidades: lead.necessidades,
-      orcamento_disponivel: lead.orcamento_disponivel
-    } : undefined
+    defaultValues: {
+      empresa_nome: '',
+      contato_nome: '',
+      email: '',
+      telefone: '',
+      setor: '',
+      tamanho_empresa: 'micro',
+      fonte_lead: '',
+      status: 'novo',
+      score_qualificacao: 0,
+      potencial_receita: 0,
+      observacoes: '',
+      responsavel: '',
+      urgencia: 'baixa',
+      necessidades: '',
+      orcamento_disponivel: 0
+    }
   });
+
+  // Reset form when lead changes or mode changes to edit
+  useEffect(() => {
+    if (lead && (mode === 'edit' || initialMode === 'edit')) {
+      setIsFormLoading(true);
+      
+      const formData: LeadFormData = {
+        empresa_nome: lead.empresa_nome ?? '',
+        contato_nome: lead.contato_nome ?? '',
+        email: lead.email ?? '',
+        telefone: lead.telefone ?? '',
+        setor: lead.setor ?? '',
+        tamanho_empresa: lead.tamanho_empresa ?? 'micro',
+        fonte_lead: lead.fonte_lead ?? '',
+        status: lead.status ?? 'novo',
+        score_qualificacao: lead.score_qualificacao ?? 0,
+        potencial_receita: lead.potencial_receita ?? 0,
+        observacoes: lead.observacoes ?? '',
+        responsavel: lead.responsavel ?? '',
+        urgencia: lead.urgencia ?? 'baixa',
+        necessidades: lead.necessidades ?? '',
+        orcamento_disponivel: lead.orcamento_disponivel ?? 0
+      };
+
+      form.reset(formData);
+      setIsFormLoading(false);
+    }
+  }, [lead, mode, initialMode, form]);
+
+  // Sync mode with initialMode
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
 
   if (!lead) return null;
 
@@ -209,133 +243,271 @@ export function LeadModal({ lead, isOpen, onOpenChange, mode: initialMode }: Lea
             ) : (
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Formulário de edição - similar ao LeadCapture mas com campos preenchidos */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="empresa_nome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome da Empresa</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                  {isFormLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-petrol"></div>
+                      <span className="ml-2">Carregando formulário...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="empresa_nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome da Empresa</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="contato_nome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome do Contato</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="contato_nome"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Nome do Contato</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input type="email" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input type="email" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="telefone"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Telefone</FormLabel>
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        <FormField
+                          control={form.control}
+                          name="telefone"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Telefone</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                    <FormField
-                      control={form.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                        <FormField
+                          control={form.control}
+                          name="setor"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Setor</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="fonte_lead"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Fonte do Lead</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="status"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Status</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="novo">Novo</SelectItem>
+                                  <SelectItem value="contactado">Contactado</SelectItem>
+                                  <SelectItem value="qualificado">Qualificado</SelectItem>
+                                  <SelectItem value="reuniao_agendada">Reunião Agendada</SelectItem>
+                                  <SelectItem value="proposta_enviada">Proposta Enviada</SelectItem>
+                                  <SelectItem value="ganho">Ganho</SelectItem>
+                                  <SelectItem value="perdido">Perdido</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="urgencia"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Urgência</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="baixa">Baixa</SelectItem>
+                                  <SelectItem value="media">Média</SelectItem>
+                                  <SelectItem value="alta">Alta</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="tamanho_empresa"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Tamanho da Empresa</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="micro">Micro</SelectItem>
+                                  <SelectItem value="pequena">Pequena</SelectItem>
+                                  <SelectItem value="media">Média</SelectItem>
+                                  <SelectItem value="grande">Grande</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="responsavel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Responsável</FormLabel>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="potencial_receita"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Receita Potencial</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="orcamento_disponivel"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Orçamento Disponível</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="number" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="necessidades"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Necessidades</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
+                              <Textarea {...field} rows={3} />
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="novo">Novo</SelectItem>
-                              <SelectItem value="contactado">Contactado</SelectItem>
-                              <SelectItem value="qualificado">Qualificado</SelectItem>
-                              <SelectItem value="reuniao_agendada">Reunião Agendada</SelectItem>
-                              <SelectItem value="proposta_enviada">Proposta Enviada</SelectItem>
-                              <SelectItem value="ganho">Ganho</SelectItem>
-                              <SelectItem value="perdido">Perdido</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name="urgencia"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Urgência</FormLabel>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                      <FormField
+                        control={form.control}
+                        name="observacoes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Observações</FormLabel>
                             <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
+                              <Textarea {...field} rows={3} />
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="baixa">Baixa</SelectItem>
-                              <SelectItem value="media">Média</SelectItem>
-                              <SelectItem value="alta">Alta</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <div className="flex gap-2">
-                    <Button type="submit" disabled={updateLead.isPending}>
-                      {updateLead.isPending ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Salvando...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Salvar
-                        </>
-                      )}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={() => setMode('view')}>
-                      Cancelar
-                    </Button>
-                  </div>
+                      <div className="flex gap-2">
+                        <Button type="submit" disabled={updateLead.isPending || isFormLoading}>
+                          {updateLead.isPending ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Salvando...
+                            </>
+                          ) : (
+                            <>
+                              <Save className="h-4 w-4 mr-2" />
+                              Salvar
+                            </>
+                          )}
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setMode('view')}>
+                          Cancelar
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </form>
               </Form>
             )}
