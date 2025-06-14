@@ -1,9 +1,9 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { FileText, ChevronDown } from 'lucide-react';
 import { usePropostas } from '@/hooks/useSupabase';
 import { ProposalCard } from '@/components/ProposalCard';
 import { ProposalViewModal } from '@/components/ProposalViewModal';
@@ -42,6 +42,14 @@ const Propostas = () => {
     navigate('/novo-diagnostico');
   };
 
+  const handleCreatePlanBasedProposal = () => {
+    navigate('/nova-proposta-plano');
+  };
+
+  const handleCreateCustomProposal = () => {
+    navigate('/nova-proposta-personalizada');
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -61,13 +69,25 @@ const Propostas = () => {
           <h1 className="text-3xl font-bold text-gray-900">Propostas Comerciais</h1>
           <p className="text-gray-600 mt-1">Gerencie suas propostas baseadas nos diagnósticos</p>
         </div>
-        <Button 
-          onClick={handleCreateNewProposal}
-          className="bg-petrol hover:bg-petrol/90 text-white"
-        >
-          <FileText className="mr-2 h-4 w-4" />
-          Nova Proposta
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="bg-petrol hover:bg-petrol/90 text-white">
+              <FileText className="mr-2 h-4 w-4" />
+              Nova Proposta
+              <ChevronDown className="ml-2 h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem onClick={handleCreatePlanBasedProposal}>
+              <FileText className="mr-2 h-4 w-4" />
+              Gerar baseada em plano
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCreateCustomProposal}>
+              <FileText className="mr-2 h-4 w-4" />
+              Criar proposta personalizada
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Stats */}
