@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   Card,
@@ -45,7 +46,13 @@ const Planos = () => {
       if (error) {
         console.error(error);
       } else {
-        setPlans(data);
+        // Transform the data to match our Plan interface
+        const transformedPlans = data.map(plan => ({
+          ...plan,
+          tarefas: Array.isArray(plan.tarefas) ? plan.tarefas : 
+                   typeof plan.tarefas === 'string' ? [plan.tarefas] : []
+        }));
+        setPlans(transformedPlans);
       }
     };
     fetchPlans();
@@ -78,7 +85,14 @@ const Planos = () => {
       toast({ title: "Plano salvo com sucesso" });
       setDialogOpen(false);
       const updatedPlans = await supabase.from("planos").select("*");
-      setPlans(updatedPlans.data || []);
+      if (updatedPlans.data) {
+        const transformedPlans = updatedPlans.data.map(plan => ({
+          ...plan,
+          tarefas: Array.isArray(plan.tarefas) ? plan.tarefas : 
+                   typeof plan.tarefas === 'string' ? [plan.tarefas] : []
+        }));
+        setPlans(transformedPlans);
+      }
     }
   };
 
@@ -89,7 +103,14 @@ const Planos = () => {
     } else {
       toast({ title: "Plano excluído" });
       const updatedPlans = await supabase.from("planos").select("*");
-      setPlans(updatedPlans.data || []);
+      if (updatedPlans.data) {
+        const transformedPlans = updatedPlans.data.map(plan => ({
+          ...plan,
+          tarefas: Array.isArray(plan.tarefas) ? plan.tarefas : 
+                   typeof plan.tarefas === 'string' ? [plan.tarefas] : []
+        }));
+        setPlans(transformedPlans);
+      }
     }
   };
 
@@ -172,7 +193,7 @@ const Planos = () => {
               value={editingPlan?.tarefas.join(", ") || ""}
               onChange={(e) =>
                 setEditingPlan((prev) =>
-                  prev && { ...prev, tarefas: e.target.value.split(",") }
+                  prev && { ...prev, tarefas: e.target.value.split(",").map(t => t.trim()) }
                 )
               }
             />

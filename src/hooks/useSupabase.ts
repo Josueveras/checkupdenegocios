@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useDiagnosticNotifications } from './useDiagnosticNotifications';
@@ -147,6 +146,32 @@ export const useSaveRespostas = () => {
       
       if (error) throw error;
       return data;
+    }
+  });
+};
+
+// Hook para CRM
+export const useCRM = () => {
+  return useQuery({
+    queryKey: ['crm'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('propostas')
+        .select(`
+          *,
+          diagnosticos!propostas_diagnostico_id_fkey (
+            empresas!diagnosticos_empresa_id_fkey (
+              nome,
+              cliente_nome,
+              cliente_email,
+              cliente_telefone
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
     }
   });
 };

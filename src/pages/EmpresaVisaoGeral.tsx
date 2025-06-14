@@ -1,3 +1,4 @@
+
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,24 +7,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 const EmpresaVisaoGeral = () => {
   const { id } = useParams();
 
-  const { data: diagnosticos, isLoading, error } = useQuery(['diagnosticos', id], async () => {
-    const { data, error } = await supabase
-      .from('diagnosticos')
-      .select('*')
-      .eq('empresa_id', id);
+  const { data: diagnosticos, isLoading, error } = useQuery({
+    queryKey: ['diagnosticos', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('diagnosticos')
+        .select('*')
+        .eq('empresa_id', id);
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data || [];
+    }
   });
 
   if (isLoading) return <div className="p-6">Carregando dados...</div>;
   if (error) return <div className="p-6 text-red-500">Erro ao carregar dados.</div>;
 
   // Cálculos simples de exemplo
-const total = diagnosticos.length;
-const mediaScore = total > 0
-  ? Math.round(diagnosticos.reduce((sum, d) => sum + (d.score_geral || 0), 0) / total)
-  : 0;
+  const total = diagnosticos.length;
+  const mediaScore = total > 0
+    ? Math.round(diagnosticos.reduce((sum, d) => sum + (d.score_geral || 0), 0) / total)
+    : 0;
 
   return (
     <div className="space-y-6 animate-fade-in p-6">
