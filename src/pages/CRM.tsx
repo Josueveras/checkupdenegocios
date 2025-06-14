@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,6 @@ import { LeadCard } from '@/components/crm/LeadCard';
 import { LeadModal } from '@/components/crm/LeadModal';
 import { LeadFilters } from '@/components/crm/LeadFilters';
 import { LeadStats } from '@/components/crm/LeadStats';
-import { FormBuilder } from '@/components/crm/FormBuilder';
 import { Lead } from '@/types/lead';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,9 +25,9 @@ const CRM = () => {
 
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = 
-      (lead.empresa_nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lead.contato_nome || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (lead.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+      lead.empresa_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.contato_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lead.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'todos' || lead.status === statusFilter;
     const matchesUrgencia = urgenciaFilter === 'todos' || lead.urgencia === urgenciaFilter;
@@ -60,23 +60,17 @@ const CRM = () => {
   };
 
   const handleCall = (lead: Lead) => {
-    if (lead.telefone) {
-      window.open(`tel:${lead.telefone}`, '_self');
-    }
+    window.open(`tel:${lead.telefone}`, '_self');
   };
 
   const handleEmail = (lead: Lead) => {
-    if (lead.email) {
-      window.open(`mailto:${lead.email}`, '_blank');
-    }
+    window.open(`mailto:${lead.email}`, '_blank');
   };
 
   const handleWhatsApp = (lead: Lead) => {
-    if (lead.telefone && lead.contato_nome && lead.empresa_nome) {
-      const message = encodeURIComponent(`Olá ${lead.contato_nome}, tudo bem? Sou da equipe comercial e gostaria de conversar sobre as necessidades da ${lead.empresa_nome}.`);
-      const phone = lead.telefone.replace(/\D/g, '');
-      window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
-    }
+    const message = encodeURIComponent(`Olá ${lead.contato_nome}, tudo bem? Sou da equipe comercial e gostaria de conversar sobre as necessidades da ${lead.empresa_nome}.`);
+    const phone = lead.telefone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
   };
 
   if (isLoading) {
@@ -98,16 +92,13 @@ const CRM = () => {
           <h1 className="text-3xl font-bold text-gray-900">CRM - Leads Externos</h1>
           <p className="text-gray-600 mt-1">Gerencie seus leads e pipeline comercial</p>
         </div>
-        <div className="flex gap-2">
-          <FormBuilder />
-          <Button 
-            onClick={handleCreateNewLead}
-            className="bg-petrol hover:bg-petrol/90 text-white"
-          >
-            <UserPlus className="mr-2 h-4 w-4" />
-            Novo Lead
-          </Button>
-        </div>
+        <Button 
+          onClick={handleCreateNewLead}
+          className="bg-petrol hover:bg-petrol/90 text-white"
+        >
+          <UserPlus className="mr-2 h-4 w-4" />
+          Novo Lead
+        </Button>
       </div>
 
       {/* Stats */}

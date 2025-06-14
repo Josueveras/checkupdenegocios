@@ -1,24 +1,23 @@
 
 export interface Lead {
   id: string;
-  empresa_nome?: string;
-  contato_nome?: string;
-  email?: string;
-  telefone?: string;
-  setor?: string;
-  tamanho_empresa?: 'micro' | 'pequena' | 'media' | 'grande';
-  fonte_lead?: string;
-  status?: 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'proposta_enviada' | 'ganho' | 'perdido';
-  score_qualificacao?: number;
-  potencial_receita?: number;
-  observacoes?: string;
+  empresa_nome: string;
+  contato_nome: string;
+  email: string;
+  telefone: string;
+  setor: string;
+  tamanho_empresa: 'micro' | 'pequena' | 'media' | 'grande';
+  fonte_lead: string;
+  status: 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'proposta_enviada' | 'ganho' | 'perdido';
+  score_qualificacao: number;
+  potencial_receita: number;
+  observacoes: string;
   data_criacao: string;
   data_ultima_interacao: string;
-  responsavel?: string;
-  urgencia?: 'baixa' | 'media' | 'alta';
-  necessidades?: string;
-  orcamento_disponivel?: number;
-  custom_fields?: Record<string, any>;
+  responsavel: string;
+  urgencia: 'baixa' | 'media' | 'alta';
+  necessidades: string;
+  orcamento_disponivel: number;
 }
 
 export interface LeadActivity {
