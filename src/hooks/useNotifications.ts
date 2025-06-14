@@ -18,15 +18,42 @@ export const useNotifications = () => {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
-      // Usando any para contornar a limitação dos tipos do Supabase
-      const { data, error } = await (supabase as any)
-        .from('notifications')
-        .select('*')
-        .order('created_at', { ascending: false });
+      console.log('DEBUG: Tentando buscar notificações...');
       
-      if (error) throw error;
-      return (data as Notification[]) || [];
-    }
+      // Por enquanto, vamos verificar se a tabela existe
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('count')
+          .limit(1);
+        
+        if (error) {
+          console.warn('DEBUG: Tabela notifications não existe ou não está acessível:', error.message);
+          // Retornar array vazio se a tabela não existir
+          return [];
+        }
+        
+        // Se chegou até aqui, a tabela existe, buscar dados reais
+        const { data: notifications, error: fetchError } = await supabase
+          .from('notifications')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (fetchError) {
+          console.error('DEBUG: Erro ao buscar notificações:', fetchError);
+          throw fetchError;
+        }
+        
+        console.log('DEBUG: Notificações encontradas:', notifications?.length || 0);
+        return (notifications as Notification[]) || [];
+        
+      } catch (error) {
+        console.warn('DEBUG: Erro na verificação da tabela notifications:', error);
+        return [];
+      }
+    },
+    retry: 1, // Tentar apenas uma vez se der erro
+    retryDelay: 1000
   });
 };
 
@@ -36,16 +63,25 @@ export const useMarkAsRead = () => {
   
   return useMutation({
     mutationFn: async (notificationId: string) => {
-      // Usando any para contornar a limitação dos tipos do Supabase
-      const { error } = await (supabase as any)
+      console.log('DEBUG: Tentando marcar notificação como lida:', notificationId);
+      
+      const { error } = await supabase
         .from('notifications')
         .update({ lida: true })
         .eq('id', notificationId);
       
-      if (error) throw error;
+      if (error) {
+        console.error('DEBUG: Erro ao marcar como lida:', error);
+        throw error;
+      }
+      
+      console.log('DEBUG: Notificação marcada como lida com sucesso');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (error) => {
+      console.error('DEBUG: Falha ao marcar notificação como lida:', error);
     }
   });
 };
@@ -56,11 +92,15 @@ export const useCreateNotification = () => {
   
   return useMutation({
     mutationFn: async (notification: Omit<Notification, 'id' | 'created_at' | 'user_id'>) => {
+      console.log('DEBUG: Criando nova notificação:', notification);
+      
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      if (!user) {
+        console.error('DEBUG: Usuário não autenticado');
+        throw new Error('Usuário não autenticado');
+      }
 
-      // Usando any para contornar a limitação dos tipos do Supabase
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('notifications')
         .insert({
           ...notification,
@@ -69,11 +109,19 @@ export const useCreateNotification = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('DEBUG: Erro ao criar notificação:', error);
+        throw error;
+      }
+      
+      console.log('DEBUG: Notificação criada com sucesso:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+    onError: (error) => {
+      console.error('DEBUG: Falha ao criar notificação:', error);
     }
   });
 };

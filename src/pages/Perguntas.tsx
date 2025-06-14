@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { usePerguntasManager } from '@/hooks/usePerguntasManager';
@@ -8,6 +7,7 @@ import { QuestionHeader } from '@/components/questions/QuestionHeader';
 import { QuestionDialog } from '@/components/questions/QuestionDialog';
 import { CategoryDialog } from '@/components/questions/CategoryDialog';
 import { EmptyState } from '@/components/questions/EmptyState';
+import { DebugPanel } from '@/components/questions/DebugPanel';
 
 interface Question {
   id?: string;
@@ -187,9 +187,30 @@ const Perguntas = () => {
         onManageCategories={() => setCategoryDialogOpen(true)}
       />
 
-      {/* Debug info - remover em produção */}
-      <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded">
-        Debug: {questions.length} perguntas carregadas
+      {/* Debug Panel - apenas em desenvolvimento */}
+      <DebugPanel />
+
+      {/* Enhanced Debug info */}
+      <div className="text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <strong>Perguntas carregadas:</strong> {questions.length}
+          </div>
+          <div>
+            <strong>Status:</strong> {isLoading ? 'Carregando...' : 'Pronto'}
+          </div>
+          <div>
+            <strong>Última atualização:</strong> {new Date().toLocaleTimeString()}
+          </div>
+          <div>
+            <strong>Problemas:</strong> {error ? 'Sim' : 'Não'}
+          </div>
+        </div>
+        {error && (
+          <div className="mt-2 text-red-600 text-xs">
+            <strong>Erro:</strong> {error.message}
+          </div>
+        )}
       </div>
 
       {/* Questions List */}
