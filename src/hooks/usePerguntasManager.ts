@@ -15,25 +15,38 @@ export const usePerguntasManager = () => {
   const queryClient = useQueryClient();
   const { data: questions, isLoading, error } = usePerguntas();
 
+  console.log('Raw questions data from Supabase:', questions);
+
   // Transformar dados do Supabase para o formato da UI
-  const formattedQuestions = questions?.map((pergunta: any) => ({
-    id: pergunta.id,
-    question: pergunta.pergunta,
-    category: pergunta.categoria,
-    options: pergunta.opcoes ? pergunta.opcoes.map((opt: any) => ({
-      text: opt.texto || opt.text || '',
-      score: opt.score || 0
-    })) : [
-      { text: "Não temos estratégia definida", score: 0 },
-      { text: "Temos algumas ações isoladas", score: 1 },
-      { text: "Temos estratégia básica implementada", score: 2 },
-      { text: "Temos estratégia completa e bem executada", score: 3 }
-    ],
-    required: pergunta.obrigatoria || false
-  })) || [];
+  const formattedQuestions = questions?.map((pergunta: any) => {
+    console.log('Processing question:', pergunta.id, 'with opcoes:', pergunta.opcoes);
+    
+    let processedOptions: Array<{ text: string; score: number }> = [];
+    
+    if (pergunta.opcoes && Array.isArray(pergunta.opcoes)) {
+      processedOptions = pergunta.opcoes.map((opt: any) => ({
+        text: opt.texto || opt.text || '',
+        score: typeof opt.score === 'number' ? opt.score : 0
+      }));
+    }
+    
+    console.log('Processed options for question', pergunta.id, ':', processedOptions);
+    
+    return {
+      id: pergunta.id,
+      question: pergunta.pergunta,
+      category: pergunta.categoria,
+      options: processedOptions,
+      required: pergunta.obrigatoria || false
+    };
+  }) || [];
+
+  console.log('Final formatted questions:', formattedQuestions);
 
   const saveQuestion = useMutation({
     mutationFn: async (question: Question) => {
+      console.log('Saving question:', question);
+      
       const perguntaData = {
         pergunta: question.question,
         categoria: question.category,
@@ -46,6 +59,8 @@ export const usePerguntasManager = () => {
         tipo: 'multipla_escolha'
       };
 
+      console.log('Data being sent to Supabase:', perguntaData);
+
       if (question.id) {
         // Atualizar pergunta existente
         const { data, error } = await supabase
@@ -55,7 +70,12 @@ export const usePerguntasManager = () => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error updating question:', error);
+          throw error;
+        }
+        
+        console.log('Question updated successfully:', data);
         return data;
       } else {
         // Criar nova pergunta
@@ -65,26 +85,46 @@ export const usePerguntasManager = () => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error creating question:', error);
+          throw error;
+        }
+        
+        console.log('Question created successfully:', data);
         return data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Mutation successful, invalidating queries...');
       queryClient.invalidateQueries({ queryKey: ['perguntas'] });
+    },
+    onError: (error) => {
+      console.error('Mutation failed:', error);
     }
   });
 
   const deleteQuestion = useMutation({
     mutationFn: async (id: string) => {
+      console.log('Deleting question with id:', id);
+      
       const { error } = await supabase
         .from('perguntas')
         .delete()
         .eq('id', id);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting question:', error);
+        throw error;
+      }
+      
+      console.log('Question deleted successfully');
     },
     onSuccess: () => {
+      console.log('Delete successful, invalidating queries...');
       queryClient.invalidateQueries({ queryKey: ['perguntas'] });
+    },
+    onError: (error) => {
+      console.error('Delete failed:', error);
     }
   });
 
