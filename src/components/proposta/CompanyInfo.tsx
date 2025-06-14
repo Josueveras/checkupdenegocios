@@ -15,26 +15,28 @@ interface CompanyInfoProps {
 export const CompanyInfo = ({ empresa }: CompanyInfoProps) => {
   return (
     <Card className="w-full overflow-hidden">
-      <CardHeader>
-        <CardTitle className="truncate">Informações da Empresa</CardTitle>
+      <CardHeader className="p-3 sm:p-6">
+        <CardTitle className="truncate text-base sm:text-lg md:text-xl">
+          Informações da Empresa
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+      <CardContent className="p-3 sm:p-6 pt-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-600">Nome da Empresa</p>
-            <p className="text-lg truncate">{empresa.nome}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">Nome da Empresa</p>
+            <p className="text-sm sm:text-base md:text-lg truncate">{empresa.nome}</p>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-600">Cliente</p>
-            <p className="text-lg truncate">{empresa.cliente_nome || 'N/A'}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">Cliente</p>
+            <p className="text-sm sm:text-base md:text-lg truncate">{empresa.cliente_nome || 'N/A'}</p>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-600">E-mail</p>
-            <p className="text-lg truncate">{empresa.cliente_email || 'N/A'}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">E-mail</p>
+            <p className="text-sm sm:text-base md:text-lg truncate">{empresa.cliente_email || 'N/A'}</p>
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-gray-600">Telefone</p>
-            <p className="text-lg truncate">{empresa.cliente_telefone || 'N/A'}</p>
+            <p className="text-xs sm:text-sm font-medium text-gray-600">Telefone</p>
+            <p className="text-sm sm:text-base md:text-lg truncate">{empresa.cliente_telefone || 'N/A'}</p>
           </div>
         </div>
       </CardContent>

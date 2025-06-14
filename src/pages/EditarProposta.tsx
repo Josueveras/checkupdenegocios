@@ -53,7 +53,7 @@ const EditarProposta = () => {
 
   return (
     <div className="w-full min-h-screen overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 md:space-y-6 animate-fade-in">
         <EditProposalHeader
           empresaNome={empresaNome}
           onCancel={handleCancel}
@@ -61,7 +61,7 @@ const EditarProposta = () => {
           isSaving={isSaving}
         />
 
-        <div className="space-y-6 w-full overflow-hidden">
+        <div className="space-y-4 md:space-y-6 w-full overflow-hidden">
           {empresa && (
             <div className="w-full overflow-hidden">
               <CompanyInfo empresa={empresa} />
