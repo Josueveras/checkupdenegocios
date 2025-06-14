@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -85,14 +86,14 @@ const CRM = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in overflow-hidden">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">CRM - Leads Externos</h1>
           <p className="text-gray-600 mt-1">Gerencie seus leads e pipeline comercial</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <FormBuilder />
           <Button 
             onClick={handleCreateNewLead}
@@ -121,7 +122,7 @@ const CRM = () => {
       />
 
       {/* Grid View */}
-      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2">
         {filteredLeads.map((lead) => (
           <LeadCard
             key={lead.id}

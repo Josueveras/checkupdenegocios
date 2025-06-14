@@ -31,7 +31,7 @@ export function LeadFilters({
   const hasActiveFilters = searchTerm || statusFilter !== 'todos' || urgenciaFilter !== 'todos' || tamanhoFilter !== 'todos';
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4 p-4 bg-white rounded-lg border">
+    <div className="flex flex-col gap-4 p-4 bg-white rounded-lg border">
       <div className="flex-1 relative">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
         <Input
@@ -42,9 +42,9 @@ export function LeadFilters({
         />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 overflow-x-auto">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px] min-w-[140px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -60,7 +60,7 @@ export function LeadFilters({
         </Select>
 
         <Select value={urgenciaFilter} onValueChange={setUrgenciaFilter}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-full sm:w-[120px] min-w-[120px]">
             <SelectValue placeholder="Urgência" />
           </SelectTrigger>
           <SelectContent>
@@ -72,7 +72,7 @@ export function LeadFilters({
         </Select>
 
         <Select value={tamanhoFilter} onValueChange={setTamanhoFilter}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-full sm:w-[120px] min-w-[120px]">
             <SelectValue placeholder="Tamanho" />
           </SelectTrigger>
           <SelectContent>
@@ -85,7 +85,7 @@ export function LeadFilters({
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="outline" size="sm" onClick={onClearFilters}>
+          <Button variant="outline" size="sm" onClick={onClearFilters} className="min-w-[80px]">
             <X className="h-4 w-4 mr-1" />
             Limpar
           </Button>
