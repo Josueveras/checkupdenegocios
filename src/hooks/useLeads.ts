@@ -3,8 +3,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Lead, LeadActivity } from '@/types/lead';
 import { useToast } from '@/hooks/use-toast';
 
-// Mock data temporário até configurar Supabase
-const mockLeads: Lead[] = [
+// Chave para o localStorage
+const LEADS_STORAGE_KEY = 'crm-leads';
+const ACTIVITIES_STORAGE_KEY = 'crm-activities';
+
+// Mock data inicial (usado apenas se não houver dados no localStorage)
+const initialMockLeads: Lead[] = [
   {
     id: '1',
     empresa_nome: 'TechCorp Solutions',
@@ -47,7 +51,7 @@ const mockLeads: Lead[] = [
   }
 ];
 
-const mockActivities: LeadActivity[] = [
+const initialMockActivities: LeadActivity[] = [
   {
     id: '1',
     lead_id: '1',
@@ -58,13 +62,59 @@ const mockActivities: LeadActivity[] = [
   }
 ];
 
+// Funções utilitárias para localStorage
+const getStoredLeads = (): Lead[] => {
+  try {
+    const stored = localStorage.getItem(LEADS_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    // Se não houver dados armazenados, usar dados iniciais e salvar
+    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(initialMockLeads));
+    return initialMockLeads;
+  } catch (error) {
+    console.error('Erro ao carregar leads do localStorage:', error);
+    return initialMockLeads;
+  }
+};
+
+const saveLeads = (leads: Lead[]) => {
+  try {
+    localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(leads));
+  } catch (error) {
+    console.error('Erro ao salvar leads no localStorage:', error);
+  }
+};
+
+const getStoredActivities = (): LeadActivity[] => {
+  try {
+    const stored = localStorage.getItem(ACTIVITIES_STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    localStorage.setItem(ACTIVITIES_STORAGE_KEY, JSON.stringify(initialMockActivities));
+    return initialMockActivities;
+  } catch (error) {
+    console.error('Erro ao carregar atividades do localStorage:', error);
+    return initialMockActivities;
+  }
+};
+
+const saveActivities = (activities: LeadActivity[]) => {
+  try {
+    localStorage.setItem(ACTIVITIES_STORAGE_KEY, JSON.stringify(activities));
+  } catch (error) {
+    console.error('Erro ao salvar atividades no localStorage:', error);
+  }
+};
+
 export const useLeads = () => {
   return useQuery({
     queryKey: ['leads'],
     queryFn: async () => {
       // Simular delay de API
       await new Promise(resolve => setTimeout(resolve, 500));
-      return mockLeads;
+      return getStoredLeads();
     }
   });
 };
@@ -74,7 +124,8 @@ export const useLeadById = (id: string) => {
     queryKey: ['lead', id],
     queryFn: async () => {
       await new Promise(resolve => setTimeout(resolve, 300));
-      const lead = mockLeads.find(l => l.id === id);
+      const leads = getStoredLeads();
+      const lead = leads.find(l => l.id === id);
       if (!lead) throw new Error('Lead não encontrado');
       return lead;
     },
@@ -87,7 +138,8 @@ export const useLeadActivities = (leadId: string) => {
     queryKey: ['lead-activities', leadId],
     queryFn: async () => {
       await new Promise(resolve => setTimeout(resolve, 300));
-      return mockActivities.filter(a => a.lead_id === leadId);
+      const activities = getStoredActivities();
+      return activities.filter(a => a.lead_id === leadId);
     },
     enabled: !!leadId
   });
@@ -102,14 +154,19 @@ export const useCreateLead = () => {
       // Simular delay de API
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      const leads = getStoredLeads();
+      const newId = (Math.max(...leads.map(l => parseInt(l.id)), 0) + 1).toString();
+      
       const newLead: Lead = {
         ...lead,
-        id: (mockLeads.length + 1).toString(),
+        id: newId,
         data_criacao: new Date().toISOString(),
         data_ultima_interacao: new Date().toISOString()
       };
       
-      mockLeads.push(newLead);
+      const updatedLeads = [...leads, newLead];
+      saveLeads(updatedLeads);
+      
       return newLead;
     },
     onSuccess: () => {
@@ -138,16 +195,20 @@ export const useUpdateLead = () => {
     mutationFn: async ({ id, ...updates }: Partial<Lead> & { id: string }) => {
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      const index = mockLeads.findIndex(l => l.id === id);
+      const leads = getStoredLeads();
+      const index = leads.findIndex(l => l.id === id);
       if (index === -1) throw new Error('Lead não encontrado');
       
-      mockLeads[index] = {
-        ...mockLeads[index],
+      const updatedLead = {
+        ...leads[index],
         ...updates,
         data_ultima_interacao: new Date().toISOString()
       };
       
-      return mockLeads[index];
+      leads[index] = updatedLead;
+      saveLeads(leads);
+      
+      return updatedLead;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
@@ -174,10 +235,12 @@ export const useDeleteLead = () => {
     mutationFn: async (id: string) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      const index = mockLeads.findIndex(l => l.id === id);
+      const leads = getStoredLeads();
+      const index = leads.findIndex(l => l.id === id);
       if (index === -1) throw new Error('Lead não encontrado');
       
-      mockLeads.splice(index, 1);
+      const updatedLeads = leads.filter(l => l.id !== id);
+      saveLeads(updatedLeads);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leads'] });
