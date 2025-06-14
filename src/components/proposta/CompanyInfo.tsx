@@ -14,27 +14,27 @@ interface CompanyInfoProps {
 
 export const CompanyInfo = ({ empresa }: CompanyInfoProps) => {
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardHeader>
-        <CardTitle>Informações da Empresa</CardTitle>
+        <CardTitle className="truncate">Informações da Empresa</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+          <div className="min-w-0">
             <p className="text-sm font-medium text-gray-600">Nome da Empresa</p>
-            <p className="text-lg">{empresa.nome}</p>
+            <p className="text-lg truncate">{empresa.nome}</p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-medium text-gray-600">Cliente</p>
-            <p className="text-lg">{empresa.cliente_nome || 'N/A'}</p>
+            <p className="text-lg truncate">{empresa.cliente_nome || 'N/A'}</p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-medium text-gray-600">E-mail</p>
-            <p className="text-lg">{empresa.cliente_email || 'N/A'}</p>
+            <p className="text-lg truncate">{empresa.cliente_email || 'N/A'}</p>
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-sm font-medium text-gray-600">Telefone</p>
-            <p className="text-lg">{empresa.cliente_telefone || 'N/A'}</p>
+            <p className="text-lg truncate">{empresa.cliente_telefone || 'N/A'}</p>
           </div>
         </div>
       </CardContent>

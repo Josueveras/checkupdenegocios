@@ -19,13 +19,13 @@ export const ProposalFilters = ({
   return (
     <Card className="w-full overflow-hidden">
       <CardHeader>
-        <CardTitle>Filtros</CardTitle>
-        <CardDescription>
+        <CardTitle className="truncate">Filtros</CardTitle>
+        <CardDescription className="truncate">
           Filtre as propostas por empresa ou status
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
           <div className="space-y-2 min-w-0">
             <label className="text-sm font-medium">Buscar</label>
             <Input

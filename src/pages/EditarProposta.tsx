@@ -52,27 +52,39 @@ const EditarProposta = () => {
   const empresaNome = isNewProposal && plano && 'nome' in plano ? plano.nome : empresa?.nome;
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
-      <EditProposalHeader
-        empresaNome={empresaNome}
-        onCancel={handleCancel}
-        onSave={onSave}
-        isSaving={isSaving}
-      />
-
-      {empresa && <CompanyInfo empresa={empresa} />}
-
-      {isNewProposal && (
-        <EmpresaSelector
-          selectedEmpresaId={formData.empresa_id || ''}
-          onChange={(empresaId) => updateFormData({ empresa_id: empresaId })}
+    <div className="w-full min-h-screen overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+        <EditProposalHeader
+          empresaNome={empresaNome}
+          onCancel={handleCancel}
+          onSave={onSave}
+          isSaving={isSaving}
         />
-      )}
 
-      <ProposalDataForm
-        formData={formData}
-        onChange={updateFormData}
-      />
+        <div className="space-y-6 w-full overflow-hidden">
+          {empresa && (
+            <div className="w-full overflow-hidden">
+              <CompanyInfo empresa={empresa} />
+            </div>
+          )}
+
+          {isNewProposal && (
+            <div className="w-full overflow-hidden">
+              <EmpresaSelector
+                selectedEmpresaId={formData.empresa_id || ''}
+                onChange={(empresaId) => updateFormData({ empresa_id: empresaId })}
+              />
+            </div>
+          )}
+
+          <div className="w-full overflow-hidden">
+            <ProposalDataForm
+              formData={formData}
+              onChange={updateFormData}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

@@ -13,7 +13,7 @@ export const EmpresaSelector = ({ selectedEmpresaId, onChange }: EmpresaSelector
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="w-full overflow-hidden">
         <CardContent className="py-6">
           <div className="text-center">Carregando empresas...</div>
         </CardContent>
@@ -22,18 +22,18 @@ export const EmpresaSelector = ({ selectedEmpresaId, onChange }: EmpresaSelector
   }
 
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardHeader>
-        <CardTitle>Selecionar Empresa</CardTitle>
+        <CardTitle className="truncate">Selecionar Empresa</CardTitle>
       </CardHeader>
       <CardContent>
-        <div>
+        <div className="w-full min-w-0">
           <Label htmlFor="empresa">Empresa *</Label>
           <select
             id="empresa"
             value={selectedEmpresaId}
             onChange={(e) => onChange(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1 min-w-0 truncate"
           >
             <option value="">Selecione uma empresa</option>
             {empresas.map((empresa) => (
