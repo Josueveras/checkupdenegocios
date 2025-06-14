@@ -17,7 +17,7 @@ export const ProposalFilters = ({
   setStatusFilter 
 }: ProposalFiltersProps) => {
   return (
-    <Card>
+    <Card className="w-full overflow-hidden">
       <CardHeader>
         <CardTitle>Filtros</CardTitle>
         <CardDescription>
@@ -25,19 +25,20 @@ export const ProposalFilters = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="space-y-2 min-w-0">
             <label className="text-sm font-medium">Buscar</label>
             <Input
               placeholder="Empresa ou cliente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full"
             />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 min-w-0">
             <label className="text-sm font-medium">Status</label>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,32 +63,34 @@ const Propostas = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in overflow-hidden">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Propostas Comerciais</h1>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 truncate">Propostas Comerciais</h1>
           <p className="text-gray-600 mt-1">Gerencie suas propostas baseadas nos diagnósticos</p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="bg-petrol hover:bg-petrol/90 text-white">
-              <FileText className="mr-2 h-4 w-4" />
-              Nova Proposta
-              <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem onClick={handleCreatePlanBasedProposal}>
-              <FileText className="mr-2 h-4 w-4" />
-              Gerar baseada em plano
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleCreateCustomProposal}>
-              <FileText className="mr-2 h-4 w-4" />
-              Criar proposta personalizada
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex-shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-petrol hover:bg-petrol/90 text-white w-full sm:w-auto">
+                <FileText className="mr-2 h-4 w-4" />
+                Nova Proposta
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={handleCreatePlanBasedProposal}>
+                <FileText className="mr-2 h-4 w-4" />
+                Gerar baseada em plano
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleCreateCustomProposal}>
+                <FileText className="mr-2 h-4 w-4" />
+                Criar proposta personalizada
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Stats */}
@@ -102,7 +105,7 @@ const Propostas = () => {
       />
 
       {/* Proposals List */}
-      <div className="grid gap-6">
+      <div className="space-y-6">
         {filteredPropostas.map((proposta) => (
           <ProposalCard
             key={proposta.id}
@@ -114,7 +117,7 @@ const Propostas = () => {
       </div>
 
       {filteredPropostas.length === 0 && (
-        <Card>
+        <Card className="w-full overflow-hidden">
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma proposta encontrada</h3>
@@ -124,7 +127,7 @@ const Propostas = () => {
                 : "Não há propostas que correspondam aos filtros selecionados."
               }
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-4 flex-wrap">
               {propostas.length === 0 ? (
                 <Button onClick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
                   <FileText className="mr-2 h-4 w-4" />
