@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,8 @@ import { LeadStats } from '@/components/crm/LeadStats';
 import { Lead } from '@/types/lead';
 import { useNavigate } from 'react-router-dom';
 import { FormBuilder } from '@/components/crm/FormBuilder';
+import { PipelineView } from '@/components/crm/PipelineView';
+import { LayoutGrid, Kanban } from 'lucide-react';
 
 const CRM = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ const CRM = () => {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
+  const [viewMode, setViewMode] = useState<'cards' | 'pipeline'>('cards');
 
   const { data: leads = [], isLoading } = useLeads();
 
@@ -102,6 +104,28 @@ const CRM = () => {
             <UserPlus className="mr-2 h-4 w-4" />
             Novo Lead
           </Button>
+          
+          {/* Toggle de Visualização */}
+          <div className="flex border rounded-lg">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('cards')}
+              className="rounded-r-none"
+            >
+              <LayoutGrid className="h-4 w-4 mr-2" />
+              Cards
+            </Button>
+            <Button
+              variant={viewMode === 'pipeline' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('pipeline')}
+              className="rounded-l-none"
+            >
+              <Kanban className="h-4 w-4 mr-2" />
+              Pipeline
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -121,46 +145,62 @@ const CRM = () => {
         onClearFilters={handleClearFilters}
       />
 
-      {/* Grid View */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {filteredLeads.map((lead) => (
-          <LeadCard
-            key={lead.id}
-            lead={lead}
-            onEdit={handleEditLead}
-            onView={handleViewLead}
-            onCall={handleCall}
-            onEmail={handleEmail}
-            onWhatsApp={handleWhatsApp}
-          />
-        ))}
-      </div>
+      {/* Renderização Condicional - Cards ou Pipeline */}
+      {viewMode === 'cards' ? (
+        <>
+          {/* Grid View */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {filteredLeads.map((lead) => (
+              <LeadCard
+                key={lead.id}
+                lead={lead}
+                onEdit={handleEditLead}
+                onView={handleViewLead}
+                onCall={handleCall}
+                onEmail={handleEmail}
+                onWhatsApp={handleWhatsApp}
+              />
+            ))}
+          </div>
 
-      {filteredLeads.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-12">
-            <UserPlus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum lead encontrado</h3>
-            <p className="text-gray-600 mb-6">
-              {leads.length === 0 
-                ? "Você ainda não tem leads cadastrados. Crie seu primeiro lead para começar."
-                : "Não há leads que correspondam aos filtros selecionados."
-              }
-            </p>
-            <div className="flex justify-center gap-4">
-              {leads.length === 0 ? (
-                <Button onClick={handleCreateNewLead} className="bg-petrol hover:bg-petrol/90 text-white">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Criar Primeiro Lead
-                </Button>
-              ) : (
-                <Button variant="outline" onClick={handleClearFilters}>
-                  Limpar Filtros
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+          {filteredLeads.length === 0 && (
+            <Card>
+              <CardContent className="text-center py-12">
+                <UserPlus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum lead encontrado</h3>
+                <p className="text-gray-600 mb-6">
+                  {leads.length === 0 
+                    ? "Você ainda não tem leads cadastrados. Crie seu primeiro lead para começar."
+                    : "Não há leads que correspondam aos filtros selecionados."
+                  }
+                </p>
+                <div className="flex justify-center gap-4">
+                  {leads.length === 0 ? (
+                    <Button onClick={handleCreateNewLead} className="bg-petrol hover:bg-petrol/90 text-white">
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Criar Primeiro Lead
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      Limpar Filtros
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      ) : (
+        /* Pipeline View */
+        <PipelineView
+          leads={filteredLeads}
+          onViewLead={handleViewLead}
+          onEditLead={handleEditLead}
+          onCall={handleCall}
+          onEmail={handleEmail}
+          onWhatsApp={handleWhatsApp}
+          onCreateNewLead={handleCreateNewLead}
+        />
       )}
 
       {/* Lead Modal */}
