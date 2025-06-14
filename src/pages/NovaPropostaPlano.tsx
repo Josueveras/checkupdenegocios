@@ -2,40 +2,18 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-
-// Mock data dos planos - você pode substituir por dados reais da página Planos
-const planos = [
-  {
-    id: 1,
-    nome: 'Plano Essencial',
-    descricao: 'Ideal para pequenas empresas que estão começando',
-    valor: 2500,
-    servicos: ['Diagnóstico inicial', 'Relatório básico', 'Consultoria 2h']
-  },
-  {
-    id: 2,
-    nome: 'Plano Profissional',
-    descricao: 'Para empresas que querem crescimento estruturado',
-    valor: 5000,
-    servicos: ['Diagnóstico completo', 'Plano estratégico', 'Consultoria 8h', 'Follow-up mensal']
-  },
-  {
-    id: 3,
-    nome: 'Plano Premium',
-    descricao: 'Solução completa para empresas em expansão',
-    valor: 8500,
-    servicos: ['Diagnóstico avançado', 'Plano estratégico completo', 'Consultoria 16h', 'Follow-up quinzenal', 'Implementação assistida']
-  }
-];
+import { usePlanos } from '@/hooks/usePlanos';
 
 const NovaPropostaPlano = () => {
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const { data: planos = [], isLoading } = usePlanos();
 
-  const handleSelectPlan = (planId: number) => {
+  const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
   };
 
@@ -59,6 +37,17 @@ const NovaPropostaPlano = () => {
     navigate('/propostas');
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-petrol mx-auto mb-4"></div>
+          <p>Carregando planos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       {/* Header */}
@@ -81,7 +70,7 @@ const NovaPropostaPlano = () => {
             className={`cursor-pointer transition-all hover:shadow-lg ${
               selectedPlan === plano.id ? 'ring-2 ring-petrol border-petrol' : ''
             }`}
-            onClick={() => handleSelectPlan(plano.id)}
+            onClick={() => handleSelectPlan(plano.id!)}
           >
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -92,7 +81,8 @@ const NovaPropostaPlano = () => {
                   </div>
                 )}
               </div>
-              <p className="text-gray-600">{plano.descricao}</p>
+              <p className="text-gray-600">{plano.objetivo}</p>
+              <Badge variant="outline">{plano.categoria}</Badge>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -100,12 +90,12 @@ const NovaPropostaPlano = () => {
                   {plano.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                 </div>
                 <div className="space-y-2">
-                  <p className="font-medium text-gray-900">Serviços inclusos:</p>
+                  <p className="font-medium text-gray-900">Tarefas incluídas:</p>
                   <ul className="space-y-1">
-                    {plano.servicos.map((servico, index) => (
+                    {plano.tarefas.map((tarefa, index) => (
                       <li key={index} className="text-sm text-gray-600 flex items-center">
                         <div className="w-1.5 h-1.5 bg-petrol rounded-full mr-2" />
-                        {servico}
+                        {tarefa}
                       </li>
                     ))}
                   </ul>
@@ -115,6 +105,21 @@ const NovaPropostaPlano = () => {
           </Card>
         ))}
       </div>
+
+      {planos.length === 0 && !isLoading && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum plano disponível</h3>
+            <p className="text-gray-600 mb-6">
+              Não há planos ativos cadastrados no sistema. Cadastre planos na página de Planos para poder criar propostas baseadas em planos.
+            </p>
+            <Button onClick={() => navigate('/planos')} variant="outline">
+              Ir para Planos
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end">
