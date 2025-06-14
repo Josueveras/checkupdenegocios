@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FileText } from 'lucide-react';
 import { useCRM } from '@/hooks/useSupabase';
 import { ProposalCard } from '@/components/ProposalCard';
@@ -15,27 +14,27 @@ const CRM = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [selectedCRM, setSelectedCRM] = useState<any>(null);
+  const [selectedProposta, setSelectedProposta] = useState<any>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  const { data: CRM = [], isLoading } = useCRM();
+  const { data: propostas = [], isLoading } = useCRM();
 
-  const filteredCRM = CRM.filter(CRM => {
-    const empresa = CRM.diagnosticos?.empresas;
+  const filteredPropostas = propostas.filter(proposta => {
+    const empresa = proposta.diagnosticos?.empresas;
     const matchesSearch = empresa?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          empresa?.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || CRM.status === statusFilter;
+    const matchesStatus = statusFilter === 'todos' || proposta.status === statusFilter;
     
     return matchesSearch && matchesStatus;
   });
 
-  const handleViewCRM = (CRM: any) => {
-    setSelectedCRM(CRM);
+  const handleViewProposta = (proposta: any) => {
+    setSelectedProposta(proposta);
     setIsViewDialogOpen(true);
   };
 
-  const handleEditCRM = (CRM: any) => {
-    navigate(`/editar-CRM?id=${CRM.id}`);
+  const handleEditProposta = (proposta: any) => {
+    navigate(`/editar-proposta?id=${proposta.id}`);
   };
 
   const handleCreateNewProposal = () => {
@@ -59,7 +58,7 @@ const CRM = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">CRM Comerciais</h1>
-          <p className="text-gray-600 mt-1">Gerencie suas CRM baseadas nos diagnósticos</p>
+          <p className="text-gray-600 mt-1">Gerencie suas propostas baseadas nos diagnósticos</p>
         </div>
         <Button 
           onClick={handleCreateNewProposal}
@@ -71,7 +70,7 @@ const CRM = () => {
       </div>
 
       {/* Stats */}
-      <ProposalStats CRM={CRM} />
+      <ProposalStats propostas={propostas} />
 
       {/* Filters */}
       <ProposalFilters 
@@ -83,29 +82,29 @@ const CRM = () => {
 
       {/* Proposals List */}
       <div className="grid gap-6">
-        {filteredCRM.map((CRM) => (
+        {filteredPropostas.map((proposta) => (
           <ProposalCard
-            key={CRM.id}
-            CRM={CRM}
-            onEdit={handleEditCRM}
-            onView={handleViewCRM}
+            key={proposta.id}
+            proposta={proposta}
+            onEdit={handleEditProposta}
+            onView={handleViewProposta}
           />
         ))}
       </div>
 
-      {filteredCRM.length === 0 && (
+      {filteredPropostas.length === 0 && (
         <Card>
           <CardContent className="text-center py-12">
             <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma CRM encontrada</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma proposta encontrada</h3>
             <p className="text-gray-600 mb-6">
-              {CRM.length === 0 
-                ? "Você ainda não tem CRM criadas. Crie um diagnóstico para gerar sua primeira proposta."
-                : "Não há CRM que correspondam aos filtros selecionados."
+              {propostas.length === 0 
+                ? "Você ainda não tem propostas criadas. Crie um diagnóstico para gerar sua primeira proposta."
+                : "Não há propostas que correspondam aos filtros selecionados."
               }
             </p>
             <div className="flex justify-center gap-4">
-              {CRM.length === 0 ? (
+              {propostas.length === 0 ? (
                 <Button onClick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
                   <FileText className="mr-2 h-4 w-4" />
                   Criar Primeiro Lead
@@ -127,8 +126,8 @@ const CRM = () => {
       <ProposalViewModal
         isOpen={isViewDialogOpen}
         onOpenChange={setIsViewDialogOpen}
-        CRM={selectedCRM}
-        onEdit={handleEditCRM}
+        proposta={selectedProposta}
+        onEdit={handleEditProposta}
       />
     </div>
   );

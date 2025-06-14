@@ -49,8 +49,11 @@ const Planos = () => {
         // Transform the data to match our Plan interface
         const transformedPlans = data.map(plan => ({
           ...plan,
-          tarefas: Array.isArray(plan.tarefas) ? plan.tarefas : 
-                   typeof plan.tarefas === 'string' ? [plan.tarefas] : []
+          tarefas: Array.isArray(plan.tarefas) 
+            ? plan.tarefas.map(t => String(t)) 
+            : typeof plan.tarefas === 'string' 
+            ? [plan.tarefas] 
+            : []
         }));
         setPlans(transformedPlans);
       }
@@ -88,8 +91,11 @@ const Planos = () => {
       if (updatedPlans.data) {
         const transformedPlans = updatedPlans.data.map(plan => ({
           ...plan,
-          tarefas: Array.isArray(plan.tarefas) ? plan.tarefas : 
-                   typeof plan.tarefas === 'string' ? [plan.tarefas] : []
+          tarefas: Array.isArray(plan.tarefas) 
+            ? plan.tarefas.map(t => String(t)) 
+            : typeof plan.tarefas === 'string' 
+            ? [plan.tarefas] 
+            : []
         }));
         setPlans(transformedPlans);
       }
@@ -106,8 +112,11 @@ const Planos = () => {
       if (updatedPlans.data) {
         const transformedPlans = updatedPlans.data.map(plan => ({
           ...plan,
-          tarefas: Array.isArray(plan.tarefas) ? plan.tarefas : 
-                   typeof plan.tarefas === 'string' ? [plan.tarefas] : []
+          tarefas: Array.isArray(plan.tarefas) 
+            ? plan.tarefas.map(t => String(t)) 
+            : typeof plan.tarefas === 'string' 
+            ? [plan.tarefas] 
+            : []
         }));
         setPlans(transformedPlans);
       }
