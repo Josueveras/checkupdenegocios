@@ -17,7 +17,7 @@ const EditarProposta = () => {
   const tipo = searchParams.get('tipo');
   const planoId = searchParams.get('planoId');
 
-  const isNewProposal = tipo === 'plano' && planoId;
+  const isNewProposal = tipo === 'plano' && !!planoId;
 
   const { data: proposalData, isLoading } = useProposalEdit(
     isNewProposal ? null : proposalId, 
