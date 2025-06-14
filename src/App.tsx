@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +19,7 @@ import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
 import CRM from "./pages/CRM";
+import NovoLead from "./pages/NovoLead";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
@@ -63,6 +63,7 @@ const App = () => (
           <Route path="/propostas" element={<AppLayout><Propostas /></AppLayout>} />
           <Route path="/editar-proposta" element={<AppLayout><EditarProposta /></AppLayout>} />
           <Route path="/crm" element={<AppLayout><CRM /></AppLayout>} />
+          <Route path="/novo-lead" element={<AppLayout><NovoLead /></AppLayout>} />
           <Route path="/planos" element={<AppLayout><Planos /></AppLayout>} />
           <Route path="/perguntas" element={<AppLayout><Perguntas /></AppLayout>} />
           <Route path="/metricas" element={<AppLayout><Metricas /></AppLayout>} />
