@@ -74,9 +74,18 @@ export function PipelineConfigModal({ isOpen, onOpenChange }: PipelineConfigModa
 
   const handleSubmit = (data: ColumnFormData) => {
     if (isAddingNew) {
-      addColumn(data);
+      // Ensure all required properties are present for addColumn
+      addColumn({
+        name: data.name,
+        color: data.color,
+        type: data.type
+      });
     } else if (editingColumn) {
-      updateColumn(editingColumn.id, data);
+      updateColumn(editingColumn.id, {
+        name: data.name,
+        color: data.color,
+        type: data.type
+      });
     }
     
     setEditingColumn(null);
