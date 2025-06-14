@@ -16,11 +16,14 @@ export const usePerguntasManager = () => {
   const { data: questions, isLoading, error } = usePerguntas();
 
   // Transformar dados do Supabase para o formato da UI
-  const formattedQuestions = questions?.map((pergunta: any, index: number) => ({
+  const formattedQuestions = questions?.map((pergunta: any) => ({
     id: pergunta.id,
     question: pergunta.pergunta,
     category: pergunta.categoria,
-    options: pergunta.opcoes || [
+    options: pergunta.opcoes ? pergunta.opcoes.map((opt: any) => ({
+      text: opt.texto || opt.text || '',
+      score: opt.score || 0
+    })) : [
       { text: "Não temos estratégia definida", score: 0 },
       { text: "Temos algumas ações isoladas", score: 1 },
       { text: "Temos estratégia básica implementada", score: 2 },

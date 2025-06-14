@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Edit, FileText, Settings, Trash2 } from 'lucide-react';
+import { Edit, FileText, Settings, Trash2, Plus, X, Tag } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { usePerguntasManager } from '@/hooks/usePerguntasManager';
+import { useCategories } from '@/hooks/useCategories';
 
 interface Question {
   id?: string;
@@ -23,11 +24,12 @@ interface Question {
 
 const Perguntas = () => {
   const { questions, isLoading, saveQuestion, deleteQuestion } = usePerguntasManager();
+  const { categories, addCategory, removeCategory } = useCategories();
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isNewQuestion, setIsNewQuestion] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  const categories = ["Marketing", "Vendas", "Estratégia", "Gestão", "Tecnologia"];
+  const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const handleEditQuestion = (question: Question) => {
     setEditingQuestion({ ...question });
@@ -38,12 +40,10 @@ const Perguntas = () => {
   const handleNewQuestion = () => {
     setEditingQuestion({
       question: "",
-      category: "Marketing",
+      category: categories[0] || "Marketing",
       options: [
         { text: "", score: 0 },
-        { text: "", score: 1 },
-        { text: "", score: 2 },
-        { text: "", score: 3 }
+        { text: "", score: 1 }
       ],
       required: false
     });
@@ -59,6 +59,15 @@ const Perguntas = () => {
       toast({
         title: "Erro de validação",
         description: "A pergunta não pode estar vazia.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (editingQuestion.options.length < 2) {
+      toast({
+        title: "Erro de validação",
+        description: "É necessário ter pelo menos 2 opções de resposta.",
         variant: "destructive"
       });
       return;
@@ -120,6 +129,50 @@ const Perguntas = () => {
     setEditingQuestion({ ...editingQuestion, options: newOptions });
   };
 
+  const addOption = () => {
+    if (!editingQuestion || editingQuestion.options.length >= 10) return;
+    
+    const newOptions = [
+      ...editingQuestion.options,
+      { text: "", score: editingQuestion.options.length }
+    ];
+    setEditingQuestion({ ...editingQuestion, options: newOptions });
+  };
+
+  const removeOption = (index: number) => {
+    if (!editingQuestion || editingQuestion.options.length <= 2) return;
+    
+    const newOptions = editingQuestion.options.filter((_, i) => i !== index);
+    setEditingQuestion({ ...editingQuestion, options: newOptions });
+  };
+
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
+      const success = addCategory(newCategoryName);
+      if (success) {
+        toast({
+          title: "Categoria adicionada",
+          description: `Categoria "${newCategoryName}" criada com sucesso!`
+        });
+        setNewCategoryName('');
+      } else {
+        toast({
+          title: "Erro",
+          description: "Categoria já existe ou é inválida.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
+  const handleRemoveCategory = (category: string) => {
+    removeCategory(category);
+    toast({
+      title: "Categoria removida",
+      description: `Categoria "${category}" removida com sucesso!`
+    });
+  };
+
   const getCategoryColor = (category: string) => {
     const colors = {
       "Marketing": "bg-blue-100 text-blue-800",
@@ -128,7 +181,7 @@ const Perguntas = () => {
       "Gestão": "bg-orange-100 text-orange-800",
       "Tecnologia": "bg-gray-100 text-gray-800"
     };
-    return colors[category as keyof typeof colors] || colors["Marketing"];
+    return colors[category as keyof typeof colors] || "bg-slate-100 text-slate-800";
   };
 
   if (isLoading) {
@@ -152,10 +205,20 @@ const Perguntas = () => {
           <h1 className="text-3xl font-bold text-gray-900">Editor de Perguntas</h1>
           <p className="text-gray-600 mt-1">Gerencie as perguntas do diagnóstico empresarial</p>
         </div>
-        <Button onClick={handleNewQuestion} className="bg-petrol hover:bg-petrol/90 text-white">
-          <Edit className="mr-2 h-4 w-4" />
-          Nova Pergunta
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCategoryDialogOpen(true)}
+            className="text-purple-600 border-purple-200 hover:bg-purple-50"
+          >
+            <Tag className="mr-2 h-4 w-4" />
+            Categorias
+          </Button>
+          <Button onClick={handleNewQuestion} className="bg-petrol hover:bg-petrol/90 text-white">
+            <Edit className="mr-2 h-4 w-4" />
+            Nova Pergunta
+          </Button>
+        </div>
       </div>
 
       {/* Statistics */}
@@ -308,13 +371,25 @@ const Perguntas = () => {
               </div>
 
               <div className="space-y-4">
-                <Label>Opções de Resposta *</Label>
+                <div className="flex items-center justify-between">
+                  <Label>Opções de Resposta * (mín: 2, máx: 10)</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addOption}
+                    disabled={editingQuestion.options.length >= 10}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Adicionar
+                  </Button>
+                </div>
                 {editingQuestion.options.map((option, index) => (
-                  <div key={index} className="grid grid-cols-12 gap-3 items-center">
+                  <div key={index} className="grid grid-cols-12 gap-3 items-center p-3 border rounded-lg">
                     <div className="col-span-1">
                       <Label className="text-xs text-gray-500">#{index + 1}</Label>
                     </div>
-                    <div className="col-span-8">
+                    <div className="col-span-7">
                       <Input
                         value={option.text}
                         onChange={(e) => updateOption(index, 'text', e.target.value)}
@@ -326,7 +401,7 @@ const Perguntas = () => {
                         <Input
                           type="number"
                           min="0"
-                          max="3"
+                          max="10"
                           value={option.score}
                           onChange={(e) => updateOption(index, 'score', parseInt(e.target.value) || 0)}
                           className="w-16"
@@ -334,10 +409,22 @@ const Perguntas = () => {
                         <span className="text-xs text-gray-500">pts</span>
                       </div>
                     </div>
+                    <div className="col-span-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeOption(index)}
+                        disabled={editingQuestion.options.length <= 2}
+                        className="text-red-600 p-1"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
                 <p className="text-xs text-gray-500">
-                  💡 Dica: Use pontuações de 0 a 3, onde 0 = inexistente e 3 = excelente
+                  💡 Dica: Use pontuações crescentes, onde menor = inexistente e maior = excelente
                 </p>
               </div>
             </div>
@@ -356,6 +443,61 @@ const Perguntas = () => {
                 ? "Salvando..." 
                 : (isNewQuestion ? "Criar Pergunta" : "Salvar Alterações")
               }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Management Dialog */}
+      <Dialog open={categoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Categorias</DialogTitle>
+            <DialogDescription>
+              Adicione ou remova categorias para organizar suas perguntas
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="Nome da nova categoria..."
+                onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+              />
+              <Button onClick={handleAddCategory} size="sm">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Categorias Existentes:</Label>
+              <div className="flex flex-wrap gap-2">
+                {categories.map(category => (
+                  <div key={category} className="flex items-center gap-1">
+                    <Badge className={getCategoryColor(category)}>
+                      {category}
+                    </Badge>
+                    {categories.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemoveCategory(category)}
+                        className="h-6 w-6 p-0 text-red-600"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={() => setCategoryDialogOpen(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>
