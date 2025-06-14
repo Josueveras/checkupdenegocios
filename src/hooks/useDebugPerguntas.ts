@@ -2,6 +2,12 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+interface OptionData {
+  texto?: string;
+  text?: string;
+  score?: number;
+}
+
 export const useDebugPerguntas = () => {
   // Query para analisar dados corrompidos
   const analyzeData = useQuery({
@@ -36,25 +42,28 @@ export const useDebugPerguntas = () => {
             processedOptions = pergunta.opcoes.map((opt, optIndex) => {
               console.log(`  Option ${optIndex + 1}:`, opt);
               
+              // Cast to OptionData type for proper TypeScript handling
+              const optData = opt as OptionData;
+              
               // Verificar se é um objeto válido
-              if (typeof opt === 'object' && opt !== null) {
-                const hasTexto = 'texto' in opt;
-                const hasText = 'text' in opt;
-                const hasScore = 'score' in opt;
+              if (typeof optData === 'object' && optData !== null) {
+                const hasTexto = 'texto' in optData;
+                const hasText = 'text' in optData;
+                const hasScore = 'score' in optData;
                 
                 if (!hasTexto && !hasText) {
                   hasErrors = true;
                   errorDetails.push(`Option ${optIndex + 1}: Missing text/texto field`);
                 }
                 
-                if (!hasScore || typeof opt.score !== 'number') {
+                if (!hasScore || typeof optData.score !== 'number') {
                   hasErrors = true;
                   errorDetails.push(`Option ${optIndex + 1}: Invalid or missing score`);
                 }
                 
                 return {
-                  text: opt.texto || opt.text || '',
-                  score: typeof opt.score === 'number' ? opt.score : 0,
+                  text: optData.texto || optData.text || '',
+                  score: typeof optData.score === 'number' ? optData.score : 0,
                   originalFormat: opt
                 };
               } else {
@@ -137,11 +146,12 @@ export const useDebugPerguntas = () => {
               return true;
             })
             .map(opt => {
-              if (typeof opt === 'object' && opt !== null) {
+              const optData = opt as OptionData;
+              if (typeof optData === 'object' && optData !== null) {
                 // Padronizar formato para 'texto' e 'score'
                 const standardized = {
-                  texto: opt.texto || opt.text || '',
-                  score: typeof opt.score === 'number' ? opt.score : 0
+                  texto: optData.texto || optData.text || '',
+                  score: typeof optData.score === 'number' ? optData.score : 0
                 };
                 
                 if (JSON.stringify(opt) !== JSON.stringify(standardized)) {

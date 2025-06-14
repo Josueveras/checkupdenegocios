@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { usePerguntasManager } from '@/hooks/usePerguntasManager';
@@ -18,7 +19,7 @@ interface Question {
 }
 
 const Perguntas = () => {
-  const { questions, isLoading, saveQuestion, deleteQuestion } = usePerguntasManager();
+  const { questions, isLoading, error, saveQuestion, deleteQuestion } = usePerguntasManager();
   const { categories, addCategory, removeCategory } = useCategories();
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [isNewQuestion, setIsNewQuestion] = useState(false);
