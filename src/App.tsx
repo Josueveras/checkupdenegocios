@@ -1,3 +1,4 @@
+
 console.log("forçar rebuild Lovable");
 
 import { Toaster } from "@/components/ui/toaster";
@@ -15,22 +16,14 @@ import Dashboard from "./pages/Dashboard";
 import NovoDiagnostico from "./pages/NovoDiagnostico";
 import Diagnosticos from "./pages/Diagnosticos";
 import DiagnosticoView from "./pages/DiagnosticoView";
-import Acompanhamento from "./pages/Acompanhamento";
-import ResultadoAcompanhamento from "./pages/ResultadoAcompanhamento";
-import EvolucaoCliente from "./pages/EvolucaoCliente";
-import EvolucaoClienteDetalhada from "./pages/EvolucaoClienteDetalhada";
 import EmpresaDetalhada from "./pages/EmpresaDetalhada";
 import EmpresaVisaoGeral from "./pages/EmpresaVisaoGeral";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
-import NovoCheckup from "./pages/NovoCheckup";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
-import Configuracoes from "./pages/Configuracoes";
-import Conta from "./pages/Conta";
-import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -76,21 +69,11 @@ const App = () => (
           <Route path="/diagnostico-view" element={
             <AppLayout><DiagnosticoView /></AppLayout>
           } />
-          <Route path="/acompanhamento" element={
-            <AppLayout><Acompanhamento /></AppLayout>
-          } />
-          <Route path="/acompanhamento/resultado/:id" element={
-            <AppLayout><ResultadoAcompanhamento /></AppLayout>
-          } />
           <Route path="/empresa/:id" element={
             <AppLayout><EmpresaDetalhada /></AppLayout>
           } />
           <Route path="/empresa-visao/:id" element={
-  <AppLayout><EmpresaVisaoGeral /></AppLayout>
-} />
-
-          <Route path="/clientes/:id" element={
-            <AppLayout><EvolucaoClienteDetalhada /></AppLayout>
+            <AppLayout><EmpresaVisaoGeral /></AppLayout>
           } />
           <Route path="/empresas" element={
             <AppLayout><Empresas /></AppLayout>
@@ -101,9 +84,6 @@ const App = () => (
           <Route path="/editar-proposta" element={
             <AppLayout><EditarProposta /></AppLayout>
           } />
-          <Route path="/checkup/novo" element={
-            <AppLayout><NovoCheckup /></AppLayout>
-          } />
           <Route path="/planos" element={
             <AppLayout><Planos /></AppLayout>
           } />
@@ -112,12 +92,6 @@ const App = () => (
           } />
           <Route path="/metricas" element={
             <AppLayout><Metricas /></AppLayout>
-          } />
-          <Route path="/configuracoes" element={
-            <AppLayout><Configuracoes /></AppLayout>
-          } />
-          <Route path="/conta" element={
-            <AppLayout><Conta /></AppLayout>
           } />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
