@@ -26,7 +26,7 @@ const EmpresaVisaoGeral = () => {
   // Cálculos simples de exemplo
   const total = diagnosticos.length;
   const mediaScore = total > 0
-    ? Math.round(diagnosticos.reduce((sum, d) => sum + (d.score_geral || 0), 0) / total)
+    ? Math.round(diagnosticos.reduce((sum, d) => sum + (d.score_total || 0), 0) / total)
     : 0;
 
   return (
