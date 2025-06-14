@@ -19,28 +19,28 @@ interface ProposalDataFormProps {
 
 export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) => {
   return (
-    <Card className="w-full overflow-hidden">
-      <CardHeader className="p-3 sm:p-6">
-        <CardTitle className="truncate text-base sm:text-lg md:text-xl">
+    <Card>
+      <CardHeader className="p-2 sm:p-4">
+        <CardTitle className="text-sm sm:text-base truncate">
           Dados da Proposta
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6 pt-0 space-y-3 sm:space-y-4">
-        <div className="w-full min-w-0">
-          <Label htmlFor="objetivo" className="text-xs sm:text-sm">Objetivo *</Label>
+      <CardContent className="p-2 sm:p-4 pt-0 space-y-2 sm:space-y-3">
+        <div className="min-w-0">
+          <Label htmlFor="objetivo" className="text-sm">Objetivo *</Label>
           <Textarea
             id="objetivo"
             value={formData.objetivo}
             onChange={(e) => onChange({ objetivo: e.target.value })}
             placeholder="Descreva o objetivo da proposta"
             rows={3}
-            className="mt-1 w-full resize-none text-xs sm:text-sm"
+            className="mt-1 w-full resize-none text-sm"
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
           <div className="min-w-0">
-            <Label htmlFor="valor" className="text-xs sm:text-sm">Valor (R$) *</Label>
+            <Label htmlFor="valor" className="text-sm">Valor (R$) *</Label>
             <Input
               id="valor"
               type="number"
@@ -49,28 +49,28 @@ export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) 
               value={formData.valor}
               onChange={(e) => onChange({ valor: e.target.value })}
               placeholder="0.00"
-              className="mt-1 w-full h-8 sm:h-10 text-xs sm:text-sm"
+              className="mt-1 w-full h-8 sm:h-9 text-sm"
             />
           </div>
           <div className="min-w-0">
-            <Label htmlFor="prazo" className="text-xs sm:text-sm">Prazo</Label>
+            <Label htmlFor="prazo" className="text-sm">Prazo</Label>
             <Input
               id="prazo"
               value={formData.prazo}
               onChange={(e) => onChange({ prazo: e.target.value })}
               placeholder="Ex: 3 meses, 6 semanas..."
-              className="mt-1 w-full h-8 sm:h-10 text-xs sm:text-sm"
+              className="mt-1 w-full h-8 sm:h-9 text-sm"
             />
           </div>
         </div>
 
-        <div className="w-full min-w-0">
-          <Label htmlFor="status" className="text-xs sm:text-sm">Status</Label>
+        <div className="min-w-0">
+          <Label htmlFor="status" className="text-sm">Status</Label>
           <select
             id="status"
             value={formData.status}
             onChange={(e) => onChange({ status: e.target.value })}
-            className="flex h-8 sm:h-10 w-full rounded-md border border-input bg-background px-2 sm:px-3 py-1 sm:py-2 text-xs sm:text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1 min-w-0"
+            className="flex h-8 sm:h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1"
           >
             <option value="rascunho">Rascunho</option>
             <option value="enviada">Enviada</option>

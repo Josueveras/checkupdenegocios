@@ -24,7 +24,6 @@ const EditarProposta = () => {
     isNewProposal ? planoId : null
   );
 
-  // Safely extract proposta and plano data
   const proposta = proposalData?.type === 'existing' ? proposalData.data : null;
   const plano = proposalData?.type === 'plan' ? proposalData.data : null;
 
@@ -47,13 +46,12 @@ const EditarProposta = () => {
     return <ProposalNotFoundState isNewProposal={isNewProposal} />;
   }
 
-  // Safely access empresa and plano name with proper type checking
   const empresa = proposta && 'diagnosticos' in proposta ? proposta.diagnosticos?.empresas : null;
   const empresaNome = isNewProposal && plano && 'nome' in plano ? plano.nome : empresa?.nome;
 
   return (
-    <div className="w-full min-h-screen overflow-hidden">
-      <div className="max-w-6xl mx-auto px-2 sm:px-4 py-3 sm:py-6 space-y-4 md:space-y-6 animate-fade-in">
+    <div className="w-full min-h-screen">
+      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
         <EditProposalHeader
           empresaNome={empresaNome}
           onCancel={handleCancel}
@@ -61,28 +59,22 @@ const EditarProposta = () => {
           isSaving={isSaving}
         />
 
-        <div className="space-y-4 md:space-y-6 w-full overflow-hidden">
+        <div className="space-y-3 sm:space-y-4">
           {empresa && (
-            <div className="w-full overflow-hidden">
-              <CompanyInfo empresa={empresa} />
-            </div>
+            <CompanyInfo empresa={empresa} />
           )}
 
           {isNewProposal && (
-            <div className="w-full overflow-hidden">
-              <EmpresaSelector
-                selectedEmpresaId={formData.empresa_id || ''}
-                onChange={(empresaId) => updateFormData({ empresa_id: empresaId })}
-              />
-            </div>
+            <EmpresaSelector
+              selectedEmpresaId={formData.empresa_id || ''}
+              onChange={(empresaId) => updateFormData({ empresa_id: empresaId })}
+            />
           )}
 
-          <div className="w-full overflow-hidden">
-            <ProposalDataForm
-              formData={formData}
-              onChange={updateFormData}
-            />
-          </div>
+          <ProposalDataForm
+            formData={formData}
+            onChange={updateFormData}
+          />
         </div>
       </div>
     </div>
