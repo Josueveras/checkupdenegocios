@@ -29,11 +29,11 @@ export function PipelineColumn({
   const statusColor = getLeadStatusColor(status);
 
   return (
-    <div className="flex-shrink-0 w-80">
+    <div className="flex-shrink-0 w-52 sm:w-60 lg:w-64">
       <Card className={`h-full ${isOver ? 'ring-2 ring-petrol/50' : ''}`}>
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-2 px-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <CardTitle className="text-xs font-medium truncate">{title}</CardTitle>
             <Badge className={statusColor}>
               {count}
             </Badge>
@@ -44,10 +44,10 @@ export function PipelineColumn({
             </p>
           )}
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 px-3">
           <div
             ref={setNodeRef}
-            className="space-y-3 min-h-[500px] max-h-[500px] overflow-y-auto"
+            className="space-y-2 min-h-[350px] max-h-[350px] overflow-y-auto"
           >
             {children}
           </div>

@@ -24,8 +24,8 @@ import { useUpdateLead } from '@/hooks/useLeads';
 
 interface LeadPipelineProps {
   leads: Lead[];
-  onEditLead: (lead: Lead) => void;
-  onViewLead: (lead: Lead) => void;
+  onEdit: (lead: Lead) => void;
+  onView: (lead: Lead) => void;
   onCall?: (lead: Lead) => void;
   onEmail?: (lead: Lead) => void;
   onWhatsApp?: (lead: Lead) => void;
@@ -43,8 +43,8 @@ const PIPELINE_COLUMNS = [
 
 export function LeadPipeline({ 
   leads, 
-  onEditLead, 
-  onViewLead, 
+  onEdit, 
+  onView, 
   onCall, 
   onEmail, 
   onWhatsApp 
@@ -99,7 +99,7 @@ export function LeadPipeline({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4 min-h-[600px]">
+      <div className="flex gap-3 overflow-x-auto pb-4 min-h-[400px]">
         {PIPELINE_COLUMNS.map((column) => {
           const columnLeads = getLeadsByStatus(column.status);
           const totalValue = getTotalValue(column.status);
@@ -117,8 +117,8 @@ export function LeadPipeline({
                 <PipelineCard
                   key={lead.id}
                   lead={lead}
-                  onEdit={onEditLead}
-                  onView={onViewLead}
+                  onEdit={onEdit}
+                  onView={onView}
                   onCall={onCall}
                   onEmail={onEmail}
                   onWhatsApp={onWhatsApp}
@@ -133,8 +133,8 @@ export function LeadPipeline({
         {activeLead ? (
           <PipelineCard
             lead={activeLead}
-            onEdit={onEditLead}
-            onView={onViewLead}
+            onEdit={onEdit}
+            onView={onView}
             onCall={onCall}
             onEmail={onEmail}
             onWhatsApp={onWhatsApp}

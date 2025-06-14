@@ -67,36 +67,36 @@ export function PipelineCard({
       {...attributes}
       {...listeners}
     >
-      <CardContent className="p-4">
-        <div className="space-y-3">
-          {/* Header com drag handle */}
+      <CardContent className="p-3">
+        <div className="space-y-2">
+          {/* Header compacto */}
           <div className="flex items-start justify-between">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-1 mb-1">
                 <Building className="h-3 w-3 text-gray-500 flex-shrink-0" />
-                <h3 className="font-semibold text-sm truncate">{lead.empresa_nome}</h3>
+                <h3 className="font-semibold text-xs truncate">{lead.empresa_nome}</h3>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-1 text-gray-600">
                 <User className="h-3 w-3 flex-shrink-0" />
                 <span className="text-xs truncate">{lead.contato_nome}</span>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-1 ml-2">
-              <GripVertical className="h-4 w-4 text-gray-400" />
+            <div className="flex flex-col items-end gap-1 ml-1">
+              <GripVertical className="h-3 w-3 text-gray-400" />
               <div className="flex items-center gap-1">
                 <Star className={`h-3 w-3 ${qualificationLevel.color}`} />
                 <span className={`text-xs font-medium ${qualificationLevel.color}`}>
-                  {qualificationLevel.level}
+                  {qualificationLevel.level[0]}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Informações principais */}
-          <div className="space-y-2 text-xs">
+          {/* Informações essenciais */}
+          <div className="space-y-1 text-xs">
             <div className="flex justify-between">
               <span className="text-gray-500">Setor:</span>
-              <span className="font-medium truncate ml-2">{lead.setor}</span>
+              <span className="font-medium truncate ml-1">{lead.setor}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Urgência:</span>
@@ -106,34 +106,32 @@ export function PipelineCard({
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500">Receita:</span>
-              <span className="font-medium text-green-600">
+              <span className="font-medium text-green-600 text-xs">
                 {formatCurrency(lead.potencial_receita)}
               </span>
             </div>
           </div>
 
           {/* Ações compactas */}
-          <div className="flex flex-wrap gap-1 pt-2 border-t">
-            <Button variant="outline" size="sm" onClick={() => onView(lead)} className="h-7 px-2 text-xs">
-              <Eye className="h-3 w-3 mr-1" />
-              Ver
+          <div className="flex flex-wrap gap-1 pt-1 border-t">
+            <Button variant="outline" size="sm" onClick={() => onView(lead)} className="h-6 px-2 text-xs">
+              <Eye className="h-3 w-3" />
             </Button>
-            <Button variant="outline" size="sm" onClick={() => onEdit(lead)} className="h-7 px-2 text-xs">
-              <Edit className="h-3 w-3 mr-1" />
-              Editar
+            <Button variant="outline" size="sm" onClick={() => onEdit(lead)} className="h-6 px-2 text-xs">
+              <Edit className="h-3 w-3" />
             </Button>
             {onCall && (
-              <Button variant="outline" size="sm" onClick={() => onCall(lead)} className="h-7 px-2 text-xs">
+              <Button variant="outline" size="sm" onClick={() => onCall(lead)} className="h-6 px-2 text-xs">
                 <Phone className="h-3 w-3" />
               </Button>
             )}
             {onEmail && (
-              <Button variant="outline" size="sm" onClick={() => onEmail(lead)} className="h-7 px-2 text-xs">
+              <Button variant="outline" size="sm" onClick={() => onEmail(lead)} className="h-6 px-2 text-xs">
                 <Mail className="h-3 w-3" />
               </Button>
             )}
             {onWhatsApp && (
-              <Button variant="outline" size="sm" onClick={() => onWhatsApp(lead)} className="h-7 px-2 text-xs">
+              <Button variant="outline" size="sm" onClick={() => onWhatsApp(lead)} className="h-6 px-2 text-xs">
                 <MessageCircle className="h-3 w-3" />
               </Button>
             )}
