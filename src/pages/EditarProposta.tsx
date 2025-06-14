@@ -169,9 +169,9 @@ const EditarProposta = () => {
     );
   }
 
-  // Safely access empresa and plano name
-  const empresa = proposta?.diagnosticos?.empresas;
-  const empresaNome = isNewProposal ? plano?.nome : empresa?.nome;
+  // Safely access empresa and plano name with proper type checking
+  const empresa = proposta && 'diagnosticos' in proposta ? proposta.diagnosticos?.empresas : null;
+  const empresaNome = isNewProposal && plano && 'nome' in plano ? plano.nome : empresa?.nome;
   const isSaving = updateProposalMutation.isPending || createProposalMutation.isPending;
 
   return (
