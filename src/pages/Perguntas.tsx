@@ -8,7 +8,6 @@ import { QuestionHeader } from '@/components/questions/QuestionHeader';
 import { QuestionDialog } from '@/components/questions/QuestionDialog';
 import { CategoryDialog } from '@/components/questions/CategoryDialog';
 import { EmptyState } from '@/components/questions/EmptyState';
-import { DebugPanel } from '@/components/questions/DebugPanel';
 
 interface Question {
   id?: string;
@@ -26,20 +25,13 @@ const Perguntas = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
 
-  // Debug log quando questions mudarem
-  useEffect(() => {
-    console.log('Questions updated in component:', questions);
-  }, [questions]);
-
   const handleEditQuestion = (question: Question) => {
-    console.log('Editing question:', question);
     setEditingQuestion({ ...question });
     setIsNewQuestion(false);
     setDialogOpen(true);
   };
 
   const handleNewQuestion = () => {
-    console.log('Creating new question');
     setEditingQuestion({
       question: "",
       category: categories[0] || "Marketing",
@@ -55,8 +47,6 @@ const Perguntas = () => {
 
   const handleSaveQuestion = async () => {
     if (!editingQuestion) return;
-
-    console.log('Attempting to save question:', editingQuestion);
 
     // Validação básica
     if (!editingQuestion.question.trim()) {
@@ -87,7 +77,6 @@ const Perguntas = () => {
     }
 
     try {
-      console.log('Calling saveQuestion mutation...');
       await saveQuestion.mutateAsync(editingQuestion);
       
       toast({
@@ -97,22 +86,19 @@ const Perguntas = () => {
           : "Pergunta editada com sucesso!"
       });
 
-      console.log('Question saved successfully, closing dialog');
       setDialogOpen(false);
       setEditingQuestion(null);
     } catch (error) {
       console.error('Erro ao salvar pergunta:', error);
       toast({
         title: "Erro ao salvar",
-        description: "Ocorreu um erro ao salvar a pergunta. Verifique o console para mais detalhes.",
+        description: "Ocorreu um erro ao salvar a pergunta. Tente novamente.",
         variant: "destructive"
       });
     }
   };
 
   const handleDeleteQuestion = async (id: string) => {
-    console.log('Attempting to delete question with id:', id);
-    
     try {
       await deleteQuestion.mutateAsync(id);
       toast({
@@ -179,8 +165,6 @@ const Perguntas = () => {
     );
   }
 
-  console.log('Rendering questions list, count:', questions.length);
-
   return (
     <div className="space-y-6 animate-fade-in">
       <QuestionHeader 
@@ -188,47 +172,18 @@ const Perguntas = () => {
         onManageCategories={() => setCategoryDialogOpen(true)}
       />
 
-      {/* Debug Panel - apenas em desenvolvimento */}
-      <DebugPanel />
-
-      {/* Enhanced Debug info */}
-      <div className="text-xs text-gray-500 bg-gray-50 p-4 rounded-lg">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div>
-            <strong>Perguntas carregadas:</strong> {questions.length}
-          </div>
-          <div>
-            <strong>Status:</strong> {isLoading ? 'Carregando...' : 'Pronto'}
-          </div>
-          <div>
-            <strong>Última atualização:</strong> {new Date().toLocaleTimeString()}
-          </div>
-          <div>
-            <strong>Problemas:</strong> {error ? 'Sim' : 'Não'}
-          </div>
-        </div>
-        {error && (
-          <div className="mt-2 text-red-600 text-xs">
-            <strong>Erro:</strong> {error.message}
-          </div>
-        )}
-      </div>
-
       {/* Questions List */}
       <div className="space-y-4">
-        {questions.map((question, index) => {
-          console.log('Rendering question card:', question.id, 'with options:', question.options);
-          return (
-            <QuestionCard
-              key={question.id}
-              question={question}
-              index={index}
-              onEdit={handleEditQuestion}
-              onDelete={handleDeleteQuestion}
-              getCategoryColor={getCategoryColor}
-            />
-          );
-        })}
+        {questions.map((question, index) => (
+          <QuestionCard
+            key={question.id}
+            question={question}
+            index={index}
+            onEdit={handleEditQuestion}
+            onDelete={handleDeleteQuestion}
+            getCategoryColor={getCategoryColor}
+          />
+        ))}
       </div>
 
       <QuestionDialog
