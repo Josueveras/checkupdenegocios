@@ -8,15 +8,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { EditProposalHeader } from '@/components/proposta/EditProposalHeader';
 import { CompanyInfo } from '@/components/proposta/CompanyInfo';
 import { ProposalDataForm } from '@/components/proposta/ProposalDataForm';
+import { EmpresaSelector } from '@/components/proposta/EmpresaSelector';
 
 const EditarProposta = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const proposalId = searchParams.get('id');
+  const tipo = searchParams.get('tipo');
+  const planoId = searchParams.get('planoId');
   const queryClient = useQueryClient();
 
-  const { data: proposta, isLoading } = useProposalEdit(proposalId);
-  const { formData, updateFormData, validateForm } = useProposalForm(proposta);
+  const isNewProposal = tipo === 'plano' && planoId;
+
+  const { data: proposalData, isLoading } = useProposalEdit(
+    isNewProposal ? null : proposalId, 
+    isNewProposal ? planoId : null
+  );
+
+  const proposta = proposalData?.type === 'existing' ? proposalData.data : null;
+  const plano = proposalData?.type === 'plan' ? proposalData.data : null;
+
+  const { formData, updateFormData, validateForm } = useProposalForm(proposta, plano);
 
   const updateProposalMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
@@ -54,9 +66,73 @@ const EditarProposta = () => {
     }
   });
 
+  const createProposalMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      if (!data.empresa_id) {
+        throw new Error('Empresa deve ser selecionada');
+      }
+
+      // Primeiro criar um diagnóstico básico para a empresa
+      const { data: diagnostico, error: diagError } = await supabase
+        .from('diagnosticos')
+        .insert({
+          empresa_id: data.empresa_id,
+          status: 'concluido',
+          nivel_maturidade: 'medio'
+        })
+        .select()
+        .single();
+
+      if (diagError) throw diagError;
+
+      // Depois criar a proposta
+      const { error } = await supabase
+        .from('propostas')
+        .insert({
+          diagnostico_id: diagnostico.id,
+          objetivo: data.objetivo,
+          valor: data.valor ? parseFloat(data.valor) : null,
+          prazo: data.prazo,
+          status: data.status,
+          acoes_sugeridas: data.acoes_sugeridas
+        });
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['propostas'] });
+      toast({
+        title: "Proposta criada",
+        description: "A proposta foi criada com sucesso."
+      });
+      navigate('/propostas');
+    },
+    onError: (error) => {
+      console.error('Erro ao criar proposta:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar a proposta.",
+        variant: "destructive"
+      });
+    }
+  });
+
   const handleSave = () => {
     if (!validateForm()) return;
-    updateProposalMutation.mutate(formData);
+    
+    if (isNewProposal) {
+      if (!formData.empresa_id) {
+        toast({
+          title: "Empresa obrigatória",
+          description: "Selecione uma empresa para continuar.",
+          variant: "destructive"
+        });
+        return;
+      }
+      createProposalMutation.mutate(formData);
+    } else {
+      updateProposalMutation.mutate(formData);
+    }
   };
 
   const handleCancel = () => {
@@ -68,17 +144,19 @@ const EditarProposta = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-petrol mx-auto mb-4"></div>
-          <p>Carregando proposta...</p>
+          <p>{isNewProposal ? 'Carregando dados do plano...' : 'Carregando proposta...'}</p>
         </div>
       </div>
     );
   }
 
-  if (!proposta) {
+  if (!proposalData) {
     return (
       <div className="w-full max-w-7xl mx-auto px-4 py-6">
         <div className="text-center py-12">
-          <p className="text-gray-600 mb-4">Proposta não encontrada.</p>
+          <p className="text-gray-600 mb-4">
+            {isNewProposal ? 'Plano não encontrado.' : 'Proposta não encontrada.'}
+          </p>
           <button 
             onClick={() => navigate('/propostas')} 
             className="bg-petrol hover:bg-petrol/90 text-white px-4 py-2 rounded"
@@ -90,18 +168,26 @@ const EditarProposta = () => {
     );
   }
 
-  const empresa = proposta.diagnosticos?.empresas;
+  const empresa = proposta?.diagnosticos?.empresas;
+  const isSaving = updateProposalMutation.isPending || createProposalMutation.isPending;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <EditProposalHeader
-        empresaNome={empresa?.nome}
+        empresaNome={isNewProposal ? plano?.nome : empresa?.nome}
         onCancel={handleCancel}
         onSave={handleSave}
-        isSaving={updateProposalMutation.isPending}
+        isSaving={isSaving}
       />
 
       {empresa && <CompanyInfo empresa={empresa} />}
+
+      {isNewProposal && (
+        <EmpresaSelector
+          selectedEmpresaId={formData.empresa_id || ''}
+          onChange={(empresaId) => updateFormData({ empresa_id: empresaId })}
+        />
+      )}
 
       <ProposalDataForm
         formData={formData}

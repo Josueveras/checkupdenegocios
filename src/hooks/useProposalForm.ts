@@ -8,6 +8,7 @@ interface ProposalFormData {
   prazo: string;
   status: string;
   acoes_sugeridas: string[];
+  empresa_id?: string;
 }
 
 interface ProposalData {
@@ -18,13 +19,21 @@ interface ProposalData {
   acoes_sugeridas?: any;
 }
 
-export const useProposalForm = (proposta: ProposalData | null) => {
+interface PlanData {
+  nome?: string;
+  objetivo?: string;
+  valor?: number;
+  tarefas?: string[];
+}
+
+export const useProposalForm = (proposta: ProposalData | null, plano: PlanData | null = null) => {
   const [formData, setFormData] = useState<ProposalFormData>({
     objetivo: '',
     valor: '',
     prazo: '',
     status: 'rascunho',
-    acoes_sugeridas: []
+    acoes_sugeridas: [],
+    empresa_id: ''
   });
 
   const getAcoesSugeridas = (acoes: any): string[] => {
@@ -45,15 +54,33 @@ export const useProposalForm = (proposta: ProposalData | null) => {
 
   useEffect(() => {
     if (proposta) {
+      // Carregar dados de proposta existente
       setFormData({
         objetivo: proposta.objetivo || '',
         valor: proposta.valor?.toString() || '',
         prazo: proposta.prazo || '',
         status: proposta.status || 'rascunho',
-        acoes_sugeridas: getAcoesSugeridas(proposta.acoes_sugeridas)
+        acoes_sugeridas: getAcoesSugeridas(proposta.acoes_sugeridas),
+        empresa_id: ''
+      });
+    } else if (plano) {
+      // Carregar dados do plano para nova proposta
+      const tarefasArray = Array.isArray(plano.tarefas) 
+        ? plano.tarefas.map(t => String(t)) 
+        : typeof plano.tarefas === 'string' 
+        ? [plano.tarefas] 
+        : [];
+
+      setFormData({
+        objetivo: plano.objetivo || '',
+        valor: plano.valor?.toString() || '',
+        prazo: '',
+        status: 'rascunho',
+        acoes_sugeridas: tarefasArray,
+        empresa_id: ''
       });
     }
-  }, [proposta]);
+  }, [proposta, plano]);
 
   const updateFormData = (updates: Partial<ProposalFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
