@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { BarChart, FileText, Calendar, Settings, Edit, File, Target, LayoutDashboard } from "lucide-react";
+import { BarChart, FileText, Calendar, Settings, Edit, File, Target, LayoutDashboard, Plus, ClipboardList, Users } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
@@ -11,19 +10,15 @@ const menuItems = [{
 }, {
   title: "Novo Diagnóstico",
   url: "/novo-diagnostico",
-  icon: FileText
+  icon: Plus
 }, {
   title: "Diagnósticos",
   url: "/diagnosticos",
   icon: File
 }, {
-  title: "Acompanhamento",
-  url: "/acompanhamento",
-  icon: Calendar
-}, {
   title: "Propostas",
   url: "/propostas",
-  icon: FileText
+  icon: ClipboardList
 }, {
   title: "Planos",
   url: "/planos",
@@ -33,21 +28,13 @@ const menuItems = [{
   url: "/perguntas",
   icon: Edit
 }, {
-  title: "Métricas",
-  url: "/metricas",
-  icon: BarChart
-}, {
-  title: "Configurações",
-  url: "/configuracoes",
-  icon: Settings
-}, {
   title: "CRM",
   url: "/crm",
   icon: LayoutDashboard,
 }, {
-  title: "Conta",
-  url: "/conta",
-  icon: Settings
+  title: "Métricas",
+  url: "/metricas",
+  icon: BarChart
 }];
 
 export function AppSidebar() {

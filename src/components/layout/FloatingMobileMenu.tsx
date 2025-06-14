@@ -1,6 +1,5 @@
-
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Plus, FileText, Calendar, Settings, BarChart, Users, ClipboardList, Target, User } from "lucide-react";
+import { Home, Plus, FileText, BarChart, Users, ClipboardList, Target, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
@@ -22,11 +21,6 @@ const menuItems = [
     icon: FileText
   },
   {
-    title: "Acompanhamento",
-    url: "/acompanhamento",
-    icon: Calendar
-  },
-  {
     title: "Propostas",
     url: "/propostas",
     icon: ClipboardList
@@ -42,14 +36,14 @@ const menuItems = [
     icon: Users
   },
   {
+    title: "CRM",
+    url: "/crm",
+    icon: LayoutDashboard
+  },
+  {
     title: "Métricas",
     url: "/metricas",
     icon: BarChart
-  },
-  {
-    title: "Config",
-    url: "/configuracoes",
-    icon: Settings
   }
 ];
 

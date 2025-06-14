@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -23,11 +22,6 @@ const menuItems = [
     icon: "📋"
   },
   {
-    title: "Acompanhamento",
-    url: "/acompanhamento",
-    icon: "📅"
-  },
-  {
     title: "Propostas",
     url: "/propostas",
     icon: "📄"
@@ -43,19 +37,14 @@ const menuItems = [
     icon: "❓"
   },
   {
+    title: "CRM",
+    url: "/crm",
+    icon: "👥"
+  },
+  {
     title: "Métricas",
     url: "/metricas",
     icon: "📈"
-  },
-  {
-    title: "Configurações",
-    url: "/configuracoes",
-    icon: "⚙️"
-  },
-  {
-    title: "Conta",
-    url: "/conta",
-    icon: "👤"
   }
 ];
 
