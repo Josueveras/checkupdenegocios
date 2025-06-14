@@ -45,7 +45,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
   const acoesSugeridas = getAcoesSugeridas(proposta.acoes_sugeridas);
 
   return (
-    <Card className="hover:shadow-md transition-shadow relative">
+    <Card className="hover:shadow-md transition-shadow relative w-full overflow-hidden">
       <Button
         variant="ghost"
         size="icon"
@@ -57,17 +57,17 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
 
       <CardHeader>
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 pr-12">
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="font-semibold text-xl text-gray-900">{empresa?.nome || 'Empresa não informada'}</h3>
+              <h3 className="font-semibold text-xl text-gray-900 truncate">{empresa?.nome || 'Empresa não informada'}</h3>
               <Badge className={getStatusBadge(proposta.status)}>
                 {proposta.status?.charAt(0).toUpperCase() + proposta.status?.slice(1)}
               </Badge>
             </div>
-            <p className="text-gray-600"><strong>Cliente:</strong> {empresa?.cliente_nome || 'N/A'}</p>
+            <p className="text-gray-600 truncate"><strong>Cliente:</strong> {empresa?.cliente_nome || 'N/A'}</p>
             <p className="text-gray-600"><strong>Data:</strong> {new Date(proposta.created_at).toLocaleDateString('pt-BR')}</p>
           </div>
-          <div className="text-right">
+          <div className="text-right flex-shrink-0">
             <div className="text-2xl font-bold text-green-600">
               {(proposta.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
             </div>
@@ -78,70 +78,81 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
       <CardContent className="space-y-4">
         <div>
           <h5 className="font-medium text-gray-900 mb-2">Objetivo</h5>
-          <p className="text-gray-700">{proposta.objetivo || 'Objetivo não definido'}</p>
+          <p className="text-gray-700 break-words">{proposta.objetivo || 'Objetivo não definido'}</p>
         </div>
         
         <div>
           <h5 className="font-medium text-gray-900 mb-2">Ações Sugeridas</h5>
           <ul className="space-y-1">
             {acoesSugeridas.length > 0 ? acoesSugeridas.map((acao: string, index: number) => (
-              <li key={index} className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-petrol rounded-full"></div>
-                <span className="text-gray-700">{acao}</span>
+              <li key={index} className="flex items-start gap-2">
+                <div className="w-2 h-2 bg-petrol rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-gray-700 break-words">{acao}</span>
               </li>
             )) : <li className="text-gray-500">Nenhuma ação definida</li>}
           </ul>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={() => handleDownloadPDF(proposta)}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Baixar PDF
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => handleSendWhatsApp(proposta)}
-            className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white"
-          >
-            📤 Enviar WhatsApp
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => onView(proposta)}
-            className="flex items-center gap-2"
-          >
-            <Eye className="h-4 w-4" />
-            Visualizar
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white"
-              >
-                <Trash2 className="h-4 w-4" />
-                Excluir
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={() => deleteProposal.mutate(proposta.id)}>
-                  Excluir
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+        <div className="pt-4 border-t">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleDownloadPDF(proposta)}
+              className="flex items-center gap-2 text-xs"
+              size="sm"
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Baixar PDF</span>
+              <span className="sm:hidden">PDF</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleSendWhatsApp(proposta)}
+              className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white text-xs"
+              size="sm"
+            >
+              📤 
+              <span className="hidden sm:inline">WhatsApp</span>
+              <span className="sm:hidden">WA</span>
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onView(proposta)}
+              className="flex items-center gap-2 text-xs"
+              size="sm"
+            >
+              <Eye className="h-4 w-4" />
+              <span className="hidden sm:inline">Visualizar</span>
+              <span className="sm:hidden">Ver</span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="flex items-center gap-2 text-red-600 border-red-600 hover:bg-red-600 hover:text-white text-xs"
+                  size="sm"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="hidden sm:inline">Excluir</span>
+                  <span className="sm:hidden">Del</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir esta proposta? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteProposal.mutate(proposta.id)}>
+                    Excluir
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </CardContent>
     </Card>

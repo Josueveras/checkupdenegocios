@@ -63,7 +63,7 @@ const Propostas = () => {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in overflow-hidden">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="min-w-0 flex-1">
@@ -94,25 +94,30 @@ const Propostas = () => {
       </div>
 
       {/* Stats */}
-      <ProposalStats propostas={propostas} />
+      <div className="w-full overflow-hidden">
+        <ProposalStats propostas={propostas} />
+      </div>
 
       {/* Filters */}
-      <ProposalFilters 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-      />
+      <div className="w-full overflow-hidden">
+        <ProposalFilters 
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          statusFilter={statusFilter}
+          setStatusFilter={setStatusFilter}
+        />
+      </div>
 
       {/* Proposals List */}
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         {filteredPropostas.map((proposta) => (
-          <ProposalCard
-            key={proposta.id}
-            proposta={proposta}
-            onEdit={handleEditProposta}
-            onView={handleViewProposta}
-          />
+          <div key={proposta.id} className="w-full">
+            <ProposalCard
+              proposta={proposta}
+              onEdit={handleEditProposta}
+              onView={handleViewProposta}
+            />
+          </div>
         ))}
       </div>
 

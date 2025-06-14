@@ -13,8 +13,8 @@ export const ProposalStats = ({ propostas }: ProposalStatsProps) => {
     .reduce((sum, proposta) => sum + (proposta.valor || 0), 0);
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-      <Card className="border-l-4 border-l-petrol min-w-0">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+      <Card className="border-l-4 border-l-petrol min-w-0 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-600 truncate">
             Total de Propostas
@@ -26,7 +26,7 @@ export const ProposalStats = ({ propostas }: ProposalStatsProps) => {
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-green-500 min-w-0">
+      <Card className="border-l-4 border-l-green-500 min-w-0 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-600 truncate">
             Aprovadas
@@ -40,7 +40,7 @@ export const ProposalStats = ({ propostas }: ProposalStatsProps) => {
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-mustard min-w-0">
+      <Card className="border-l-4 border-l-mustard min-w-0 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-600 truncate">
             Valor Total
@@ -54,7 +54,7 @@ export const ProposalStats = ({ propostas }: ProposalStatsProps) => {
         </CardContent>
       </Card>
 
-      <Card className="border-l-4 border-l-blue-light min-w-0">
+      <Card className="border-l-4 border-l-blue-light min-w-0 overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-gray-600 truncate">
             Valor Aprovado
