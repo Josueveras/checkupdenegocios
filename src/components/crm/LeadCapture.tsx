@@ -46,8 +46,21 @@ export function LeadCapture({ onSuccess }: LeadCaptureProps) {
     const score = calculateLeadScore(data);
     
     const leadData = {
-      ...data,
-      score_qualificacao: score
+      empresa_nome: data.empresa_nome,
+      contato_nome: data.contato_nome,
+      email: data.email,
+      telefone: data.telefone,
+      setor: data.setor,
+      tamanho_empresa: data.tamanho_empresa,
+      fonte_lead: data.fonte_lead,
+      status: data.status,
+      score_qualificacao: score,
+      potencial_receita: data.potencial_receita,
+      observacoes: data.observacoes,
+      responsavel: data.responsavel,
+      urgencia: data.urgencia,
+      necessidades: data.necessidades,
+      orcamento_disponivel: data.orcamento_disponivel
     };
 
     try {

@@ -1,17 +1,16 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { LeadStats } from '@/types/lead';
+import { useLeads } from './useLeads';
 
 export const useLeadStats = () => {
+  const { data: leads = [] } = useLeads();
+
   return useQuery({
-    queryKey: ['lead-stats'],
+    queryKey: ['lead-stats', leads.length],
     queryFn: async (): Promise<LeadStats> => {
-      const { data: leads, error } = await supabase
-        .from('leads')
-        .select('status, potencial_receita');
-      
-      if (error) throw error;
+      // Simular delay de processamento
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const totalLeads = leads.length;
       const leadsNovos = leads.filter(lead => lead.status === 'novo').length;
@@ -32,6 +31,7 @@ export const useLeadStats = () => {
         receita_potencial: receitaPotencial,
         ticket_medio: Math.round(ticketMedio * 100) / 100
       };
-    }
+    },
+    enabled: leads.length >= 0
   });
 };
