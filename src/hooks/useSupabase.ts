@@ -86,6 +86,32 @@ export const usePropostas = () => {
   });
 };
 
+// Hook para CRM (mesmo que usePropostas, mantido por compatibilidade)
+export const useCRM = () => {
+  return useQuery({
+    queryKey: ['crm'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('propostas')
+        .select(`
+          *,
+          diagnosticos!propostas_diagnostico_id_fkey (
+            empresas!diagnosticos_empresa_id_fkey (
+              nome,
+              cliente_nome,
+              cliente_email,
+              cliente_telefone
+            )
+          )
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+};
+
 // Hook para salvar empresa
 export const useSaveEmpresa = () => {
   const queryClient = useQueryClient();
@@ -128,7 +154,6 @@ export const useSaveDiagnostico = () => {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
-      // Criar notificação quando diagnóstico for concluído
       if (data?.empresas?.nome) {
         notifyDiagnosticCompleted(data.empresas.nome, data.id);
       }
@@ -147,32 +172,6 @@ export const useSaveRespostas = () => {
       
       if (error) throw error;
       return data;
-    }
-  });
-};
-
-// Hook para CRM
-export const useCRM = () => {
-  return useQuery({
-    queryKey: ['crm'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('propostas')
-        .select(`
-          *,
-          diagnosticos!propostas_diagnostico_id_fkey (
-            empresas!diagnosticos_empresa_id_fkey (
-              nome,
-              cliente_nome,
-              cliente_email,
-              cliente_telefone
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
     }
   });
 };

@@ -1,6 +1,4 @@
 
-console.log("forçar rebuild Lovable");
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +19,7 @@ import EmpresaVisaoGeral from "./pages/EmpresaVisaoGeral";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
 import EditarProposta from "./pages/EditarProposta";
+import CRM from "./pages/CRM";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
@@ -31,7 +30,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50">
-        {/* Sidebar apenas no desktop */}
         <div className="hidden md:block">
           <AppSidebar />
         </div>
@@ -41,8 +39,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             {children}
           </main>
         </div>
-        
-        {/* Menu mobile fixo na parte inferior */}
         <FloatingMobileMenu />
       </div>
     </SidebarProvider>
@@ -57,42 +53,19 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={
-            <AppLayout><Dashboard /></AppLayout>
-          } />
-          <Route path="/novo-diagnostico" element={
-            <AppLayout><NovoDiagnostico /></AppLayout>
-          } />
-          <Route path="/diagnosticos" element={
-            <AppLayout><Diagnosticos /></AppLayout>
-          } />
-          <Route path="/diagnostico-view" element={
-            <AppLayout><DiagnosticoView /></AppLayout>
-          } />
-          <Route path="/empresa/:id" element={
-            <AppLayout><EmpresaDetalhada /></AppLayout>
-          } />
-          <Route path="/empresa-visao/:id" element={
-            <AppLayout><EmpresaVisaoGeral /></AppLayout>
-          } />
-          <Route path="/empresas" element={
-            <AppLayout><Empresas /></AppLayout>
-          } />
-          <Route path="/propostas" element={
-            <AppLayout><Propostas /></AppLayout>
-          } />
-          <Route path="/editar-proposta" element={
-            <AppLayout><EditarProposta /></AppLayout>
-          } />
-          <Route path="/planos" element={
-            <AppLayout><Planos /></AppLayout>
-          } />
-          <Route path="/perguntas" element={
-            <AppLayout><Perguntas /></AppLayout>
-          } />
-          <Route path="/metricas" element={
-            <AppLayout><Metricas /></AppLayout>
-          } />
+          <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
+          <Route path="/novo-diagnostico" element={<AppLayout><NovoDiagnostico /></AppLayout>} />
+          <Route path="/diagnosticos" element={<AppLayout><Diagnosticos /></AppLayout>} />
+          <Route path="/diagnostico-view" element={<AppLayout><DiagnosticoView /></AppLayout>} />
+          <Route path="/empresa/:id" element={<AppLayout><EmpresaDetalhada /></AppLayout>} />
+          <Route path="/empresa-visao/:id" element={<AppLayout><EmpresaVisaoGeral /></AppLayout>} />
+          <Route path="/empresas" element={<AppLayout><Empresas /></AppLayout>} />
+          <Route path="/propostas" element={<AppLayout><Propostas /></AppLayout>} />
+          <Route path="/editar-proposta" element={<AppLayout><EditarProposta /></AppLayout>} />
+          <Route path="/crm" element={<AppLayout><CRM /></AppLayout>} />
+          <Route path="/planos" element={<AppLayout><Planos /></AppLayout>} />
+          <Route path="/perguntas" element={<AppLayout><Perguntas /></AppLayout>} />
+          <Route path="/metricas" element={<AppLayout><Metricas /></AppLayout>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
