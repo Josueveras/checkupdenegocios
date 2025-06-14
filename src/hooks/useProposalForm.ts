@@ -23,7 +23,7 @@ interface PlanData {
   nome?: string;
   objetivo?: string;
   valor?: number;
-  tarefas?: string[];
+  tarefas?: any; // Changed from string[] to any to handle Json type
 }
 
 export const useProposalForm = (proposta: ProposalData | null, plano: PlanData | null = null) => {
@@ -52,6 +52,22 @@ export const useProposalForm = (proposta: ProposalData | null, plano: PlanData |
     return [];
   };
 
+  const getTarefasArray = (tarefas: any): string[] => {
+    if (!tarefas) return [];
+    if (typeof tarefas === 'string') {
+      try {
+        const parsed = JSON.parse(tarefas);
+        return Array.isArray(parsed) ? parsed.map(t => String(t)) : [tarefas];
+      } catch {
+        return [tarefas];
+      }
+    }
+    if (Array.isArray(tarefas)) {
+      return tarefas.map(t => String(t));
+    }
+    return [];
+  };
+
   useEffect(() => {
     if (proposta) {
       // Carregar dados de proposta existente
@@ -65,11 +81,7 @@ export const useProposalForm = (proposta: ProposalData | null, plano: PlanData |
       });
     } else if (plano) {
       // Carregar dados do plano para nova proposta
-      const tarefasArray = Array.isArray(plano.tarefas) 
-        ? plano.tarefas.map(t => String(t)) 
-        : typeof plano.tarefas === 'string' 
-        ? [plano.tarefas] 
-        : [];
+      const tarefasArray = getTarefasArray(plano.tarefas);
 
       setFormData({
         objetivo: plano.objetivo || '',

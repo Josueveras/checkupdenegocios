@@ -25,6 +25,7 @@ const EditarProposta = () => {
     isNewProposal ? planoId : null
   );
 
+  // Safely extract proposta and plano data
   const proposta = proposalData?.type === 'existing' ? proposalData.data : null;
   const plano = proposalData?.type === 'plan' ? proposalData.data : null;
 
@@ -78,7 +79,7 @@ const EditarProposta = () => {
         .insert({
           empresa_id: data.empresa_id,
           status: 'concluido',
-          nivel_maturidade: 'medio'
+          nivel: 'medio' // Changed from nivel_maturidade to nivel
         })
         .select()
         .single();
@@ -168,13 +169,15 @@ const EditarProposta = () => {
     );
   }
 
+  // Safely access empresa and plano name
   const empresa = proposta?.diagnosticos?.empresas;
+  const empresaNome = isNewProposal ? plano?.nome : empresa?.nome;
   const isSaving = updateProposalMutation.isPending || createProposalMutation.isPending;
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <EditProposalHeader
-        empresaNome={isNewProposal ? plano?.nome : empresa?.nome}
+        empresaNome={empresaNome}
         onCancel={handleCancel}
         onSave={handleSave}
         isSaving={isSaving}
