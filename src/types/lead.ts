@@ -1,23 +1,24 @@
 
 export interface Lead {
   id: string;
-  empresa_nome: string;
-  contato_nome: string;
-  email: string;
-  telefone: string;
-  setor: string;
-  tamanho_empresa: 'micro' | 'pequena' | 'media' | 'grande';
-  fonte_lead: string;
-  status: 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'proposta_enviada' | 'ganho' | 'perdido';
-  score_qualificacao: number;
-  potencial_receita: number;
-  observacoes: string;
+  empresa_nome?: string;
+  contato_nome?: string;
+  email?: string;
+  telefone?: string;
+  setor?: string;
+  tamanho_empresa?: 'micro' | 'pequena' | 'media' | 'grande';
+  fonte_lead?: string;
+  status?: 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'proposta_enviada' | 'ganho' | 'perdido';
+  score_qualificacao?: number;
+  potencial_receita?: number;
+  observacoes?: string;
   data_criacao: string;
   data_ultima_interacao: string;
-  responsavel: string;
-  urgencia: 'baixa' | 'media' | 'alta';
-  necessidades: string;
-  orcamento_disponivel: number;
+  responsavel?: string;
+  urgencia?: 'baixa' | 'media' | 'alta';
+  necessidades?: string;
+  orcamento_disponivel?: number;
+  custom_fields?: Record<string, any>;
 }
 
 export interface LeadActivity {
@@ -37,4 +38,21 @@ export interface LeadStats {
   taxa_conversao: number;
   receita_potencial: number;
   ticket_medio: number;
+}
+
+export interface DynamicField {
+  id: string;
+  name: string;
+  label: string;
+  type: 'text' | 'email' | 'tel' | 'number' | 'textarea' | 'select' | 'checkbox';
+  placeholder?: string;
+  required: boolean;
+  options?: string[];
+  order: number;
+}
+
+export interface FormConfig {
+  id: string;
+  name: string;
+  fields: DynamicField[];
 }

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { LeadFilters } from '@/components/crm/LeadFilters';
 import { LeadStats } from '@/components/crm/LeadStats';
 import { Lead } from '@/types/lead';
 import { useNavigate } from 'react-router-dom';
+import { FormBuilder } from '@/components/crm/FormBuilder';
 
 const CRM = () => {
   const navigate = useNavigate();
@@ -92,13 +92,16 @@ const CRM = () => {
           <h1 className="text-3xl font-bold text-gray-900">CRM - Leads Externos</h1>
           <p className="text-gray-600 mt-1">Gerencie seus leads e pipeline comercial</p>
         </div>
-        <Button 
-          onClick={handleCreateNewLead}
-          className="bg-petrol hover:bg-petrol/90 text-white"
-        >
-          <UserPlus className="mr-2 h-4 w-4" />
-          Novo Lead
-        </Button>
+        <div className="flex gap-2">
+          <FormBuilder />
+          <Button 
+            onClick={handleCreateNewLead}
+            className="bg-petrol hover:bg-petrol/90 text-white"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Novo Lead
+          </Button>
+        </div>
       </div>
 
       {/* Stats */}
