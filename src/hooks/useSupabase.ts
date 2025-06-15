@@ -1,25 +1,8 @@
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useDiagnosticNotifications } from './useDiagnosticNotifications';
 
-// Hook para empresas
-export const useEmpresas = () => {
-  return useQuery({
-    queryKey: ['empresas'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('empresas')
-        .select('*')
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-};
-
-// Hook para diagnósticos
+// Diagnosticos
 export const useDiagnosticos = () => {
   return useQuery({
     queryKey: ['diagnosticos'],
@@ -28,22 +11,33 @@ export const useDiagnosticos = () => {
         .from('diagnosticos')
         .select(`
           *,
-          empresas!diagnosticos_empresa_id_fkey (
-            nome,
-            cliente_nome,
-            cliente_email,
-            cliente_telefone
-          )
+          empresas (*)
         `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data || [];
+      return data;
     }
   });
 };
 
-// Hook para perguntas
+// Empresas
+export const useEmpresas = () => {
+  return useQuery({
+    queryKey: ['empresas'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('empresas')
+        .select('*')
+        .order('nome');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+};
+
+// Perguntas
 export const usePerguntas = () => {
   return useQuery({
     queryKey: ['perguntas'],
@@ -51,127 +45,34 @@ export const usePerguntas = () => {
       const { data, error } = await supabase
         .from('perguntas')
         .select('*')
-        .eq('ativa', true)
-        .order('created_at', { ascending: true });
+        .order('categoria', { ascending: true });
       
       if (error) throw error;
-      return data || [];
+      return data;
     }
   });
 };
 
-// Hook para propostas
-export const usePropostas = () => {
+// Dashboard stats
+export const useDashboardStats = () => {
   return useQuery({
-    queryKey: ['propostas'],
+    queryKey: ['dashboard-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('propostas')
-        .select(`
-          *,
-          diagnosticos!propostas_diagnostico_id_fkey (
-            empresas!diagnosticos_empresa_id_fkey (
-              nome,
-              cliente_nome,
-              cliente_email,
-              cliente_telefone
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-};
+      // Buscar estatísticas básicas
+      const [diagnosticosRes, empresasRes] = await Promise.all([
+        supabase.from('diagnosticos').select('*', { count: 'exact' }),
+        supabase.from('empresas').select('*', { count: 'exact' })
+      ]);
 
-// Hook para CRM (mesmo que usePropostas, mantido por compatibilidade)
-export const useCRM = () => {
-  return useQuery({
-    queryKey: ['crm'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('propostas')
-        .select(`
-          *,
-          diagnosticos!propostas_diagnostico_id_fkey (
-            empresas!diagnosticos_empresa_id_fkey (
-              nome,
-              cliente_nome,
-              cliente_email,
-              cliente_telefone
-            )
-          )
-        `)
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-};
+      if (diagnosticosRes.error) throw diagnosticosRes.error;
+      if (empresasRes.error) throw empresasRes.error;
 
-// Hook para salvar empresa
-export const useSaveEmpresa = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async (empresa: any) => {
-      const { data, error } = await supabase
-        .from('empresas')
-        .insert(empresa)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['empresas'] });
-    }
-  });
-};
-
-// Hook para salvar diagnóstico
-export const useSaveDiagnostico = () => {
-  const queryClient = useQueryClient();
-  const { notifyDiagnosticCompleted } = useDiagnosticNotifications();
-  
-  return useMutation({
-    mutationFn: async (diagnostico: any) => {
-      const { data, error } = await supabase
-        .from('diagnosticos')
-        .insert(diagnostico)
-        .select(`
-          *,
-          empresas!diagnosticos_empresa_id_fkey (nome)
-        `)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
-      if (data?.empresas?.nome) {
-        notifyDiagnosticCompleted(data.empresas.nome, data.id);
-      }
-    }
-  });
-};
-
-// Hook para salvar respostas
-export const useSaveRespostas = () => {
-  return useMutation({
-    mutationFn: async (respostas: any[]) => {
-      const { data, error } = await supabase
-        .from('respostas')
-        .insert(respostas)
-        .select();
-      
-      if (error) throw error;
-      return data;
+      return {
+        totalDiagnosticos: diagnosticosRes.count || 0,
+        totalEmpresas: empresasRes.count || 0,
+        diagnosticos: diagnosticosRes.data || [],
+        empresas: empresasRes.data || []
+      };
     }
   });
 };

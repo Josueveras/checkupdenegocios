@@ -1,9 +1,8 @@
 
 import jsPDF from 'jspdf';
 import { generateDiagnosticPDF } from './pdf/diagnosticPDF';
-import { generateProposalPDF } from './pdf/proposalPDF';
 
-export { generateDiagnosticPDF, generateProposalPDF };
+export { generateDiagnosticPDF };
 
 export const downloadPDF = (doc: jsPDF, filename: string) => {
   doc.save(filename);

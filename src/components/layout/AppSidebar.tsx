@@ -17,14 +17,6 @@ const menuItems = [{
   url: "/diagnosticos",
   icon: File
 }, {
-  title: "Propostas Diagnósticos",
-  url: "/propostas",
-  icon: ClipboardList
-}, {
-  title: "Propostas Planos",
-  url: "/propostas-planos",
-  icon: FileText
-}, {
   title: "Planos",
   url: "/planos",
   icon: Target

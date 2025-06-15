@@ -17,11 +17,6 @@ import DiagnosticoView from "./pages/DiagnosticoView";
 import EmpresaDetalhada from "./pages/EmpresaDetalhada";
 import EmpresaVisaoGeral from "./pages/EmpresaVisaoGeral";
 import Empresas from "./pages/Empresas";
-import Propostas from "./pages/Propostas";
-import PropostasPlanos from "./pages/PropostasPlanos";
-import EditarProposta from "./pages/EditarProposta";
-import NovaPropostaPlano from "./pages/NovaPropostaPlano";
-import NovaPropostaPersonalizada from "./pages/NovaPropostaPersonalizada";
 import CRM from "./pages/CRM";
 import NovoLead from "./pages/NovoLead";
 import Planos from "./pages/Planos";
@@ -65,11 +60,6 @@ const App = () => (
           <Route path="/empresa/:id" element={<AppLayout><EmpresaDetalhada /></AppLayout>} />
           <Route path="/empresa-visao/:id" element={<AppLayout><EmpresaVisaoGeral /></AppLayout>} />
           <Route path="/empresas" element={<AppLayout><Empresas /></AppLayout>} />
-          <Route path="/propostas" element={<AppLayout><Propostas /></AppLayout>} />
-          <Route path="/propostas-planos" element={<AppLayout><PropostasPlanos /></AppLayout>} />
-          <Route path="/editar-proposta" element={<AppLayout><EditarProposta /></AppLayout>} />
-          <Route path="/nova-proposta-plano" element={<AppLayout><NovaPropostaPlano /></AppLayout>} />
-          <Route path="/nova-proposta-personalizada" element={<AppLayout><NovaPropostaPersonalizada /></AppLayout>} />
           <Route path="/crm" element={<AppLayout><CRM /></AppLayout>} />
           <Route path="/novo-lead" element={<AppLayout><NovoLead /></AppLayout>} />
           <Route path="/planos" element={<AppLayout><Planos /></AppLayout>} />
