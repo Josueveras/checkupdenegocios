@@ -26,7 +26,9 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
   const handleFilterChange = (key: string, value: string) => {
-    const newFilters = { ...filters, [key]: value };
+    // Convert "todos" back to empty string for filtering logic
+    const filterValue = value === 'todos' || value === 'todas' ? '' : value;
+    const newFilters = { ...filters, [key]: filterValue };
     setFilters(newFilters);
 
     // Update active filters list
@@ -39,7 +41,7 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
   };
 
   const clearFilter = (key: string) => {
-    handleFilterChange(key, '');
+    handleFilterChange(key, 'todos');
   };
 
   const clearAllFilters = () => {
@@ -108,12 +110,12 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
         {/* Filters Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {/* Status */}
-          <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+          <Select value={filters.status || 'todos'} onValueChange={(value) => handleFilterChange('status', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="novo">Novo</SelectItem>
               <SelectItem value="contactado">Contactado</SelectItem>
               <SelectItem value="qualificado">Qualificado</SelectItem>
@@ -124,12 +126,12 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
           </Select>
 
           {/* Setor */}
-          <Select value={filters.setor} onValueChange={(value) => handleFilterChange('setor', value)}>
+          <Select value={filters.setor || 'todos'} onValueChange={(value) => handleFilterChange('setor', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Setor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="tecnologia">Tecnologia</SelectItem>
               <SelectItem value="saude">Saúde</SelectItem>
               <SelectItem value="educacao">Educação</SelectItem>
@@ -142,12 +144,12 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
           </Select>
 
           {/* Tamanho da Empresa */}
-          <Select value={filters.tamanho_empresa} onValueChange={(value) => handleFilterChange('tamanho_empresa', value)}>
+          <Select value={filters.tamanho_empresa || 'todos'} onValueChange={(value) => handleFilterChange('tamanho_empresa', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Tamanho" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="todos">Todos</SelectItem>
               <SelectItem value="micro">Micro</SelectItem>
               <SelectItem value="pequena">Pequena</SelectItem>
               <SelectItem value="media">Média</SelectItem>
@@ -156,12 +158,12 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
           </Select>
 
           {/* Urgência */}
-          <Select value={filters.urgencia} onValueChange={(value) => handleFilterChange('urgencia', value)}>
+          <Select value={filters.urgencia || 'todas'} onValueChange={(value) => handleFilterChange('urgencia', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Urgência" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+              <SelectItem value="todas">Todas</SelectItem>
               <SelectItem value="baixa">Baixa</SelectItem>
               <SelectItem value="media">Média</SelectItem>
               <SelectItem value="alta">Alta</SelectItem>
@@ -169,12 +171,12 @@ export const LeadFilters = ({ onFiltersChange, totalLeads, filteredLeads }: Lead
           </Select>
 
           {/* Fonte */}
-          <Select value={filters.fonte_lead} onValueChange={(value) => handleFilterChange('fonte_lead', value)}>
+          <Select value={filters.fonte_lead || 'todas'} onValueChange={(value) => handleFilterChange('fonte_lead', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Fonte" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todas</SelectItem>
+              <SelectItem value="todas">Todas</SelectItem>
               <SelectItem value="website">Website</SelectItem>
               <SelectItem value="redes_sociais">Redes Sociais</SelectItem>
               <SelectItem value="indicacao">Indicação</SelectItem>
