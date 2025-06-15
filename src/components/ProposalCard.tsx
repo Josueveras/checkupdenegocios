@@ -45,7 +45,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
   const acoesSugeridas = getAcoesSugeridas(proposta.acoes_sugeridas);
 
   return (
-    <Card className="hover:shadow-md transition-shadow relative w-full overflow-hidden">
+    <Card className="hover:shadow-md transition-shadow relative">
       <Button
         variant="ghost"
         size="icon"
@@ -94,7 +94,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
         </div>
 
         <div className="pt-4 border-t">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               onClick={() => handleDownloadPDF(proposta)}
@@ -102,8 +102,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
               size="sm"
             >
               <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Baixar PDF</span>
-              <span className="sm:hidden">PDF</span>
+              PDF
             </Button>
             <Button
               variant="outline"
@@ -111,9 +110,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
               className="flex items-center gap-2 text-green-600 border-green-600 hover:bg-green-600 hover:text-white text-xs"
               size="sm"
             >
-              📤 
-              <span className="hidden sm:inline">WhatsApp</span>
-              <span className="sm:hidden">WA</span>
+              📤 WhatsApp
             </Button>
             <Button
               variant="outline"
@@ -122,8 +119,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
               size="sm"
             >
               <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Visualizar</span>
-              <span className="sm:hidden">Ver</span>
+              Ver
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -133,8 +129,7 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
                   size="sm"
                 >
                   <Trash2 className="h-4 w-4" />
-                  <span className="hidden sm:inline">Excluir</span>
-                  <span className="sm:hidden">Del</span>
+                  Excluir
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
