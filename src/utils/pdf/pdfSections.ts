@@ -3,154 +3,122 @@ import jsPDF from 'jspdf';
 import { PDF_STYLES } from './pdfStyles';
 
 export const createSectionGenerators = (doc: jsPDF, helpers: any) => {
-  const { pageWidth, margin, contentWidth, addTitle, addText, drawRoundedRect } = helpers;
+  const { pageWidth, margin, contentWidth, addTitle, addSubtitle, addText } = helpers;
 
   const generateHeader = (empresa: any, yPosition: number) => {
-    const dataFormatada = new Date().toLocaleDateString('pt-BR');
+    // Simple centered title
+    addTitle('Diagnóstico Empresarial', pageWidth / 2 - 50, yPosition);
     
-    // Título principal centralizado
-    addTitle('Diagnóstico Empresarial', pageWidth / 2, yPosition, PDF_STYLES.fonts.mainTitle, PDF_STYLES.colors.petrol, 'center');
-    
-    // Nome da empresa e data à direita
-    addText(empresa?.nome || 'Empresa', pageWidth - margin, yPosition, PDF_STYLES.fonts.large, 'bold', PDF_STYLES.colors.petrol, 'right');
-    addText(dataFormatada, pageWidth - margin, yPosition + 15, PDF_STYLES.fonts.normal, 'normal', PDF_STYLES.colors.text, 'right');
+    // Company name and date
+    addText(`Empresa: ${empresa?.nome || 'N/A'}`, margin, yPosition + 25);
+    addText(`Data: ${new Date().toLocaleDateString('pt-BR')}`, margin, yPosition + 40);
     
     return yPosition + 60;
   };
 
   const generateCompanyData = (empresa: any, yPosition: number) => {
-    // Fundo do bloco
-    drawRoundedRect(margin, yPosition - 5, contentWidth, 65, PDF_STYLES.layout.radius, PDF_STYLES.colors.lightGray);
+    addSubtitle('Dados da Empresa', margin, yPosition);
+    let currentY = yPosition + PDF_STYLES.layout.sectionSpacing;
     
-    addTitle('Dados da Empresa', margin + 15, yPosition + 15, PDF_STYLES.fonts.heading);
-    let currentY = yPosition + 35;
+    const data = [
+      ['Cliente:', empresa?.cliente_nome || 'N/A'],
+      ['E-mail:', empresa?.cliente_email || 'N/A'],
+      ['Telefone:', empresa?.cliente_telefone || 'N/A'],
+      ['Setor:', empresa?.setor || 'N/A']
+    ];
     
-    const leftCol = margin + 15;
-    const rightCol = margin + contentWidth / 2 + 10;
+    data.forEach(([label, value]) => {
+      addText(label, margin, currentY, true);
+      addText(value, margin + 60, currentY);
+      currentY += PDF_STYLES.layout.lineHeight;
+    });
     
-    addText('Cliente:', leftCol, currentY, PDF_STYLES.fonts.normal, 'bold');
-    addText(empresa?.cliente_nome || 'N/A', leftCol + 35, currentY, PDF_STYLES.fonts.normal);
-    
-    addText('E-mail:', rightCol, currentY, PDF_STYLES.fonts.normal, 'bold');
-    addText(empresa?.cliente_email || 'N/A', rightCol + 30, currentY, PDF_STYLES.fonts.normal);
-    
-    currentY += 15;
-    
-    addText('Telefone:', leftCol, currentY, PDF_STYLES.fonts.normal, 'bold');
-    addText(empresa?.cliente_telefone || 'N/A', leftCol + 40, currentY, PDF_STYLES.fonts.normal);
-    
-    addText('Setor:', rightCol, currentY, PDF_STYLES.fonts.normal, 'bold');
-    addText(empresa?.setor || 'N/A', rightCol + 25, currentY, PDF_STYLES.fonts.normal);
-    
-    return yPosition + 80;
+    return currentY + PDF_STYLES.layout.sectionSpacing;
   };
 
   const generateResults = (diagnosticData: any, yPosition: number) => {
-    addTitle('Resultados', margin, yPosition, PDF_STYLES.fonts.heading);
-    let currentY = yPosition + 25;
+    addSubtitle('Resultados', margin, yPosition);
+    let currentY = yPosition + PDF_STYLES.layout.sectionSpacing;
     
-    // Score geral em destaque
-    const scoreCircleX = margin + 50;
-    const scoreCircleY = currentY + 30;
-    const scoreRadius = 25;
+    // Score geral simples
+    addText(`Score Geral: ${diagnosticData.score_total}%`, margin, currentY, true);
+    currentY += PDF_STYLES.layout.lineHeight;
     
-    // Círculo do score
-    doc.setFillColor(PDF_STYLES.colors.highlight[0], PDF_STYLES.colors.highlight[1], PDF_STYLES.colors.highlight[2]);
-    doc.circle(scoreCircleX, scoreCircleY, scoreRadius, 'F');
+    addText(`Nível de Maturidade: ${diagnosticData.nivel}`, margin, currentY, true);
+    currentY += PDF_STYLES.layout.sectionSpacing;
     
-    // Score em branco
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(PDF_STYLES.fonts.score);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${diagnosticData.score_total}%`, scoreCircleX, scoreCircleY - 2, { align: 'center' });
-    
-    doc.setFontSize(PDF_STYLES.fonts.small);
-    doc.text('SCORE GERAL', scoreCircleX, scoreCircleY + 12, { align: 'center' });
-    
-    // Nível de maturidade
-    addText('Nível de Maturidade:', scoreCircleX + 60, scoreCircleY - 15, PDF_STYLES.fonts.medium, 'bold', PDF_STYLES.colors.text);
-    addTitle(diagnosticData.nivel, scoreCircleX + 60, scoreCircleY, PDF_STYLES.fonts.title, PDF_STYLES.colors.petrol);
-    
-    currentY += 80;
-    
-    // Pontuação por categoria
-    addText('Pontuação por Categoria:', margin, currentY, PDF_STYLES.fonts.large, 'bold');
-    currentY += 20;
+    // Scores por categoria
+    addText('Pontuação por Categoria:', margin, currentY, true);
+    currentY += PDF_STYLES.layout.lineHeight;
     
     const categories = [
-      { name: 'Estratégia', score: diagnosticData.score_estrategia },
-      { name: 'Vendas', score: diagnosticData.score_vendas },
-      { name: 'Marketing', score: diagnosticData.score_marketing },
-      { name: 'Gestão', score: diagnosticData.score_gestao }
+      ['Marketing:', diagnosticData.score_marketing],
+      ['Vendas:', diagnosticData.score_vendas],  
+      ['Estratégia:', diagnosticData.score_estrategia],
+      ['Gestão:', diagnosticData.score_gestao]
     ];
     
-    categories.forEach((cat, index) => {
-      const x = margin + (index % 2) * (contentWidth / 2);
-      const y = currentY + Math.floor(index / 2) * 20;
-      
-      addText(`${cat.name}:`, x, y, PDF_STYLES.fonts.normal, 'normal');
-      addText(`${cat.score}%`, x + 50, y, PDF_STYLES.fonts.normal, 'bold', PDF_STYLES.colors.highlight);
+    categories.forEach(([category, score]) => {
+      addText(`• ${category} ${score}%`, margin + 10, currentY);
+      currentY += PDF_STYLES.layout.lineHeight;
     });
     
-    return currentY + 60;
+    return currentY + PDF_STYLES.layout.sectionSpacing;
   };
 
   const generatePointsSection = (diagnosticData: any, yPosition: number) => {
-    if (!diagnosticData.pontos_fortes?.length && !diagnosticData.pontos_atencao?.length) {
-      return yPosition;
-    }
-
-    addTitle('Pontos Fortes e Pontos de Atenção', margin, yPosition, PDF_STYLES.fonts.heading);
-    let currentY = yPosition + 25;
-    
-    const colWidth = (contentWidth - 20) / 2;
+    let currentY = yPosition;
     
     // Pontos Fortes
     if (diagnosticData.pontos_fortes?.length > 0) {
-      drawRoundedRect(margin, currentY - 5, colWidth, 80, PDF_STYLES.layout.radius, PDF_STYLES.colors.greenBg);
+      addSubtitle('Pontos Fortes', margin, currentY);
+      currentY += PDF_STYLES.layout.sectionSpacing;
       
-      addTitle('Pontos Fortes', margin + 10, currentY + 12, PDF_STYLES.fonts.large, PDF_STYLES.colors.greenText);
-      
-      diagnosticData.pontos_fortes.slice(0, 4).forEach((ponto: string, index: number) => {
-        addText(`• ${ponto}`, margin + 10, currentY + 30 + (index * 12), PDF_STYLES.fonts.small, 'normal', PDF_STYLES.colors.text);
+      diagnosticData.pontos_fortes.forEach((ponto: string) => {
+        addText(`• ${ponto}`, margin, currentY);
+        currentY += PDF_STYLES.layout.lineHeight;
       });
+      
+      currentY += PDF_STYLES.layout.sectionSpacing;
     }
     
     // Pontos de Atenção
     if (diagnosticData.pontos_atencao?.length > 0) {
-      drawRoundedRect(margin + colWidth + 20, currentY - 5, colWidth, 80, PDF_STYLES.layout.radius, PDF_STYLES.colors.redBg);
+      addSubtitle('Pontos de Atenção', margin, currentY);
+      currentY += PDF_STYLES.layout.sectionSpacing;
       
-      addTitle('Pontos de Atenção', margin + colWidth + 30, currentY + 12, PDF_STYLES.fonts.large, PDF_STYLES.colors.redText);
-      
-      diagnosticData.pontos_atencao.slice(0, 4).forEach((ponto: string, index: number) => {
-        addText(`• ${ponto}`, margin + colWidth + 30, currentY + 30 + (index * 12), PDF_STYLES.fonts.small, 'normal', PDF_STYLES.colors.text);
+      diagnosticData.pontos_atencao.forEach((ponto: string) => {
+        addText(`• ${ponto}`, margin, currentY);
+        currentY += PDF_STYLES.layout.lineHeight;
       });
+      
+      currentY += PDF_STYLES.layout.sectionSpacing;
     }
     
-    return currentY + 100;
+    return currentY;
   };
 
   const generateRecommendations = (diagnosticData: any, yPosition: number, checkPageBreak: (y: number, h: number) => number) => {
     if (!diagnosticData.recomendacoes) return yPosition;
 
-    yPosition = checkPageBreak(yPosition, 120);
+    yPosition = checkPageBreak(yPosition, 60);
     
-    addTitle('Recomendações', margin, yPosition, PDF_STYLES.fonts.heading);
-    let currentY = yPosition + 25;
+    addSubtitle('Recomendações', margin, yPosition);
+    let currentY = yPosition + PDF_STYLES.layout.sectionSpacing;
     
     Object.entries(diagnosticData.recomendacoes).forEach(([categoria, recomendacoes]: [string, any]) => {
       if (recomendacoes && recomendacoes.length > 0) {
-        currentY = checkPageBreak(currentY, 40);
+        currentY = checkPageBreak(currentY, 30);
         
-        addText(categoria, margin, currentY, PDF_STYLES.fonts.medium, 'bold', PDF_STYLES.colors.petrol);
-        currentY += 15;
+        addText(`${categoria}:`, margin, currentY, true);
+        currentY += PDF_STYLES.layout.lineHeight;
         
-        recomendacoes.slice(0, 3).forEach((rec: string) => {
-          addText(`• ${rec}`, margin + 10, currentY, PDF_STYLES.fonts.normal, 'normal', PDF_STYLES.colors.text);
-          currentY += 12;
+        recomendacoes.forEach((rec: string) => {
+          addText(`• ${rec}`, margin + 10, currentY);
+          currentY += PDF_STYLES.layout.lineHeight;
         });
         
-        currentY += 10;
+        currentY += PDF_STYLES.layout.lineHeight;
       }
     });
     
@@ -160,60 +128,27 @@ export const createSectionGenerators = (doc: jsPDF, helpers: any) => {
   const generateObservations = (diagnosticData: any, yPosition: number, checkPageBreak: (y: number, h: number) => number) => {
     if (!diagnosticData.observacoes) return yPosition;
 
-    yPosition = checkPageBreak(yPosition, 60);
+    yPosition = checkPageBreak(yPosition, 40);
     
-    addTitle('Observações', margin, yPosition, PDF_STYLES.fonts.heading);
-    let currentY = yPosition + 20;
+    addSubtitle('Observações', margin, yPosition);
+    let currentY = yPosition + PDF_STYLES.layout.sectionSpacing;
     
     const lines = doc.splitTextToSize(diagnosticData.observacoes, contentWidth - 20);
-    lines.forEach((line: string, index: number) => {
-      addText(line, margin, currentY + (index * 12), PDF_STYLES.fonts.normal, 'normal', PDF_STYLES.colors.text);
+    lines.forEach((line: string) => {
+      addText(line, margin, currentY);
+      currentY += PDF_STYLES.layout.lineHeight;
     });
     
-    return currentY + lines.length * 12 + 20;
+    return currentY + PDF_STYLES.layout.sectionSpacing;
   };
 
   const generateFinalSection = (yPosition: number, checkPageBreak: (y: number, h: number) => number) => {
-    yPosition = checkPageBreak(yPosition, 120);
+    yPosition = checkPageBreak(yPosition, 40);
     
-    // Fundo azul petróleo
-    doc.setFillColor(PDF_STYLES.colors.petrol[0], PDF_STYLES.colors.petrol[1], PDF_STYLES.colors.petrol[2]);
-    doc.rect(0, yPosition - 10, pageWidth, 120, 'F');
+    // Simple thank you message
+    addText('Obrigado pela confiança!', pageWidth / 2 - 40, yPosition);
     
-    // Título em branco
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(PDF_STYLES.fonts.bigTitle);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Próximos Passos', pageWidth / 2, yPosition + 20, { align: 'center' });
-    
-    // Frase principal
-    doc.setFontSize(PDF_STYLES.fonts.large);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Com base na análise realizada, identificamos', pageWidth / 2, yPosition + 45, { align: 'center' });
-    doc.text('oportunidades estratégicas para impulsionar', pageWidth / 2, yPosition + 60, { align: 'center' });
-    doc.text('o crescimento do seu negócio.', pageWidth / 2, yPosition + 75, { align: 'center' });
-    
-    // Frase destaque
-    doc.setFontSize(PDF_STYLES.fonts.heading);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(PDF_STYLES.colors.highlight[0], PDF_STYLES.colors.highlight[1], PDF_STYLES.colors.highlight[2]);
-    doc.text('Vamos juntos transformar seus resultados?', pageWidth / 2, yPosition + 95, { align: 'center' });
-    
-    // Botão visual
-    const buttonWidth = 120;
-    const buttonHeight = 20;
-    const buttonX = (pageWidth - buttonWidth) / 2;
-    const buttonY = yPosition + 105;
-    
-    doc.setFillColor(PDF_STYLES.colors.highlight[0], PDF_STYLES.colors.highlight[1], PDF_STYLES.colors.highlight[2]);
-    doc.roundedRect(buttonX, buttonY, buttonWidth, buttonHeight, 10, 10, 'F');
-    
-    doc.setTextColor(PDF_STYLES.colors.petrol[0], PDF_STYLES.colors.petrol[1], PDF_STYLES.colors.petrol[2]);
-    doc.setFontSize(PDF_STYLES.fonts.medium);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Agendar reunião de apresentação', pageWidth / 2, buttonY + 13, { align: 'center' });
-    
-    return yPosition + 120;
+    return yPosition + 30;
   };
 
   return {
