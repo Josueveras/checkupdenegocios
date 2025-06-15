@@ -138,7 +138,7 @@ const Propostas = () => {
               </p>
               <div className="flex justify-center gap-4 flex-wrap">
                 {propostas.length === 0 ? (
-                  <Button onclick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
+                  <Button onClick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
                     <FileText className="mr-2 h-4 w-4" />
                     Criar Primeira Proposta
                   </Button>
