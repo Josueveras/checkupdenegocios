@@ -8,21 +8,40 @@ export const useProposalEdit = (proposalId: string | null, planoId: string | nul
     queryFn: async () => {
       // Se tem proposalId, buscar proposta existente
       if (proposalId) {
-        const { data, error } = await supabase
+        const { data: proposta, error } = await supabase
           .from('propostas')
           .select(`
             *,
             diagnosticos!propostas_diagnostico_id_fkey (
               *,
               empresas!diagnosticos_empresa_id_fkey (*)
-            ),
-            empresas!propostas_empresa_id_fkey (*)
+            )
           `)
           .eq('id', proposalId)
           .single();
         
         if (error) throw error;
-        return { type: 'existing', data };
+
+        // Se a proposta não tem diagnóstico, buscar empresa diretamente
+        if (proposta && !proposta.diagnostico_id && proposta.empresa_id) {
+          const { data: empresa, error: empresaError } = await supabase
+            .from('empresas')
+            .select('*')
+            .eq('id', proposta.empresa_id)
+            .single();
+          
+          if (empresaError) throw empresaError;
+          
+          return { 
+            type: 'existing', 
+            data: { 
+              ...proposta, 
+              empresas: empresa 
+            } 
+          };
+        }
+        
+        return { type: 'existing', data: proposta };
       }
       
       // Se tem planoId, buscar dados do plano para nova proposta
