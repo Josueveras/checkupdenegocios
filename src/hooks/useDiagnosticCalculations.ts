@@ -15,13 +15,18 @@ export const useDiagnosticCalculations = () => {
     const categories = ["Marketing", "Vendas", "Estratégia", "Gestão"];
     const categoryScores: {[key: string]: {total: number, max: number}} = {};
     
-    // Inicializar categorias
+    // Inicializar categorias predefinidas
     categories.forEach(cat => {
       categoryScores[cat] = { total: 0, max: 0 };
     });
 
     // Calcular scores por categoria
     questions.forEach(question => {
+      // Garantir que a categoria existe no categoryScores
+      if (!categoryScores[question.category]) {
+        categoryScores[question.category] = { total: 0, max: 0 };
+      }
+      
       const answer = answers[question.id];
       if (answer !== undefined) {
         categoryScores[question.category].total += answer;
