@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -18,12 +18,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Edit, Trash2, Plus } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { ServicesList } from "@/components/planos/ServicesList";
+import { usePlanos } from "@/hooks/usePlanos";
+import { useCreatePlano, useUpdatePlano, useDeletePlano } from "@/hooks/usePlanosOperations";
 
 interface Plan {
   id?: string;
@@ -36,31 +35,14 @@ interface Plan {
 }
 
 const Planos = () => {
-  const [plans, setPlans] = useState<Plan[]>([]);
+  const { data: plans = [], isLoading } = usePlanos();
+  const createPlano = useCreatePlano();
+  const updatePlano = useUpdatePlano();
+  const deletePlano = useDeletePlano();
+  
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [isNewPlan, setIsNewPlan] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchPlans = async () => {
-      const { data, error } = await supabase.from("planos").select("*");
-      if (error) {
-        console.error(error);
-      } else {
-        // Transform the data to match our Plan interface, renaming tarefas to servicos
-        const transformedPlans = data.map(plan => ({
-          ...plan,
-          servicos: Array.isArray(plan.tarefas) 
-            ? plan.tarefas.map(t => String(t)) 
-            : typeof plan.tarefas === 'string' 
-            ? [plan.tarefas] 
-            : []
-        }));
-        setPlans(transformedPlans);
-      }
-    };
-    fetchPlans();
-  }, []);
 
   const handleEditPlan = (plan: Plan) => {
     setEditingPlan({ ...plan });
@@ -83,54 +65,29 @@ const Planos = () => {
   const handleSavePlan = async () => {
     if (!editingPlan) return;
     
-    // Transform servicos back to tarefas for database compatibility
-    const planToSave = {
-      ...editingPlan,
-      tarefas: editingPlan.servicos
-    };
-    delete (planToSave as any).servicos;
-    
-    const { data, error } = await supabase.from("planos").upsert([planToSave]);
-    if (error) {
-      toast({ title: "Erro ao salvar plano" });
-    } else {
-      toast({ title: "Plano salvo com sucesso" });
-      setDialogOpen(false);
-      const updatedPlans = await supabase.from("planos").select("*");
-      if (updatedPlans.data) {
-        const transformedPlans = updatedPlans.data.map(plan => ({
-          ...plan,
-          servicos: Array.isArray(plan.tarefas) 
-            ? plan.tarefas.map(t => String(t)) 
-            : typeof plan.tarefas === 'string' 
-            ? [plan.tarefas] 
-            : []
-        }));
-        setPlans(transformedPlans);
+    try {
+      if (isNewPlan) {
+        await createPlano.mutateAsync(editingPlan);
+      } else {
+        await updatePlano.mutateAsync(editingPlan);
       }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error('Erro ao salvar plano:', error);
     }
   };
 
   const handleDeletePlan = async (id: string) => {
-    const { error } = await supabase.from("planos").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Erro ao excluir plano" });
-    } else {
-      toast({ title: "Plano excluído" });
-      const updatedPlans = await supabase.from("planos").select("*");
-      if (updatedPlans.data) {
-        const transformedPlans = updatedPlans.data.map(plan => ({
-          ...plan,
-          servicos: Array.isArray(plan.tarefas) 
-            ? plan.tarefas.map(t => String(t)) 
-            : typeof plan.tarefas === 'string' 
-            ? [plan.tarefas] 
-            : []
-        }));
-        setPlans(transformedPlans);
-      }
+    try {
+      await deletePlano.mutateAsync(id);
+    } catch (error) {
+      console.error('Erro ao excluir plano:', error);
     }
   };
+
+  if (isLoading) {
+    return <div className="p-4">Carregando planos...</div>;
+  }
 
   return (
     <div className="p-4">
@@ -232,7 +189,12 @@ const Planos = () => {
             />
           </div>
           <DialogFooter>
-            <Button onClick={handleSavePlan}>Salvar</Button>
+            <Button 
+              onClick={handleSavePlan}
+              disabled={createPlano.isPending || updatePlano.isPending}
+            >
+              {(createPlano.isPending || updatePlano.isPending) ? "Salvando..." : "Salvar"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
