@@ -1,5 +1,5 @@
 
-import { useDiagnosticos } from '@/hooks/useSupabase';
+import { useDiagnosticos } from '@/hooks/useDiagnosticos';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentDiagnostics } from '@/components/dashboard/RecentDiagnostics';

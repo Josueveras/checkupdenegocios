@@ -1,5 +1,4 @@
-
-import { usePerguntas } from './useSupabase';
+import { usePerguntas } from './usePerguntas';
 
 interface Question {
   id: string;

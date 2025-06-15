@@ -1,5 +1,5 @@
 
-import { usePerguntas } from './useSupabase';
+import { usePerguntas } from './usePerguntas';
 import { useQuestionSave } from './useQuestionSave';
 import { useQuestionDelete } from './useQuestionDelete';
 import { validateAndCleanOptions } from '@/utils/questionValidation';

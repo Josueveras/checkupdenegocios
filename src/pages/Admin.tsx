@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Building2, HelpCircle, Target, Settings, Users, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEmpresas, useDiagnosticos } from '@/hooks/useSupabase';
+import { useEmpresas } from '@/hooks/useEmpresas';
+import { useDiagnosticos } from '@/hooks/useDiagnosticos';
 import { usePlanos } from '@/hooks/usePlanos';
 
 const Admin = () => {

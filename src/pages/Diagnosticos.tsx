@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FileText } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDiagnosticos } from '@/hooks/useSupabase';
+import { useDiagnosticos } from '@/hooks/useDiagnosticos';
 import { DiagnosticCard } from '@/components/DiagnosticCard';
 
 const Diagnosticos = () => {
