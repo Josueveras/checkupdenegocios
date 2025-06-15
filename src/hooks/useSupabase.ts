@@ -1,6 +1,7 @@
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 // Diagnosticos
 export const useDiagnosticos = () => {
@@ -11,7 +12,7 @@ export const useDiagnosticos = () => {
         .from('diagnosticos')
         .select(`
           *,
-          empresas (*)
+          empresas!diagnosticos_empresa_id_fkey (*)
         `)
         .order('created_at', { ascending: false });
       
@@ -49,6 +50,68 @@ export const usePerguntas = () => {
       
       if (error) throw error;
       return data;
+    }
+  });
+};
+
+// Save Empresa
+export const useSaveEmpresa = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (empresaData: any) => {
+      const { data, error } = await supabase
+        .from('empresas')
+        .insert(empresaData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['empresas'] });
+    }
+  });
+};
+
+// Save Diagnostico
+export const useSaveDiagnostico = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (diagnosticoData: any) => {
+      const { data, error } = await supabase
+        .from('diagnosticos')
+        .insert(diagnosticoData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
+    }
+  });
+};
+
+// Save Respostas
+export const useSaveRespostas = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (respostasData: any[]) => {
+      const { data, error } = await supabase
+        .from('respostas')
+        .insert(respostasData)
+        .select();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['respostas'] });
     }
   });
 };

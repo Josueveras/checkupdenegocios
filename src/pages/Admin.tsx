@@ -4,14 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Building2, HelpCircle, Target, Settings, Users, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useEmpresas, useDiagnosticos, usePropostas } from '@/hooks/useSupabase';
+import { useEmpresas, useDiagnosticos } from '@/hooks/useSupabase';
 import { usePlanos } from '@/hooks/usePlanos';
 
 const Admin = () => {
   const navigate = useNavigate();
   const { data: diagnosticos = [] } = useDiagnosticos();
   const { data: empresas = [] } = useEmpresas();
-  const { data: propostas = [] } = usePropostas();
   const { data: planos = [] } = usePlanos();
 
   const adminSections = [
@@ -41,22 +40,12 @@ const Admin = () => {
       route: '/planos',
       color: 'bg-purple-500',
       hoverColor: 'hover:bg-purple-600'
-    },
-    {
-      title: 'Propostas',
-      description: 'Visualizar todas as propostas',
-      icon: FileText,
-      count: propostas.length || 0,
-      route: '/propostas',
-      color: 'bg-orange-500',
-      hoverColor: 'hover:bg-orange-600'
     }
   ];
 
   const stats = [
     { label: 'Total de Empresas', value: empresas.length || 0, icon: Building2 },
     { label: 'Diagnósticos', value: diagnosticos.length || 0, icon: FileText },
-    { label: 'Propostas', value: propostas.length || 0, icon: Target },
     { label: 'Planos Ativos', value: planos.length || 0, icon: Settings }
   ];
 
@@ -72,7 +61,7 @@ const Admin = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {stats.map((stat) => (
           <Card key={stat.label}>
             <CardContent className="p-4">
@@ -129,7 +118,7 @@ const Admin = () => {
           <CardDescription>Acesso rápido às funcionalidades mais utilizadas</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Button
               variant="outline"
               onClick={() => navigate('/novo-diagnostico')}
@@ -137,14 +126,6 @@ const Admin = () => {
             >
               <FileText className="h-5 w-5" />
               Novo Diagnóstico
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => navigate('/nova-proposta-plano')}
-              className="flex items-center gap-2 h-12"
-            >
-              <Target className="h-5 w-5" />
-              Nova Proposta
             </Button>
             <Button
               variant="outline"

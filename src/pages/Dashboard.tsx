@@ -1,5 +1,5 @@
 
-import { useDiagnosticos, usePropostas } from '@/hooks/useSupabase';
+import { useDiagnosticos } from '@/hooks/useSupabase';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { DashboardStats } from '@/components/dashboard/DashboardStats';
 import { RecentDiagnostics } from '@/components/dashboard/RecentDiagnostics';
@@ -8,16 +8,17 @@ import { QuickActions } from '@/components/dashboard/QuickActions';
 
 const Dashboard = () => {
   const { data: diagnosticos = [] } = useDiagnosticos();
-  const { data: propostas = [] } = usePropostas();
 
   // Calcular estatísticas reais
   const totalDiagnosticos = diagnosticos.length;
   const scoreMedia = diagnosticos.length > 0 
     ? Math.round(diagnosticos.reduce((sum, diag) => sum + diag.score_total, 0) / diagnosticos.length)
     : 0;
-  const totalPropostas = propostas.length;
-  const propostasAprovadas = propostas.filter(p => p.status === 'aprovada').length;
-  const taxaConversao = totalPropostas > 0 ? Math.round((propostasAprovadas / totalPropostas) * 100) : 0;
+  
+  // Remover referências a propostas
+  const totalPropostas = 0;
+  const propostasAprovadas = 0;
+  const taxaConversao = 0;
 
   // Últimos 3 diagnósticos
   const recentDiagnostics = diagnosticos

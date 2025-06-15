@@ -13,7 +13,7 @@ interface Diagnostic {
   empresas?: {
     nome?: string;
     cliente_nome?: string;
-  };
+  } | null;
 }
 
 interface RecentDiagnosticsProps {
