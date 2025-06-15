@@ -58,6 +58,12 @@ export const useDiagnosticSave = (editId?: string) => {
   }: SaveDiagnosticProps) => {
     try {
       console.log('🔄 Iniciando', isEditing ? 'atualização' : 'salvamento', 'do diagnóstico...');
+      console.log('📋 Parâmetros recebidos:', {
+        isEditing,
+        editId,
+        hasCurrentDiagnostic: !!currentDiagnostic,
+        currentDiagnosticId: currentDiagnostic?.id
+      });
       console.log('📊 Results recebidos:', results);
       console.log('📊 Category scores:', results.categoryScores);
 
@@ -108,9 +114,16 @@ export const useDiagnosticSave = (editId?: string) => {
       let empresa: any;
       let diagnostico: any;
 
+      // LÓGICA PRINCIPAL DE EDIÇÃO VS CRIAÇÃO
       if (isEditing && editId && currentDiagnostic) {
-        console.log('🔄 Modo de edição ativado para ID:', editId);
-        console.log('📋 Diagnóstico atual:', currentDiagnostic);
+        console.log('🔄 MODO DE EDIÇÃO CONFIRMADO');
+        console.log('📋 Diagnóstico atual completo:', currentDiagnostic);
+        console.log('🏢 Empresa do diagnóstico:', currentDiagnostic.empresas);
+
+        // Validar se o diagnóstico tem empresa associada
+        if (!currentDiagnostic.empresa_id) {
+          throw new Error('Diagnóstico não possui empresa associada');
+        }
 
         // Atualizar dados da empresa
         const empresaData = {
@@ -124,12 +137,14 @@ export const useDiagnosticSave = (editId?: string) => {
           faturamento: companyData.revenue
         };
 
-        console.log('🏢 Atualizando empresa:', empresaData);
+        console.log('🏢 Atualizando empresa ID:', currentDiagnostic.empresa_id);
+        console.log('🏢 Dados da empresa para atualizar:', empresaData);
+        
         empresa = await updateEmpresaMutation.mutateAsync({
           id: currentDiagnostic.empresa_id,
           empresaData
         });
-        console.log('✅ Empresa atualizada:', empresa);
+        console.log('✅ Empresa atualizada com sucesso:', empresa);
 
         // Preparar dados do diagnóstico para atualização
         const diagnosticoData = {
@@ -148,12 +163,14 @@ export const useDiagnosticSave = (editId?: string) => {
           status: 'concluido'
         };
 
-        console.log('💾 Atualizando diagnóstico:', diagnosticoData);
+        console.log('💾 Atualizando diagnóstico ID:', editId);
+        console.log('💾 Dados do diagnóstico para atualizar:', diagnosticoData);
+        
         diagnostico = await updateDiagnosticoMutation.mutateAsync({
           id: editId,
           diagnosticoData
         });
-        console.log('✅ Diagnóstico atualizado:', diagnostico);
+        console.log('✅ Diagnóstico atualizado com sucesso:', diagnostico);
 
         // Atualizar respostas (deletar antigas e inserir novas)
         const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
@@ -169,12 +186,13 @@ export const useDiagnosticSave = (editId?: string) => {
         });
 
         if (respostasData.length > 0) {
-          console.log('📝 Atualizando respostas:', respostasData.length, 'respostas');
+          console.log('📝 Atualizando respostas para diagnóstico:', editId);
+          console.log('📝 Total de respostas:', respostasData.length);
           await updateRespostasMutation.mutateAsync({
             diagnosticoId: editId,
             respostasData
           });
-          console.log('✅ Respostas atualizadas');
+          console.log('✅ Respostas atualizadas com sucesso');
         }
 
         toast({
@@ -182,7 +200,16 @@ export const useDiagnosticSave = (editId?: string) => {
           description: "O diagnóstico foi atualizado com sucesso!",
         });
 
+        console.log('🎉 ATUALIZAÇÃO CONCLUÍDA COM SUCESSO');
+
       } else {
+        console.log('🆕 MODO DE CRIAÇÃO CONFIRMADO');
+        console.log('📋 Motivo da criação:', {
+          isEditing,
+          editId,
+          hasCurrentDiagnostic: !!currentDiagnostic
+        });
+
         // Fluxo original de criação
         const empresaData = {
           nome: companyData.companyName,
@@ -195,7 +222,7 @@ export const useDiagnosticSave = (editId?: string) => {
           faturamento: companyData.revenue
         };
 
-        console.log('🏢 Salvando empresa:', empresaData);
+        console.log('🏢 Salvando nova empresa:', empresaData);
         empresa = await saveEmpresaMutation.mutateAsync(empresaData);
         console.log('✅ Empresa salva:', empresa);
 
@@ -244,14 +271,21 @@ export const useDiagnosticSave = (editId?: string) => {
           title: "Diagnóstico salvo",
           description: "O diagnóstico foi salvo com sucesso!",
         });
+
+        console.log('🎉 CRIAÇÃO CONCLUÍDA COM SUCESSO');
       }
 
-      console.log('🎉 Diagnóstico', isEditing ? 'atualizado' : 'salvo', 'com sucesso!');
       onSuccess();
 
     } catch (error: any) {
       console.error('❌ Erro detalhado ao', isEditing ? 'atualizar' : 'salvar', 'diagnóstico:', error);
       console.error('📊 Results que causaram erro:', results);
+      console.error('📋 Parâmetros que causaram erro:', {
+        isEditing,
+        editId,
+        hasCurrentDiagnostic: !!currentDiagnostic
+      });
+      
       toast({
         title: isEditing ? "Erro ao atualizar" : "Erro ao salvar",
         description: `Ocorreu um erro ao ${isEditing ? 'atualizar' : 'salvar'} o diagnóstico: ${error?.message || 'Erro desconhecido'}`,
