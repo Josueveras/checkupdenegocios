@@ -1,19 +1,23 @@
 
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, X } from 'lucide-react';
 
 interface EditProposalHeaderProps {
   empresaNome?: string;
   onCancel: () => void;
   onSave: () => void;
   isSaving: boolean;
+  onBack?: () => void;
+  showBackButton?: boolean;
 }
 
 export const EditProposalHeader = ({ 
   empresaNome, 
   onCancel, 
   onSave, 
-  isSaving 
+  isSaving,
+  onBack,
+  showBackButton = false
 }: EditProposalHeaderProps) => {
   return (
     <div className="w-full overflow-hidden">
@@ -28,15 +32,28 @@ export const EditProposalHeader = ({
         </div>
         
         <div className="flex flex-col sm:flex-row gap-2 w-full">
+          {showBackButton && onBack && (
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              disabled={isSaving}
+              className="w-full sm:w-auto text-sm"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+          )}
+          
           <Button
             variant="outline"
             onClick={onCancel}
             disabled={isSaving}
             className="w-full sm:w-auto text-sm"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <X className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
+          
           <Button
             onClick={onSave}
             disabled={isSaving}

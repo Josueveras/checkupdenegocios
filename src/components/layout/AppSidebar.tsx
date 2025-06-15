@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { BarChart, FileText, Calendar, Settings, Edit, File, Target, LayoutDashboard, Plus, ClipboardList, Users } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -35,6 +36,10 @@ const menuItems = [{
   title: "Métricas",
   url: "/metricas",
   icon: BarChart
+}, {
+  title: "Administração",
+  url: "/admin",
+  icon: Settings
 }];
 
 export function AppSidebar() {

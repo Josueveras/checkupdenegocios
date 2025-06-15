@@ -26,6 +26,7 @@ import NovoLead from "./pages/NovoLead";
 import Planos from "./pages/Planos";
 import Perguntas from "./pages/Perguntas";
 import Metricas from "./pages/Metricas";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,7 @@ const App = () => (
           <Route path="/planos" element={<AppLayout><Planos /></AppLayout>} />
           <Route path="/perguntas" element={<AppLayout><Perguntas /></AppLayout>} />
           <Route path="/metricas" element={<AppLayout><Metricas /></AppLayout>} />
+          <Route path="/admin" element={<AppLayout><Admin /></AppLayout>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </BrowserRouter>
