@@ -1,5 +1,6 @@
+
 import { toast } from '@/hooks/use-toast';
-import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
+import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas, useUpdateEmpresa, useUpdateDiagnostico, useUpdateRespostas } from '@/hooks/useSupabase';
 import { detectBot, addSpamProtectionDelay } from '@/utils/botProtection';
 import { getUserIP } from '@/utils/ipUtils';
 
@@ -10,6 +11,7 @@ interface SaveDiagnosticProps {
   answers: {[key: string]: number};
   questions: any[];
   isEditing: boolean;
+  editId?: string;
   onSuccess: () => void;
 }
 
@@ -34,6 +36,9 @@ export const useDiagnosticSave = () => {
   const saveEmpresaMutation = useSaveEmpresa();
   const saveDiagnosticoMutation = useSaveDiagnostico();
   const saveRespostasMutation = useSaveRespostas();
+  const updateEmpresaMutation = useUpdateEmpresa();
+  const updateDiagnosticoMutation = useUpdateDiagnostico();
+  const updateRespostasMutation = useUpdateRespostas();
 
   const saveDiagnostic = async ({
     companyData,
@@ -42,10 +47,11 @@ export const useDiagnosticSave = () => {
     answers,
     questions,
     isEditing,
+    editId,
     onSuccess
   }: SaveDiagnosticProps) => {
     try {
-      console.log('🔄 Iniciando salvamento do diagnóstico...');
+      console.log('🔄 Iniciando', isEditing ? 'atualização' : 'salvamento', 'do diagnóstico...');
       console.log('📊 Results recebidos:', results);
       console.log('📊 Category scores:', results.categoryScores);
 
@@ -70,32 +76,8 @@ export const useDiagnosticSave = () => {
         observacoes: diagnosticData.observacoes || 'Diagnóstico concluído automaticamente.'
       };
 
-      if (isEditing) {
-        toast({
-          title: "Atualização em desenvolvimento",
-          description: "A funcionalidade de atualização será implementada em breve.",
-        });
-        return;
-      }
-
       // Obter IP do usuário para controle de spam
       const userIP = await getUserIP();
-
-      // Salvar empresa primeiro
-      const empresaData = {
-        nome: companyData.companyName,
-        cliente_nome: companyData.clientName,
-        cliente_email: companyData.email,
-        cliente_telefone: companyData.phone,
-        site_instagram: companyData.website,
-        setor: companyData.sector,
-        funcionarios: companyData.employees,
-        faturamento: companyData.revenue
-      };
-
-      console.log('🏢 Salvando empresa:', empresaData);
-      const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
-      console.log('✅ Empresa salva:', empresa);
 
       // Mapear categorias dinâmicas para as 4 colunas fixas
       const mappedScores = {
@@ -117,69 +99,173 @@ export const useDiagnosticSave = () => {
 
       console.log('🗂️ Mapeamento de categorias:', results.categoryScores, '→', mappedScores);
 
-      // Preparar dados do diagnóstico usando apenas as 4 colunas existentes
-      const diagnosticoData = {
-        empresa_id: empresa.id,
-        score_total: results.overallScore,
-        score_marketing: mappedScores.marketing,
-        score_vendas: mappedScores.vendas,
-        score_estrategia: mappedScores.estrategia,
-        score_gestao: mappedScores.gestao,
-        nivel: results.level,
-        pontos_fortes: results.strongPoints,
-        pontos_atencao: results.attentionPoints,
-        recomendacoes: results.recommendations,
-        planos: finalDiagnosticData.planos,
-        valores: parseFloat(finalDiagnosticData.valores),
-        observacoes: finalDiagnosticData.observacoes,
-        status: 'concluido'
-      };
+      let empresa: any;
+      let diagnostico: any;
 
-      console.log('💾 Dados do diagnóstico para salvar:', diagnosticoData);
-
-      const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
-      console.log('✅ Diagnóstico salvo:', diagnostico);
-
-      // Salvar respostas
-      const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
-        const question = questions.find(q => q.id === perguntaId);
-        const resposta = question?.options.find(o => o.score === score)?.text || '';
+      if (isEditing && editId) {
+        console.log('🔄 Modo de edição ativado para ID:', editId);
         
-        return {
-          diagnostico_id: diagnostico.id,
-          pergunta_id: perguntaId,
-          score: score,
-          resposta: resposta
-        };
-      });
+        // Buscar dados do diagnóstico atual para obter empresa_id
+        const { data: currentDiagnostic } = await supabase
+          .from('diagnosticos')
+          .select('empresa_id, empresas(*)')
+          .eq('id', editId)
+          .single();
 
-      if (respostasData.length > 0) {
-        console.log('📝 Salvando respostas:', respostasData.length, 'respostas');
-        await saveRespostasMutation.mutateAsync(respostasData);
-        console.log('✅ Respostas salvas');
+        if (!currentDiagnostic) {
+          throw new Error('Diagnóstico não encontrado para edição');
+        }
+
+        // Atualizar dados da empresa
+        const empresaData = {
+          nome: companyData.companyName,
+          cliente_nome: companyData.clientName,
+          cliente_email: companyData.email,
+          cliente_telefone: companyData.phone,
+          site_instagram: companyData.website,
+          setor: companyData.sector,
+          funcionarios: companyData.employees,
+          faturamento: companyData.revenue
+        };
+
+        console.log('🏢 Atualizando empresa:', empresaData);
+        empresa = await updateEmpresaMutation.mutateAsync({
+          id: currentDiagnostic.empresa_id,
+          empresaData
+        });
+        console.log('✅ Empresa atualizada:', empresa);
+
+        // Preparar dados do diagnóstico para atualização
+        const diagnosticoData = {
+          score_total: results.overallScore,
+          score_marketing: mappedScores.marketing,
+          score_vendas: mappedScores.vendas,
+          score_estrategia: mappedScores.estrategia,
+          score_gestao: mappedScores.gestao,
+          nivel: results.level,
+          pontos_fortes: results.strongPoints,
+          pontos_atencao: results.attentionPoints,
+          recomendacoes: results.recommendations,
+          planos: finalDiagnosticData.planos,
+          valores: parseFloat(finalDiagnosticData.valores),
+          observacoes: finalDiagnosticData.observacoes,
+          status: 'concluido'
+        };
+
+        console.log('💾 Atualizando diagnóstico:', diagnosticoData);
+        diagnostico = await updateDiagnosticoMutation.mutateAsync({
+          id: editId,
+          diagnosticoData
+        });
+        console.log('✅ Diagnóstico atualizado:', diagnostico);
+
+        // Atualizar respostas (deletar antigas e inserir novas)
+        const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
+          const question = questions.find(q => q.id === perguntaId);
+          const resposta = question?.options.find(o => o.score === score)?.text || '';
+          
+          return {
+            diagnostico_id: editId,
+            pergunta_id: perguntaId,
+            score: score,
+            resposta: resposta
+          };
+        });
+
+        if (respostasData.length > 0) {
+          console.log('📝 Atualizando respostas:', respostasData.length, 'respostas');
+          await updateRespostasMutation.mutateAsync({
+            diagnosticoId: editId,
+            respostasData
+          });
+          console.log('✅ Respostas atualizadas');
+        }
+
+        toast({
+          title: "Diagnóstico atualizado",
+          description: "O diagnóstico foi atualizado com sucesso!",
+        });
+
+      } else {
+        // Fluxo original de criação
+        const empresaData = {
+          nome: companyData.companyName,
+          cliente_nome: companyData.clientName,
+          cliente_email: companyData.email,
+          cliente_telefone: companyData.phone,
+          site_instagram: companyData.website,
+          setor: companyData.sector,
+          funcionarios: companyData.employees,
+          faturamento: companyData.revenue
+        };
+
+        console.log('🏢 Salvando empresa:', empresaData);
+        empresa = await saveEmpresaMutation.mutateAsync(empresaData);
+        console.log('✅ Empresa salva:', empresa);
+
+        // Preparar dados do diagnóstico usando apenas as 4 colunas existentes
+        const diagnosticoData = {
+          empresa_id: empresa.id,
+          score_total: results.overallScore,
+          score_marketing: mappedScores.marketing,
+          score_vendas: mappedScores.vendas,
+          score_estrategia: mappedScores.estrategia,
+          score_gestao: mappedScores.gestao,
+          nivel: results.level,
+          pontos_fortes: results.strongPoints,
+          pontos_atencao: results.attentionPoints,
+          recomendacoes: results.recommendations,
+          planos: finalDiagnosticData.planos,
+          valores: parseFloat(finalDiagnosticData.valores),
+          observacoes: finalDiagnosticData.observacoes,
+          status: 'concluido'
+        };
+
+        console.log('💾 Dados do diagnóstico para salvar:', diagnosticoData);
+        diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
+        console.log('✅ Diagnóstico salvo:', diagnostico);
+
+        // Salvar respostas
+        const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
+          const question = questions.find(q => q.id === perguntaId);
+          const resposta = question?.options.find(o => o.score === score)?.text || '';
+          
+          return {
+            diagnostico_id: diagnostico.id,
+            pergunta_id: perguntaId,
+            score: score,
+            resposta: resposta
+          };
+        });
+
+        if (respostasData.length > 0) {
+          console.log('📝 Salvando respostas:', respostasData.length, 'respostas');
+          await saveRespostasMutation.mutateAsync(respostasData);
+          console.log('✅ Respostas salvas');
+        }
+
+        toast({
+          title: "Diagnóstico salvo",
+          description: "O diagnóstico foi salvo com sucesso!",
+        });
       }
 
-      console.log('🎉 Diagnóstico completo salvo com sucesso!');
-
-      toast({
-        title: "Diagnóstico salvo",
-        description: "O diagnóstico foi salvo com sucesso!",
-      });
-
+      console.log('🎉 Diagnóstico', isEditing ? 'atualizado' : 'salvo', 'com sucesso!');
       onSuccess();
 
     } catch (error: any) {
-      console.error('❌ Erro detalhado ao salvar diagnóstico:', error);
+      console.error('❌ Erro detalhado ao', isEditing ? 'atualizar' : 'salvar', 'diagnóstico:', error);
       console.error('📊 Results que causaram erro:', results);
       toast({
-        title: "Erro ao salvar",
-        description: `Ocorreu um erro ao salvar o diagnóstico: ${error?.message || 'Erro desconhecido'}`,
+        title: isEditing ? "Erro ao atualizar" : "Erro ao salvar",
+        description: `Ocorreu um erro ao ${isEditing ? 'atualizar' : 'salvar'} o diagnóstico: ${error?.message || 'Erro desconhecido'}`,
         variant: "destructive"
       });
     }
   };
 
-  const isSaving = saveEmpresaMutation.isPending || saveDiagnosticoMutation.isPending;
+  const isSaving = saveEmpresaMutation.isPending || saveDiagnosticoMutation.isPending || 
+                  updateEmpresaMutation.isPending || updateDiagnosticoMutation.isPending;
 
   return {
     saveDiagnostic,

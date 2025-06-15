@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -107,6 +108,35 @@ export const useSaveEmpresa = () => {
   });
 };
 
+// Update Empresa
+export const useUpdateEmpresa = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, empresaData }: { id: string; empresaData: any }) => {
+      console.log('🔄 Atualizando empresa:', id, empresaData);
+      const { data, error } = await supabase
+        .from('empresas')
+        .update(empresaData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('❌ Erro ao atualizar empresa:', error);
+        throw error;
+      }
+      
+      console.log('✅ Empresa atualizada:', data);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
+    }
+  });
+};
+
 // Save Diagnostico
 export const useSaveDiagnostico = () => {
   const queryClient = useQueryClient();
@@ -157,6 +187,54 @@ export const useSaveDiagnostico = () => {
   });
 };
 
+// Update Diagnostico
+export const useUpdateDiagnostico = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, diagnosticoData }: { id: string; diagnosticoData: any }) => {
+      console.log('🔄 Atualizando diagnóstico:', id, diagnosticoData);
+      
+      // Garantir que apenas as 4 colunas existentes sejam enviadas
+      const cleanedData = {
+        score_total: diagnosticoData.score_total,
+        score_marketing: diagnosticoData.score_marketing,
+        score_vendas: diagnosticoData.score_vendas,
+        score_estrategia: diagnosticoData.score_estrategia,
+        score_gestao: diagnosticoData.score_gestao,
+        nivel: diagnosticoData.nivel,
+        pontos_fortes: diagnosticoData.pontos_fortes,
+        pontos_atencao: diagnosticoData.pontos_atencao,
+        recomendacoes: diagnosticoData.recomendacoes,
+        planos: diagnosticoData.planos,
+        valores: diagnosticoData.valores,
+        observacoes: diagnosticoData.observacoes,
+        status: diagnosticoData.status
+      };
+      
+      console.log('🔄 Dados limpos para atualizar:', cleanedData);
+      
+      const { data, error } = await supabase
+        .from('diagnosticos')
+        .update(cleanedData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('❌ Erro ao atualizar diagnóstico:', error);
+        throw error;
+      }
+      
+      console.log('✅ Diagnóstico atualizado:', data);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
+    }
+  });
+};
+
 // Save Respostas
 export const useSaveRespostas = () => {
   const queryClient = useQueryClient();
@@ -176,6 +254,51 @@ export const useSaveRespostas = () => {
       
       console.log('✅ Respostas salvas:', data?.length || 0);
       return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['respostas'] });
+    }
+  });
+};
+
+// Update Respostas (deletar antigas e inserir novas)
+export const useUpdateRespostas = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ diagnosticoId, respostasData }: { diagnosticoId: string; respostasData: any[] }) => {
+      console.log('🔄 Atualizando respostas para diagnóstico:', diagnosticoId);
+      
+      // Primeiro, deletar respostas antigas
+      const { error: deleteError } = await supabase
+        .from('respostas')
+        .delete()
+        .eq('diagnostico_id', diagnosticoId);
+      
+      if (deleteError) {
+        console.error('❌ Erro ao deletar respostas antigas:', deleteError);
+        throw deleteError;
+      }
+      
+      console.log('🗑️ Respostas antigas deletadas');
+      
+      // Inserir novas respostas
+      if (respostasData.length > 0) {
+        const { data, error } = await supabase
+          .from('respostas')
+          .insert(respostasData)
+          .select();
+        
+        if (error) {
+          console.error('❌ Erro ao inserir novas respostas:', error);
+          throw error;
+        }
+        
+        console.log('✅ Novas respostas inseridas:', data?.length || 0);
+        return data;
+      }
+      
+      return [];
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['respostas'] });

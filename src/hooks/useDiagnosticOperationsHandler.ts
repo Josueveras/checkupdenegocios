@@ -1,5 +1,5 @@
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { useDiagnosticSave } from '@/hooks/useDiagnosticSave';
 import { detectBot } from '@/utils/botProtection';
@@ -22,6 +22,8 @@ export const useDiagnosticOperationsHandler = ({
   isEditing
 }: OperationsProps) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get('edit');
   const { saveDiagnostic, isSaving } = useDiagnosticSave();
 
   const handleSaveDiagnostic = async () => {
@@ -32,6 +34,7 @@ export const useDiagnosticOperationsHandler = ({
       answers,
       questions,
       isEditing,
+      editId: editId || undefined,
       onSuccess: () => navigate('/diagnosticos')
     });
   };
