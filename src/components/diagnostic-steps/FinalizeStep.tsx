@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Edit, Save, Download, FileText } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { ShareButton } from '@/components/ShareButton';
@@ -133,12 +134,11 @@ export const FinalizeStep = ({
           
           <div className="space-y-2">
             <Label htmlFor="valores">Valores (R$) *</Label>
-            <Input
+            <CurrencyInput
               id="valores"
-              type="number"
-              defaultValue={diagnosticData.valores}
-              onChange={(e) => handleInputChange('valores', e.target.value)}
-              placeholder="Ex: 15000"
+              value={diagnosticData.valores}
+              onChange={(value) => handleInputChange('valores', value)}
+              placeholder="0,00"
             />
           </div>
           

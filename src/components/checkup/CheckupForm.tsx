@@ -1,9 +1,11 @@
+
 import { useEmpresas } from '@/hooks/useEmpresas';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Plus, X } from 'lucide-react';
 
 interface CheckupFormData {
@@ -117,11 +119,11 @@ export const CheckupForm = ({ formData, onChange, empresaNome }: CheckupFormProp
             </div>
             <div>
               <Label htmlFor="faturamento">Faturamento (R$)</Label>
-              <Input
+              <CurrencyInput
                 id="faturamento"
-                type="number"
-                value={formData.faturamento}
-                onChange={(e) => updateField('faturamento', parseFloat(e.target.value) || 0)}
+                value={formData.faturamento.toString()}
+                onChange={(value) => updateField('faturamento', parseFloat(value) || 0)}
+                placeholder="0,00"
               />
             </div>
           </div>

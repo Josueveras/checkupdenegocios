@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Badge } from '@/components/ui/badge';
@@ -430,10 +431,9 @@ export function LeadModal({ lead, isOpen, onOpenChange, mode: initialMode }: Lea
                             <FormItem>
                               <FormLabel>Receita Potencial</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                <CurrencyInput 
+                                  value={field.value.toString()}
+                                  onChange={(value) => field.onChange(Number(value) || 0)}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -448,10 +448,9 @@ export function LeadModal({ lead, isOpen, onOpenChange, mode: initialMode }: Lea
                             <FormItem>
                               <FormLabel>Orçamento Disponível</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
-                                  {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                <CurrencyInput 
+                                  value={field.value.toString()}
+                                  onChange={(value) => field.onChange(Number(value) || 0)}
                                 />
                               </FormControl>
                               <FormMessage />

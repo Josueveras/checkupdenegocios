@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CurrencyInput } from '@/components/ui/currency-input';
 import { Target } from 'lucide-react';
 
 interface FilterPanelProps {
@@ -49,12 +50,11 @@ export const FilterPanel = ({ filters, setFilters, clearFilters }: FilterPanelPr
           </div>
           <div>
             <Label htmlFor="faturamento">Faturamento Mín.</Label>
-            <Input
+            <CurrencyInput
               id="faturamento"
-              type="number"
-              placeholder="Ex: 50000"
               value={filters.faturamentoMinimo}
-              onChange={(e) => setFilters(prev => ({ ...prev, faturamentoMinimo: e.target.value }))}
+              onChange={(value) => setFilters(prev => ({ ...prev, faturamentoMinimo: value }))}
+              placeholder="0,00"
             />
           </div>
           <div>

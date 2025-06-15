@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { formatCurrency } from '@/utils/formatters';
-import { useState, useEffect } from 'react';
+import { CurrencyInput } from '@/components/ui/currency-input';
 
 interface ProposalFormData {
   objetivo: string;
@@ -20,57 +19,6 @@ interface ProposalDataFormProps {
 }
 
 export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) => {
-  const [displayValue, setDisplayValue] = useState('');
-
-  useEffect(() => {
-    if (formData.valor) {
-      const numericValue = parseFloat(formData.valor);
-      if (!isNaN(numericValue)) {
-        setDisplayValue(formatCurrency(numericValue));
-      } else {
-        setDisplayValue('');
-      }
-    } else {
-      setDisplayValue('');
-    }
-  }, [formData.valor]);
-
-  const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value;
-    
-    // Remove tudo exceto números e pontos/vírgulas
-    const numericOnly = inputValue.replace(/[^\d.,]/g, '');
-    
-    // Converte vírgula para ponto para processamento
-    const normalizedValue = numericOnly.replace(',', '.');
-    
-    // Atualiza o valor interno (numérico)
-    onChange({ valor: normalizedValue });
-    
-    // Atualiza a exibição formatada se for um número válido
-    const numericValue = parseFloat(normalizedValue);
-    if (!isNaN(numericValue)) {
-      setDisplayValue(formatCurrency(numericValue));
-    } else {
-      setDisplayValue(inputValue);
-    }
-  };
-
-  const handleValueFocus = () => {
-    // Ao focar, mostra o valor numérico para edição
-    setDisplayValue(formData.valor || '');
-  };
-
-  const handleValueBlur = () => {
-    // Ao sair do foco, formata novamente
-    if (formData.valor) {
-      const numericValue = parseFloat(formData.valor);
-      if (!isNaN(numericValue)) {
-        setDisplayValue(formatCurrency(numericValue));
-      }
-    }
-  };
-
   return (
     <Card className="overflow-hidden">
       <CardHeader className="p-2 sm:p-3">
@@ -94,13 +42,10 @@ export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) 
         <div className="grid grid-cols-1 gap-3">
           <div className="min-w-0">
             <Label htmlFor="valor" className="text-sm">Valor (R$) *</Label>
-            <Input
+            <CurrencyInput
               id="valor"
-              type="text"
-              value={displayValue}
-              onChange={handleValueChange}
-              onFocus={handleValueFocus}
-              onBlur={handleValueBlur}
+              value={formData.valor}
+              onChange={(value) => onChange({ valor: value })}
               placeholder="0,00"
               className="mt-1 w-full h-10 text-sm"
             />
