@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CurrencyInput } from '@/components/ui/currency-input';
-import { Edit, Save, Download, FileText } from 'lucide-react';
+import { Edit, Save, Download } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 import { ShareButton } from '@/components/ShareButton';
 import { useDiagnosticOperations } from '@/hooks/useDiagnosticOperations';
@@ -23,7 +23,6 @@ interface FinalizeStepProps {
   setDiagnosticData: (data: DiagnosticData) => void;
   onSaveDiagnostic: () => void;
   onDownloadPDF: () => void;
-  onGenerateProposal: () => void;
   isSaving: boolean;
   companyData?: any;
   results?: any;
@@ -34,7 +33,6 @@ export const FinalizeStep = ({
   setDiagnosticData, 
   onSaveDiagnostic,
   onDownloadPDF,
-  onGenerateProposal,
   isSaving,
   companyData,
   results
@@ -185,15 +183,6 @@ export const FinalizeStep = ({
                 {isGeneratingPDF ? 'Preparando...' : '📤 Compartilhar PDF'}
               </Button>
             )}
-            
-            <Button 
-              onClick={onGenerateProposal} 
-              variant="outline" 
-              className="border-blue-light text-blue-light hover:bg-blue-light hover:text-white"
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Gerar Proposta
-            </Button>
           </div>
         </CardContent>
       </Card>

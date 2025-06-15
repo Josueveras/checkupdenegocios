@@ -5,11 +5,11 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 const Metricas = () => {
   const monthlyData = [
-    { month: 'Set', diagnosticos: 8, propostas: 5, conversao: 62 },
-    { month: 'Out', diagnosticos: 12, propostas: 8, conversao: 67 },
-    { month: 'Nov', diagnosticos: 15, propostas: 11, conversao: 73 },
-    { month: 'Dez', diagnosticos: 18, propostas: 14, conversao: 78 },
-    { month: 'Jan', diagnosticos: 22, propostas: 17, conversao: 77 }
+    { month: 'Set', diagnosticos: 8, scoreMedia: 65 },
+    { month: 'Out', diagnosticos: 12, scoreMedia: 68 },
+    { month: 'Nov', diagnosticos: 15, scoreMedia: 71 },
+    { month: 'Dez', diagnosticos: 18, scoreMedia: 73 },
+    { month: 'Jan', diagnosticos: 22, scoreMedia: 75 }
   ];
 
   const maturityData = [
@@ -28,9 +28,9 @@ const Metricas = () => {
   ];
 
   const totalDiagnostics = monthlyData.reduce((sum, item) => sum + item.diagnosticos, 0);
-  const totalProposals = monthlyData.reduce((sum, item) => sum + item.propostas, 0);
-  const avgConversion = Math.round(monthlyData.reduce((sum, item) => sum + item.conversao, 0) / monthlyData.length);
+  const avgScore = Math.round(monthlyData.reduce((sum, item) => sum + item.scoreMedia, 0) / monthlyData.length);
   const avgMaturity = Math.round(categoryData.reduce((sum, item) => sum + item.media, 0) / categoryData.length);
+  const totalEmpresas = maturityData.reduce((sum, item) => sum + item.quantidade, 0);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -60,14 +60,14 @@ const Metricas = () => {
         <Card className="border-l-4 border-l-blue-light">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Propostas Geradas
+              Score Médio
             </CardTitle>
-            <div className="text-2xl">📄</div>
+            <div className="text-2xl">📈</div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{totalProposals}</div>
+            <div className="text-2xl font-bold text-gray-900">{avgScore}%</div>
             <p className="text-xs text-green-600 mt-1">
-              +21% vs mês anterior
+              +5% vs mês anterior
             </p>
           </CardContent>
         </Card>
@@ -75,14 +75,14 @@ const Metricas = () => {
         <Card className="border-l-4 border-l-mustard">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Taxa de Conversão
+              Empresas Avaliadas
             </CardTitle>
-            <div className="text-2xl">🎯</div>
+            <div className="text-2xl">🏢</div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{avgConversion}%</div>
+            <div className="text-2xl font-bold text-gray-900">{totalEmpresas}</div>
             <p className="text-xs text-green-600 mt-1">
-              +3% vs mês anterior
+              +12% vs mês anterior
             </p>
           </CardContent>
         </Card>
@@ -92,12 +92,12 @@ const Metricas = () => {
             <CardTitle className="text-sm font-medium text-gray-600">
               Maturidade Média
             </CardTitle>
-            <div className="text-2xl">📈</div>
+            <div className="text-2xl">⭐</div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-gray-900">{avgMaturity}%</div>
             <p className="text-xs text-green-600 mt-1">
-              +5% vs mês anterior
+              +3% vs mês anterior
             </p>
           </CardContent>
         </Card>
@@ -110,7 +110,7 @@ const Metricas = () => {
           <CardHeader>
             <CardTitle>Evolução Mensal</CardTitle>
             <CardDescription>
-              Diagnósticos realizados e propostas geradas por mês
+              Diagnósticos realizados por mês
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -121,18 +121,17 @@ const Metricas = () => {
                 <YAxis />
                 <Tooltip />
                 <Bar dataKey="diagnosticos" fill="#0F3244" name="Diagnósticos" />
-                <Bar dataKey="propostas" fill="#3C9CD6" name="Propostas" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Conversion Rate */}
+        {/* Score Evolution */}
         <Card>
           <CardHeader>
-            <CardTitle>Taxa de Conversão</CardTitle>
+            <CardTitle>Evolução do Score Médio</CardTitle>
             <CardDescription>
-              Percentual de diagnósticos que geram propostas
+              Score médio dos diagnósticos por mês
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -141,10 +140,10 @@ const Metricas = () => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis domain={[0, 100]} />
-                <Tooltip formatter={(value) => [`${value}%`, 'Taxa de Conversão']} />
+                <Tooltip formatter={(value) => [`${value}%`, 'Score Médio']} />
                 <Line 
                   type="monotone" 
-                  dataKey="conversao" 
+                  dataKey="scoreMedia" 
                   stroke="#FBB03B" 
                   strokeWidth={3}
                   dot={{ fill: '#FBB03B', strokeWidth: 2, r: 6 }}
@@ -234,13 +233,13 @@ const Metricas = () => {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="text-sm text-green-700">
-              <strong>Taxa de conversão crescente:</strong> Subiu 15% nos últimos 3 meses
+              <strong>Crescimento consistente:</strong> 18% mais diagnósticos vs mês anterior
             </div>
             <div className="text-sm text-green-700">
-              <strong>Volume consistente:</strong> Média de 18 diagnósticos/mês
+              <strong>Melhoria na qualidade:</strong> Score médio subiu 5%
             </div>
             <div className="text-sm text-green-700">
-              <strong>Qualidade alta:</strong> 67% das empresas são Intermediárias ou Avançadas
+              <strong>Diversidade de níveis:</strong> 67% das empresas são Intermediárias ou Avançadas
             </div>
           </CardContent>
         </Card>
@@ -259,7 +258,7 @@ const Metricas = () => {
               <strong>Muitas empresas iniciantes:</strong> 19% ainda no nível básico
             </div>
             <div className="text-sm text-yellow-700">
-              <strong>Sazonalidade:</strong> Dezembro teve queda de 12%
+              <strong>Variação sazonal:</strong> Dezembro teve ligeira queda
             </div>
           </CardContent>
         </Card>
@@ -278,7 +277,7 @@ const Metricas = () => {
               <strong>Nurturing de iniciantes:</strong> Desenvolver jornada específica para nível básico
             </div>
             <div className="text-sm text-blue-700">
-              <strong>Planejamento sazonal:</strong> Antecipar campanhas para período de férias
+              <strong>Planejamento sazonal:</strong> Antecipar campanhas para períodos de menor movimento
             </div>
           </CardContent>
         </Card>

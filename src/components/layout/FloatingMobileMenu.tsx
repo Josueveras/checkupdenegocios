@@ -1,5 +1,6 @@
+
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Plus, FileText, BarChart, Users, ClipboardList, Target, LayoutDashboard } from "lucide-react";
+import { Home, Plus, FileText, BarChart, Users, Target, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
@@ -19,11 +20,6 @@ const menuItems = [
     title: "Diagnósticos",
     url: "/diagnosticos",
     icon: FileText
-  },
-  {
-    title: "Propostas",
-    url: "/propostas",
-    icon: ClipboardList
   },
   {
     title: "Planos",

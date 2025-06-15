@@ -8,7 +8,7 @@ export interface Lead {
   setor?: string;
   tamanho_empresa?: 'micro' | 'pequena' | 'media' | 'grande';
   fonte_lead?: string;
-  status?: 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'proposta_enviada' | 'ganho' | 'perdido';
+  status?: 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'ganho' | 'perdido';
   score_qualificacao?: number;
   potencial_receita?: number;
   observacoes?: string;
@@ -24,7 +24,7 @@ export interface Lead {
 export interface LeadActivity {
   id: string;
   lead_id: string;
-  tipo: 'email' | 'telefone' | 'whatsapp' | 'reuniao' | 'proposta' | 'observacao';
+  tipo: 'email' | 'telefone' | 'whatsapp' | 'reuniao' | 'observacao';
   descricao: string;
   data: string;
   usuario: string;

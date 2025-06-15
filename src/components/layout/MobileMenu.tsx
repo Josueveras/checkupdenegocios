@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -20,11 +21,6 @@ const menuItems = [
     title: "Diagnósticos",
     url: "/diagnosticos",
     icon: "📋"
-  },
-  {
-    title: "Propostas",
-    url: "/propostas",
-    icon: "📄"
   },
   {
     title: "Planos",

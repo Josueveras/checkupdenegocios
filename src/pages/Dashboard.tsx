@@ -14,11 +14,6 @@ const Dashboard = () => {
   const scoreMedia = diagnosticos.length > 0 
     ? Math.round(diagnosticos.reduce((sum, diag) => sum + diag.score_total, 0) / diagnosticos.length)
     : 0;
-  
-  // Remover referências a propostas
-  const totalPropostas = 0;
-  const propostasAprovadas = 0;
-  const taxaConversao = 0;
 
   // Últimos 3 diagnósticos
   const recentDiagnostics = diagnosticos
@@ -40,9 +35,6 @@ const Dashboard = () => {
       <DashboardStats
         totalDiagnosticos={totalDiagnosticos}
         scoreMedia={scoreMedia}
-        totalPropostas={totalPropostas}
-        taxaConversao={taxaConversao}
-        propostasAprovadas={propostasAprovadas}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -15,7 +15,7 @@ export const useLeadStats = () => {
       const totalLeads = leads.length;
       const leadsNovos = leads.filter(lead => lead.status === 'novo').length;
       const leadsQualificados = leads.filter(lead => 
-        ['qualificado', 'reuniao_agendada', 'proposta_enviada'].includes(lead.status)
+        ['qualificado', 'reuniao_agendada'].includes(lead.status)
       ).length;
       const leadsConvertidos = leads.filter(lead => lead.status === 'ganho').length;
       const taxaConversao = totalLeads > 0 ? (leadsConvertidos / totalLeads) * 100 : 0;

@@ -34,7 +34,7 @@ const Admin = () => {
     },
     {
       title: 'Planos',
-      description: 'Gerenciar planos de propostas',
+      description: 'Gerenciar planos de diagnósticos',
       icon: Target,
       count: planos.length || 0,
       route: '/planos',

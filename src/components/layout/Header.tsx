@@ -24,7 +24,6 @@ export function Header() {
   // Mostrar botão voltar em páginas específicas que não sejam o dashboard
   const showBackButton = location.pathname !== '/dashboard' && 
                          !location.pathname.startsWith('/diagnosticos') &&
-                         !location.pathname.startsWith('/propostas') &&
                          !location.pathname.startsWith('/planos') &&
                          !location.pathname.startsWith('/perguntas');
   
@@ -35,8 +34,6 @@ export function Header() {
     // Para páginas de edição, voltar para a página de listagem correspondente
     if (location.pathname.includes('/novo-diagnostico')) {
       navigate('/diagnosticos');
-    } else if (location.pathname.includes('/editar-proposta')) {
-      navigate('/propostas');
     } else {
       navigate('/dashboard');
     }

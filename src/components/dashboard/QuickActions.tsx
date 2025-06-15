@@ -14,17 +14,11 @@ export const QuickActions = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link to="/novo-diagnostico">
             <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
               <FileText className="h-6 w-6" />
               <span>Novo Diagnóstico</span>
-            </Button>
-          </Link>
-          <Link to="/propostas">
-            <Button variant="outline" className="w-full h-20 flex flex-col gap-2">
-              <FileText className="h-6 w-6" />
-              <span>Gerar Proposta</span>
             </Button>
           </Link>
           <Link to="/perguntas">

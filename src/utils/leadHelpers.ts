@@ -37,7 +37,6 @@ export const getLeadStatusColor = (status: Lead['status']): string => {
     case 'contactado': return 'bg-yellow-100 text-yellow-800';
     case 'qualificado': return 'bg-green-100 text-green-800';
     case 'reuniao_agendada': return 'bg-purple-100 text-purple-800';
-    case 'proposta_enviada': return 'bg-orange-100 text-orange-800';
     case 'ganho': return 'bg-emerald-100 text-emerald-800';
     case 'perdido': return 'bg-red-100 text-red-800';
     default: return 'bg-gray-100 text-gray-800';
@@ -50,7 +49,6 @@ export const getLeadStatusLabel = (status: Lead['status']): string => {
     case 'contactado': return 'Contactado';
     case 'qualificado': return 'Qualificado';
     case 'reuniao_agendada': return 'Reunião Agendada';
-    case 'proposta_enviada': return 'Proposta Enviada';
     case 'ganho': return 'Ganho';
     case 'perdido': return 'Perdido';
     default: return 'Desconhecido';

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -313,12 +312,6 @@ const DiagnosticoView = () => {
             >
               <Download className="h-4 w-4 mr-2" />
               Baixar PDF
-            </Button>
-            <Button
-              onClick={() => navigate('/propostas')}
-              variant="outline"
-            >
-              Gerar Proposta
             </Button>
           </div>
         </CardContent>
