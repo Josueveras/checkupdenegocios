@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -199,7 +198,7 @@ export const DiagnosticCard = ({ diagnostic, onView, onEdit }: DiagnosticCardPro
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
                       <AlertDialogAction
-                        onClick={() => deleteDiagnostic.mutate(diagnostic.id)}
+                        onClick={() => deleteDiagnostic.mutate({ id: diagnostic.id })}
                         className="bg-red-600 hover:bg-red-700"
                       >
                         Excluir
