@@ -23,12 +23,13 @@ import {
 import { Edit, Trash2, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ServicesList } from "@/components/planos/ServicesList";
 
 interface Plan {
   id?: string;
   nome: string;
   objetivo: string;
-  tarefas: string[];
+  servicos: string[];
   valor: number;
   categoria: string;
   ativo?: boolean;
@@ -46,10 +47,10 @@ const Planos = () => {
       if (error) {
         console.error(error);
       } else {
-        // Transform the data to match our Plan interface
+        // Transform the data to match our Plan interface, renaming tarefas to servicos
         const transformedPlans = data.map(plan => ({
           ...plan,
-          tarefas: Array.isArray(plan.tarefas) 
+          servicos: Array.isArray(plan.tarefas) 
             ? plan.tarefas.map(t => String(t)) 
             : typeof plan.tarefas === 'string' 
             ? [plan.tarefas] 
@@ -71,7 +72,7 @@ const Planos = () => {
     setEditingPlan({
       nome: "",
       objetivo: "",
-      tarefas: [""],
+      servicos: [],
       valor: 0,
       categoria: "Marketing",
     });
@@ -81,7 +82,15 @@ const Planos = () => {
 
   const handleSavePlan = async () => {
     if (!editingPlan) return;
-    const { data, error } = await supabase.from("planos").upsert([editingPlan]);
+    
+    // Transform servicos back to tarefas for database compatibility
+    const planToSave = {
+      ...editingPlan,
+      tarefas: editingPlan.servicos
+    };
+    delete (planToSave as any).servicos;
+    
+    const { data, error } = await supabase.from("planos").upsert([planToSave]);
     if (error) {
       toast({ title: "Erro ao salvar plano" });
     } else {
@@ -91,7 +100,7 @@ const Planos = () => {
       if (updatedPlans.data) {
         const transformedPlans = updatedPlans.data.map(plan => ({
           ...plan,
-          tarefas: Array.isArray(plan.tarefas) 
+          servicos: Array.isArray(plan.tarefas) 
             ? plan.tarefas.map(t => String(t)) 
             : typeof plan.tarefas === 'string' 
             ? [plan.tarefas] 
@@ -112,7 +121,7 @@ const Planos = () => {
       if (updatedPlans.data) {
         const transformedPlans = updatedPlans.data.map(plan => ({
           ...plan,
-          tarefas: Array.isArray(plan.tarefas) 
+          servicos: Array.isArray(plan.tarefas) 
             ? plan.tarefas.map(t => String(t)) 
             : typeof plan.tarefas === 'string' 
             ? [plan.tarefas] 
@@ -137,12 +146,15 @@ const Planos = () => {
               <Badge>{plan.categoria}</Badge>
             </CardHeader>
             <CardContent>
-              <ul className="list-disc pl-5">
-                {plan.tarefas.map((task, idx) => (
-                  <li key={idx}>{task}</li>
-                ))}
-              </ul>
-              <p className="mt-2 font-bold">R$ {plan.valor.toFixed(2)}</p>
+              <div className="space-y-2">
+                <h4 className="font-semibold text-sm">Serviços:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {plan.servicos.map((servico, idx) => (
+                    <li key={idx} className="text-sm">{servico}</li>
+                  ))}
+                </ul>
+              </div>
+              <p className="mt-3 font-bold">R$ {plan.valor.toFixed(2)}</p>
               <div className="mt-4 flex gap-2">
                 <Button variant="outline" onClick={() => handleEditPlan(plan)}>
                   <Edit className="h-4 w-4" />
@@ -157,52 +169,64 @@ const Planos = () => {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{isNewPlan ? "Novo Plano" : "Editar Plano"}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Label>Nome</Label>
-            <Input
-              value={editingPlan?.nome || ""}
-              onChange={(e) =>
-                setEditingPlan((prev) => prev && { ...prev, nome: e.target.value })
-              }
-            />
-            <Label>Objetivo</Label>
-            <Textarea
-              value={editingPlan?.objetivo || ""}
-              onChange={(e) =>
+          <div className="grid gap-4 py-4 max-h-96 overflow-y-auto">
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input
+                value={editingPlan?.nome || ""}
+                onChange={(e) =>
+                  setEditingPlan((prev) => prev && { ...prev, nome: e.target.value })
+                }
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Objetivo</Label>
+              <Textarea
+                value={editingPlan?.objetivo || ""}
+                onChange={(e) =>
+                  setEditingPlan((prev) =>
+                    prev && { ...prev, objetivo: e.target.value }
+                  )
+                }
+                rows={3}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Categoria</Label>
+              <Input
+                value={editingPlan?.categoria || ""}
+                onChange={(e) =>
+                  setEditingPlan((prev) =>
+                    prev && { ...prev, categoria: e.target.value }
+                  )
+                }
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Valor Sugerido</Label>
+              <Input
+                type="number"
+                value={editingPlan?.valor || 0}
+                onChange={(e) =>
+                  setEditingPlan((prev) =>
+                    prev && { ...prev, valor: Number(e.target.value) }
+                  )
+                }
+              />
+            </div>
+            
+            <ServicesList
+              services={editingPlan?.servicos || []}
+              onChange={(servicos) =>
                 setEditingPlan((prev) =>
-                  prev && { ...prev, objetivo: e.target.value }
-                )
-              }
-            />
-            <Label>Categoria</Label>
-            <Input
-              value={editingPlan?.categoria || ""}
-              onChange={(e) =>
-                setEditingPlan((prev) =>
-                  prev && { ...prev, categoria: e.target.value }
-                )
-              }
-            />
-            <Label>Valor Sugerido</Label>
-            <Input
-              type="number"
-              value={editingPlan?.valor || 0}
-              onChange={(e) =>
-                setEditingPlan((prev) =>
-                  prev && { ...prev, valor: Number(e.target.value) }
-                )
-              }
-            />
-            <Label>Tarefas (separadas por vírgula)</Label>
-            <Textarea
-              value={editingPlan?.tarefas.join(", ") || ""}
-              onChange={(e) =>
-                setEditingPlan((prev) =>
-                  prev && { ...prev, tarefas: e.target.value.split(",").map(t => t.trim()) }
+                  prev && { ...prev, servicos }
                 )
               }
             />

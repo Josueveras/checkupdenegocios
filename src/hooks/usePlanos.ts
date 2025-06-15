@@ -14,10 +14,10 @@ export const usePlanos = () => {
       
       if (error) throw error;
       
-      // Transform the data to ensure tarefas is always an array of strings
+      // Transform the data to ensure servicos is always an array of strings
       return (data || []).map(plano => ({
         ...plano,
-        tarefas: Array.isArray(plano.tarefas) 
+        servicos: Array.isArray(plano.tarefas) 
           ? plano.tarefas.map(t => String(t)) 
           : typeof plano.tarefas === 'string' 
           ? [plano.tarefas] 
