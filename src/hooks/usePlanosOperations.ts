@@ -2,16 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-
-interface Plan {
-  id?: string;
-  nome: string;
-  objetivo: string;
-  servicos: string[];
-  valor: number;
-  categoria: string;
-  ativo?: boolean;
-}
+import { Plan } from '@/types/plan';
 
 export const useCreatePlano = () => {
   const queryClient = useQueryClient();
