@@ -18,6 +18,7 @@ import EmpresaDetalhada from "./pages/EmpresaDetalhada";
 import EmpresaVisaoGeral from "./pages/EmpresaVisaoGeral";
 import Empresas from "./pages/Empresas";
 import Propostas from "./pages/Propostas";
+import PropostasPlanos from "./pages/PropostasPlanos";
 import EditarProposta from "./pages/EditarProposta";
 import NovaPropostaPlano from "./pages/NovaPropostaPlano";
 import NovaPropostaPersonalizada from "./pages/NovaPropostaPersonalizada";
@@ -65,6 +66,7 @@ const App = () => (
           <Route path="/empresa-visao/:id" element={<AppLayout><EmpresaVisaoGeral /></AppLayout>} />
           <Route path="/empresas" element={<AppLayout><Empresas /></AppLayout>} />
           <Route path="/propostas" element={<AppLayout><Propostas /></AppLayout>} />
+          <Route path="/propostas-planos" element={<AppLayout><PropostasPlanos /></AppLayout>} />
           <Route path="/editar-proposta" element={<AppLayout><EditarProposta /></AppLayout>} />
           <Route path="/nova-proposta-plano" element={<AppLayout><NovaPropostaPlano /></AppLayout>} />
           <Route path="/nova-proposta-personalizada" element={<AppLayout><NovaPropostaPersonalizada /></AppLayout>} />
