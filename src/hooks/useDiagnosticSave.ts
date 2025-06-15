@@ -1,8 +1,10 @@
-
 import { toast } from '@/hooks/use-toast';
-import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas, useUpdateEmpresa, useUpdateDiagnostico, useUpdateRespostas } from '@/hooks/useSupabase';
+import { useSaveEmpresa, useUpdateEmpresa } from '@/hooks/useEmpresas';
+import { useSaveDiagnostico, useUpdateDiagnostico } from '@/hooks/useDiagnosticos';
+import { useSaveRespostas, useUpdateRespostas } from '@/hooks/useRespostas';
 import { detectBot, addSpamProtectionDelay } from '@/utils/botProtection';
 import { getUserIP } from '@/utils/ipUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SaveDiagnosticProps {
   companyData: any;

@@ -10,11 +10,11 @@ export const useEmpresas = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('empresas')
-        .select('id, nome, setor')
+        .select('*')
         .order('nome');
       
       if (error) throw error;
-      return data || [];
+      return data;
     }
   });
 };
@@ -24,30 +24,53 @@ export const useSaveEmpresa = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (empresa: { nome: string; setor?: string }) => {
+    mutationFn: async (empresaData: any) => {
+      console.log('💾 Salvando empresa:', empresaData);
       const { data, error } = await supabase
         .from('empresas')
-        .insert(empresa)
-        .select('id, nome, setor')
+        .insert(empresaData)
+        .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Erro ao salvar empresa:', error);
+        throw error;
+      }
+      
+      console.log('✅ Empresa salva:', data);
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['empresas'] });
-      queryClient.invalidateQueries({ queryKey: ['empresas-com-diagnosticos'] });
-      toast({
-        title: "Empresa cadastrada",
-        description: "Empresa cadastrada com sucesso!"
-      });
+    }
+  });
+};
+
+// Update Empresa
+export const useUpdateEmpresa = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ id, empresaData }: { id: string; empresaData: any }) => {
+      console.log('🔄 Atualizando empresa:', id, empresaData);
+      const { data, error } = await supabase
+        .from('empresas')
+        .update(empresaData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('❌ Erro ao atualizar empresa:', error);
+        throw error;
+      }
+      
+      console.log('✅ Empresa atualizada:', data);
+      return data;
     },
-    onError: (error: any) => {
-      toast({
-        title: "Erro ao cadastrar",
-        description: error.message || "Erro ao cadastrar a empresa",
-        variant: "destructive"
-      });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['empresas'] });
+      queryClient.invalidateQueries({ queryKey: ['diagnosticos'] });
     }
   });
 };
