@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, FileText, Check } from 'lucide-react';
+import { ArrowLeft, FileText, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { usePlanos } from '@/hooks/usePlanos';
@@ -11,10 +11,23 @@ import { usePlanos } from '@/hooks/usePlanos';
 const NovaPropostaPlano = () => {
   const navigate = useNavigate();
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const { data: planos = [], isLoading } = usePlanos();
+
+  const INITIAL_TASKS_LIMIT = 3;
 
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
+  };
+
+  const toggleCardExpansion = (planId: string) => {
+    const newExpandedCards = new Set(expandedCards);
+    if (expandedCards.has(planId)) {
+      newExpandedCards.delete(planId);
+    } else {
+      newExpandedCards.add(planId);
+    }
+    setExpandedCards(newExpandedCards);
   };
 
   const handleContinue = () => {
@@ -64,46 +77,75 @@ const NovaPropostaPlano = () => {
 
       {/* Planos Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {planos.map((plano) => (
-          <Card 
-            key={plano.id} 
-            className={`cursor-pointer transition-all hover:shadow-lg ${
-              selectedPlan === plano.id ? 'ring-2 ring-petrol border-petrol' : ''
-            }`}
-            onClick={() => handleSelectPlan(plano.id!)}
-          >
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-xl">{plano.nome}</CardTitle>
-                {selectedPlan === plano.id && (
-                  <div className="w-6 h-6 bg-petrol rounded-full flex items-center justify-center">
-                    <Check className="w-4 h-4 text-white" />
+        {planos.map((plano) => {
+          const isExpanded = expandedCards.has(plano.id!);
+          const hasMoreTasks = plano.tarefas.length > INITIAL_TASKS_LIMIT;
+          const visibleTasks = isExpanded ? plano.tarefas : plano.tarefas.slice(0, INITIAL_TASKS_LIMIT);
+
+          return (
+            <Card 
+              key={plano.id} 
+              className={`cursor-pointer transition-all hover:shadow-lg ${
+                selectedPlan === plano.id ? 'ring-2 ring-petrol border-petrol' : ''
+              }`}
+              onClick={() => handleSelectPlan(plano.id!)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-xl">{plano.nome}</CardTitle>
+                  {selectedPlan === plano.id && (
+                    <div className="w-6 h-6 bg-petrol rounded-full flex items-center justify-center">
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-gray-600">{plano.objetivo}</p>
+                <Badge variant="outline">{plano.categoria}</Badge>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="text-2xl font-bold text-petrol">
+                    {plano.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                   </div>
-                )}
-              </div>
-              <p className="text-gray-600">{plano.objetivo}</p>
-              <Badge variant="outline">{plano.categoria}</Badge>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="text-2xl font-bold text-petrol">
-                  {plano.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  <div className="space-y-2">
+                    <p className="font-medium text-gray-900">Tarefas incluídas:</p>
+                    <ul className="space-y-1">
+                      {visibleTasks.map((tarefa, index) => (
+                        <li key={index} className="text-sm text-gray-600 flex items-center">
+                          <div className="w-1.5 h-1.5 bg-petrol rounded-full mr-2 flex-shrink-0" />
+                          {tarefa}
+                        </li>
+                      ))}
+                    </ul>
+                    {hasMoreTasks && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleCardExpansion(plano.id!);
+                        }}
+                        className="p-0 h-auto text-petrol hover:text-petrol/80 flex items-center gap-1"
+                      >
+                        {isExpanded ? (
+                          <>
+                            <ChevronUp className="w-4 h-4" />
+                            Ver menos
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4" />
+                            Ver mais ({plano.tarefas.length - INITIAL_TASKS_LIMIT} tarefas)
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="font-medium text-gray-900">Tarefas incluídas:</p>
-                  <ul className="space-y-1">
-                    {plano.tarefas.map((tarefa, index) => (
-                      <li key={index} className="text-sm text-gray-600 flex items-center">
-                        <div className="w-1.5 h-1.5 bg-petrol rounded-full mr-2" />
-                        {tarefa}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {planos.length === 0 && !isLoading && (
