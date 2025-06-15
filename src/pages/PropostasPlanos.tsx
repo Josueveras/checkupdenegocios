@@ -22,7 +22,8 @@ const PropostasPlanos = () => {
   const { data: propostas = [], isLoading } = usePropostasPlanos();
 
   const filteredPropostas = propostas.filter(proposta => {
-    const empresa = proposta.empresas;
+    // A empresa vem diretamente da proposta (propriedade empresas adicionada no hook)
+    const empresa = (proposta as any).empresas;
     const matchesSearch = empresa?.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          empresa?.cliente_nome?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || proposta.status === statusFilter;
