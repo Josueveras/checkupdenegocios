@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -330,7 +329,7 @@ const NovaPropostaPersonalizada = () => {
               <Textarea
                 value={proposalData.objetivo}
                 onChange={(e) => setProposalData(prev => ({ ...prev, objetivo: e.target.value }))}
-                placeholder="Descreva o objetivo da proposta (opcional)"
+                placeholder="Descreva o objetivo da proposta"
                 className="min-h-[100px]"
                 disabled={isLoading}
               />
@@ -344,7 +343,7 @@ const NovaPropostaPersonalizada = () => {
                 min="0"
                 value={proposalData.valor}
                 onChange={(e) => setProposalData(prev => ({ ...prev, valor: e.target.value }))}
-                placeholder="0.00 (opcional)"
+                placeholder="0.00"
                 disabled={isLoading}
               />
             </div>
@@ -354,7 +353,7 @@ const NovaPropostaPersonalizada = () => {
               <Input
                 value={proposalData.prazo}
                 onChange={(e) => setProposalData(prev => ({ ...prev, prazo: e.target.value }))}
-                placeholder="Ex: 30 dias, 3 meses (opcional)"
+                placeholder="Ex: 30 dias, 3 meses"
                 disabled={isLoading}
               />
             </div>
@@ -379,7 +378,7 @@ const NovaPropostaPersonalizada = () => {
                     <Input
                       value={acao}
                       onChange={(e) => handleActionChange(index, e.target.value)}
-                      placeholder={`Ação ${index + 1} (opcional)`}
+                      placeholder={`Ação ${index + 1}`}
                       disabled={isLoading}
                     />
                     {proposalData.acoes_sugeridas.length > 1 && (
