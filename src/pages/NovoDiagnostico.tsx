@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
@@ -59,9 +58,9 @@ const NovoDiagnostico = () => {
     results,
     answers,
     questions,
-    isEditing
+    isEditing,
+    editId
   });
-
 
   if (editLoading) {
     return <div className="flex items-center justify-center h-64">Carregando dados para edição...</div>;
