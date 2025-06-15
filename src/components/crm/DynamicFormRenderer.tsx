@@ -26,7 +26,6 @@ export function DynamicFormRenderer({
     resolver: zodResolver(leadSchema),
     defaultValues: {
       status: 'novo',
-      responsavel: 'Sistema',
       urgencia: 'media',
       score_qualificacao: 0,
       potencial_receita: 0,

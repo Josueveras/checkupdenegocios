@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useLeads } from '@/hooks/useLeads';
+import { useCreateLead } from '@/hooks/useLeads';
 import { toast } from '@/hooks/use-toast';
 import { leadSchema } from '@/utils/leadValidation';
 import { DynamicFormRenderer } from './DynamicFormRenderer';
@@ -14,11 +14,12 @@ import { useFormConfig } from '@/hooks/useFormConfig';
 
 interface LeadCaptureProps {
   onClose?: () => void;
+  onSuccess?: () => void;
 }
 
-export const LeadCapture = ({ onClose }: LeadCaptureProps) => {
-  const { createLead, updateLead } = useLeads();
-  const { data: formConfigs } = useFormConfig();
+export const LeadCapture = ({ onClose, onSuccess }: LeadCaptureProps) => {
+  const createLead = useCreateLead();
+  const { config: formConfig } = useFormConfig();
   const [selectedConfig, setSelectedConfig] = useState<string>('');
   
   const [formData, setFormData] = useState({
@@ -85,6 +86,7 @@ export const LeadCapture = ({ onClose }: LeadCaptureProps) => {
         custom_fields: {}
       });
       
+      onSuccess?.();
       onClose?.();
     } catch (error: any) {
       toast({
@@ -95,8 +97,6 @@ export const LeadCapture = ({ onClose }: LeadCaptureProps) => {
     }
   };
 
-  const selectedFormConfig = formConfigs?.find(config => config.id === selectedConfig);
-
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
@@ -104,34 +104,6 @@ export const LeadCapture = ({ onClose }: LeadCaptureProps) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Form Template Selection */}
-          {formConfigs && formConfigs.length > 0 && (
-            <div className="space-y-2">
-              <Label>Template de Formulário (Opcional)</Label>
-              <Select value={selectedConfig} onValueChange={setSelectedConfig}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione um template..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {formConfigs.map(config => (
-                    <SelectItem key={config.id} value={config.id}>
-                      {config.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {/* Dynamic Form Fields */}
-          {selectedFormConfig && (
-            <DynamicFormRenderer
-              config={selectedFormConfig}
-              values={formData.custom_fields}
-              onChange={handleInputChange}
-            />
-          )}
-
           {/* Standard Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

@@ -14,10 +14,14 @@ import { FormBuilder } from '@/components/crm/FormBuilder';
 
 const CRM = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [urgenciaFilter, setUrgenciaFilter] = useState('todos');
-  const [tamanhoFilter, setTamanhoFilter] = useState('todos');
+  const [filters, setFilters] = useState({
+    search: '',
+    status: '',
+    setor: '',
+    tamanho_empresa: '',
+    urgencia: '',
+    fonte_lead: ''
+  });
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('view');
@@ -26,15 +30,17 @@ const CRM = () => {
 
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = 
-      lead.empresa_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.contato_nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      lead.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (lead.empresa_nome?.toLowerCase() || '').includes(filters.search.toLowerCase()) ||
+      (lead.contato_nome?.toLowerCase() || '').includes(filters.search.toLowerCase()) ||
+      (lead.email?.toLowerCase() || '').includes(filters.search.toLowerCase());
     
-    const matchesStatus = statusFilter === 'todos' || lead.status === statusFilter;
-    const matchesUrgencia = urgenciaFilter === 'todos' || lead.urgencia === urgenciaFilter;
-    const matchesTamanho = tamanhoFilter === 'todos' || lead.tamanho_empresa === tamanhoFilter;
+    const matchesStatus = filters.status === '' || lead.status === filters.status;
+    const matchesUrgencia = filters.urgencia === '' || lead.urgencia === filters.urgencia;
+    const matchesTamanho = filters.tamanho_empresa === '' || lead.tamanho_empresa === filters.tamanho_empresa;
+    const matchesSetor = filters.setor === '' || (lead.setor?.toLowerCase() || '').includes(filters.setor.toLowerCase());
+    const matchesFonte = filters.fonte_lead === '' || (lead.fonte_lead?.toLowerCase() || '').includes(filters.fonte_lead.toLowerCase());
     
-    return matchesSearch && matchesStatus && matchesUrgencia && matchesTamanho;
+    return matchesSearch && matchesStatus && matchesUrgencia && matchesTamanho && matchesSetor && matchesFonte;
   });
 
   const handleViewLead = (lead: Lead) => {
@@ -53,25 +59,24 @@ const CRM = () => {
     navigate('/novo-lead');
   };
 
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setUrgenciaFilter('todos');
-    setTamanhoFilter('todos');
-  };
-
   const handleCall = (lead: Lead) => {
-    window.open(`tel:${lead.telefone}`, '_self');
+    if (lead.telefone) {
+      window.open(`tel:${lead.telefone}`, '_self');
+    }
   };
 
   const handleEmail = (lead: Lead) => {
-    window.open(`mailto:${lead.email}`, '_blank');
+    if (lead.email) {
+      window.open(`mailto:${lead.email}`, '_blank');
+    }
   };
 
   const handleWhatsApp = (lead: Lead) => {
-    const message = encodeURIComponent(`Olá ${lead.contato_nome}, tudo bem? Sou da equipe comercial e gostaria de conversar sobre as necessidades da ${lead.empresa_nome}.`);
-    const phone = lead.telefone.replace(/\D/g, '');
-    window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
+    if (lead.telefone && lead.contato_nome && lead.empresa_nome) {
+      const message = encodeURIComponent(`Olá ${lead.contato_nome}, tudo bem? Sou da equipe comercial e gostaria de conversar sobre as necessidades da ${lead.empresa_nome}.`);
+      const phone = lead.telefone.replace(/\D/g, '');
+      window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
+    }
   };
 
   if (isLoading) {
@@ -110,15 +115,9 @@ const CRM = () => {
 
       {/* Filters */}
       <LeadFilters 
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        urgenciaFilter={urgenciaFilter}
-        setUrgenciaFilter={setUrgenciaFilter}
-        tamanhoFilter={tamanhoFilter}
-        setTamanhoFilter={setTamanhoFilter}
-        onClearFilters={handleClearFilters}
+        onFiltersChange={setFilters}
+        totalLeads={leads.length}
+        filteredLeads={filteredLeads.length}
       />
 
       {/* Grid View */}
@@ -154,7 +153,7 @@ const CRM = () => {
                   Criar Primeiro Lead
                 </Button>
               ) : (
-                <Button variant="outline" onClick={handleClearFilters}>
+                <Button variant="outline" onClick={() => setFilters({ search: '', status: '', setor: '', tamanho_empresa: '', urgencia: '', fonte_lead: '' })}>
                   Limpar Filtros
                 </Button>
               )}
@@ -167,7 +166,7 @@ const CRM = () => {
       <LeadModal
         lead={selectedLead}
         isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
+        onClose={() => setIsModalOpen(false)}
         mode={modalMode}
       />
     </div>

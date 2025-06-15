@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useLeads } from '@/hooks/useLeads';
+import { useUpdateLead, useCreateLead } from '@/hooks/useLeads';
 import { toast } from '@/hooks/use-toast';
 import { Lead } from '@/types/lead';
 import { leadSchema } from '@/utils/leadValidation';
@@ -19,7 +18,8 @@ interface LeadModalProps {
 }
 
 export const LeadModal = ({ lead, isOpen, onClose, mode }: LeadModalProps) => {
-  const { updateLead, createLead } = useLeads();
+  const updateLead = useUpdateLead();
+  const createLead = useCreateLead();
   const [isEditing, setIsEditing] = useState(mode === 'edit');
   
   const [formData, setFormData] = useState({
@@ -28,13 +28,13 @@ export const LeadModal = ({ lead, isOpen, onClose, mode }: LeadModalProps) => {
     email: '',
     telefone: '',
     setor: '',
-    tamanho_empresa: 'pequena' as const,
+    tamanho_empresa: 'pequena' as 'micro' | 'pequena' | 'media' | 'grande',
     fonte_lead: '',
-    status: 'novo' as const,
+    status: 'novo' as 'novo' | 'contactado' | 'qualificado' | 'reuniao_agendada' | 'ganho' | 'perdido',
     score_qualificacao: 0,
     potencial_receita: 0,
     observacoes: '',
-    urgencia: 'media' as const,
+    urgencia: 'media' as 'baixa' | 'media' | 'alta',
     necessidades: '',
     orcamento_disponivel: 0,
     custom_fields: {} as Record<string, any>
