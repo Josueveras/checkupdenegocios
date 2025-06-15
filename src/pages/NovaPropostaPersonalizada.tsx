@@ -38,7 +38,7 @@ const NovaPropostaPersonalizada = () => {
     acoes_sugeridas: ['']
   });
 
-  // Validação dos dados
+  // Validação simplificada - apenas empresa obrigatória
   const validateData = (): boolean => {
     // Validar empresa selecionada ou dados do novo cliente
     if (!isNewClient && !selectedEmpresaId) {
@@ -51,44 +51,14 @@ const NovaPropostaPersonalizada = () => {
     }
 
     if (isNewClient) {
-      if (!newClientData.empresaNome.trim() || !newClientData.clienteNome.trim()) {
+      if (!newClientData.empresaNome.trim()) {
         toast({
-          title: "Dados do cliente obrigatórios",
-          description: "Preencha o nome da empresa e do cliente.",
+          title: "Nome da empresa obrigatório",
+          description: "Preencha o nome da empresa para continuar.",
           variant: "destructive"
         });
         return false;
       }
-    }
-
-    // Validar dados da proposta
-    if (!proposalData.objetivo.trim()) {
-      toast({
-        title: "Objetivo obrigatório",
-        description: "Descreva o objetivo da proposta.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    if (!proposalData.valor.trim() || parseFloat(proposalData.valor) <= 0) {
-      toast({
-        title: "Valor inválido",
-        description: "Informe um valor válido para a proposta.",
-        variant: "destructive"
-      });
-      return false;
-    }
-
-    // Validar ações sugeridas (pelo menos uma não vazia)
-    const acoesValidas = proposalData.acoes_sugeridas.filter(acao => acao.trim());
-    if (acoesValidas.length === 0) {
-      toast({
-        title: "Ações obrigatórias",
-        description: "Adicione pelo menos uma ação sugerida.",
-        variant: "destructive"
-      });
-      return false;
     }
 
     return true;
@@ -107,7 +77,7 @@ const NovaPropostaPersonalizada = () => {
           .from('empresas')
           .insert({
             nome: newClientData.empresaNome,
-            cliente_nome: newClientData.clienteNome,
+            cliente_nome: newClientData.clienteNome || null,
             cliente_email: newClientData.clienteEmail || null,
             cliente_telefone: newClientData.clienteTelefone || null,
             setor: newClientData.setor || null
@@ -127,10 +97,10 @@ const NovaPropostaPersonalizada = () => {
       // Criar diagnóstico com scores obrigatórios
       const diagnosticoData = {
         empresa_id: empresaId,
-        score_estrategia: 50, // Valor padrão para proposta personalizada
+        score_estrategia: 50,
         score_marketing: 50,
         score_vendas: 50,
-        score_total: 50, // Média dos scores
+        score_total: 50,
         nivel: 'Personalizada',
         pontos_fortes: ['Proposta personalizada'],
         pontos_atencao: ['Avaliar implementação'],
@@ -156,16 +126,18 @@ const NovaPropostaPersonalizada = () => {
 
       console.log('Diagnóstico criado com sucesso:', diagnostico);
 
-      // Criar proposta
-      const acoesLimpas = data.acoes_sugeridas.filter((acao: string) => acao.trim());
+      // Preparar dados da proposta com valores padrão
+      const objetivo = data.objetivo.trim() || 'Proposta personalizada';
       const valorNumerico = parseFloat(data.valor) || 0;
+      const acoesLimpas = data.acoes_sugeridas.filter((acao: string) => acao.trim());
+      const acoesFinal = acoesLimpas.length > 0 ? acoesLimpas : ['A definir'];
 
       const propostaData = {
         diagnostico_id: diagnostico.id,
-        objetivo: data.objetivo,
+        objetivo: objetivo,
         valor: valorNumerico,
         prazo: data.prazo || null,
-        acoes_sugeridas: acoesLimpas,
+        acoes_sugeridas: acoesFinal,
         status: 'rascunho'
       };
 
@@ -306,7 +278,7 @@ const NovaPropostaPersonalizada = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Nome do Cliente *</Label>
+                  <Label>Nome do Cliente</Label>
                   <Input
                     value={newClientData.clienteNome}
                     onChange={(e) => setNewClientData(prev => ({ ...prev, clienteNome: e.target.value }))}
@@ -354,25 +326,25 @@ const NovaPropostaPersonalizada = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Objetivo *</Label>
+              <Label>Objetivo</Label>
               <Textarea
                 value={proposalData.objetivo}
                 onChange={(e) => setProposalData(prev => ({ ...prev, objetivo: e.target.value }))}
-                placeholder="Descreva o objetivo da proposta..."
+                placeholder="Descreva o objetivo da proposta (opcional)"
                 className="min-h-[100px]"
                 disabled={isLoading}
               />
             </div>
             
             <div className="space-y-2">
-              <Label>Valor (R$) *</Label>
+              <Label>Valor (R$)</Label>
               <Input
                 type="number"
                 step="0.01"
                 min="0"
                 value={proposalData.valor}
                 onChange={(e) => setProposalData(prev => ({ ...prev, valor: e.target.value }))}
-                placeholder="0.00"
+                placeholder="0.00 (opcional)"
                 disabled={isLoading}
               />
             </div>
@@ -382,14 +354,14 @@ const NovaPropostaPersonalizada = () => {
               <Input
                 value={proposalData.prazo}
                 onChange={(e) => setProposalData(prev => ({ ...prev, prazo: e.target.value }))}
-                placeholder="Ex: 30 dias, 3 meses"
+                placeholder="Ex: 30 dias, 3 meses (opcional)"
                 disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Ações Sugeridas *</Label>
+                <Label>Ações Sugeridas</Label>
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -407,7 +379,7 @@ const NovaPropostaPersonalizada = () => {
                     <Input
                       value={acao}
                       onChange={(e) => handleActionChange(index, e.target.value)}
-                      placeholder={`Ação ${index + 1}`}
+                      placeholder={`Ação ${index + 1} (opcional)`}
                       disabled={isLoading}
                     />
                     {proposalData.acoes_sugeridas.length > 1 && (
