@@ -117,46 +117,41 @@ const DiagnosticoView = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
-        <Card>
-          <CardHeader className="bg-petrol text-white">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => navigate('/diagnosticos')}
-                  className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Voltar
-                </Button>
-                <div>
-                  <CardTitle className="text-2xl font-bold">Diagnóstico Empresarial</CardTitle>
-                  <p className="text-lg text-white/90 mt-1">{empresa?.nome || 'Empresa não informada'}</p>
-                  <p className="text-white/80">{new Date(diagnostic.created_at).toLocaleDateString('pt-BR')}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="secondary"
-                  onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
-                  className="bg-white/20 border-white/30 text-white hover:bg-white/30"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  PDF
-                </Button>
-                <Button
-                  onClick={() => navigate(`/novo-diagnostico?edit=${diagnostic.id}`)}
-                  className="bg-white text-petrol hover:bg-white/90"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Editar
-                </Button>
-              </div>
+        {/* Header Simplificado */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/diagnosticos')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Diagnóstico Empresarial</h1>
+              <p className="text-lg text-gray-600 mt-1">{empresa?.nome || 'Empresa não informada'}</p>
+              <p className="text-gray-500">{new Date(diagnostic.created_at).toLocaleDateString('pt-BR')}</p>
             </div>
-          </CardHeader>
-        </Card>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              PDF
+            </Button>
+            <Button
+              onClick={() => navigate(`/novo-diagnostico?edit=${diagnostic.id}`)}
+              className="bg-petrol hover:bg-petrol/90 text-white"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+          </div>
+        </div>
 
         {/* Score Geral */}
         <Card className={getScoreBg(diagnostic.score_total)} >
