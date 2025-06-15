@@ -60,8 +60,8 @@ const EditarProposta = () => {
   }
 
   // Buscar empresa: pode vir do diagnóstico ou diretamente da proposta
-  const empresa = proposta?.diagnosticos?.empresas || proposta?.empresas || null;
-  const empresaNome = isNewProposal && plano?.nome ? plano.nome : empresa?.nome;
+  const empresa = (proposta as any)?.diagnosticos?.empresas || (proposta as any)?.empresas || null;
+  const empresaNome = isNewProposal && (plano as any)?.nome ? (plano as any).nome : empresa?.nome;
 
   return (
     <div className="w-full min-h-screen overflow-hidden">

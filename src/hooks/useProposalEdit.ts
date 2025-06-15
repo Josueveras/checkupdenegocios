@@ -23,11 +23,11 @@ export const useProposalEdit = (proposalId: string | null, planoId: string | nul
         if (error) throw error;
 
         // Se a proposta não tem diagnóstico, buscar empresa diretamente
-        if (proposta && !proposta.diagnostico_id && proposta.empresa_id) {
+        if (proposta && !proposta.diagnostico_id && (proposta as any).empresa_id) {
           const { data: empresa, error: empresaError } = await supabase
             .from('empresas')
             .select('*')
-            .eq('id', proposta.empresa_id)
+            .eq('id', (proposta as any).empresa_id)
             .single();
           
           if (empresaError) throw empresaError;
