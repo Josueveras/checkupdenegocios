@@ -45,7 +45,8 @@ export const useProposalOperations = () => {
   const handleDownloadPDF = async (proposta: any) => {
     try {
       const pdf = generateProposalPDF(proposta);
-      const empresa = proposta.diagnosticos?.empresas;
+      // Buscar empresa: pode vir do diagnóstico ou diretamente da proposta
+      const empresa = proposta.diagnosticos?.empresas || proposta.empresas;
       const filename = `Proposta_${empresa?.nome || 'Empresa'}_${new Date(proposta.created_at).toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
       downloadPDF(pdf, filename);
       
@@ -65,7 +66,8 @@ export const useProposalOperations = () => {
 
   const handleSendWhatsApp = async (proposta: any) => {
     try {
-      const empresa = proposta.diagnosticos?.empresas;
+      // Buscar empresa: pode vir do diagnóstico ou diretamente da proposta
+      const empresa = proposta.diagnosticos?.empresas || proposta.empresas;
       
       if (!empresa?.cliente_telefone) {
         toast({

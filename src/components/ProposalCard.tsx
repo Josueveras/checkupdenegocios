@@ -41,7 +41,8 @@ export const ProposalCard = ({ proposta, onEdit, onView }: ProposalCardProps) =>
     return [];
   };
 
-  const empresa = proposta.diagnosticos?.empresas;
+  // Buscar empresa: pode vir do diagnóstico ou diretamente da proposta
+  const empresa = proposta.diagnosticos?.empresas || proposta.empresas;
   const acoesSugeridas = getAcoesSugeridas(proposta.acoes_sugeridas);
 
   return (

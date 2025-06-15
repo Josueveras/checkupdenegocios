@@ -59,24 +59,12 @@ export const useProposalMutations = (proposalId: string | null, isNewProposal: b
         throw new Error('Empresa deve ser selecionada');
       }
 
-      // Primeiro criar um diagnóstico básico para a empresa
-      const { data: diagnostico, error: diagError } = await supabase
-        .from('diagnosticos')
-        .insert({
-          empresa_id: data.empresa_id,
-          status: 'concluido',
-          nivel: 'medio'
-        })
-        .select()
-        .single();
-
-      if (diagError) throw diagError;
-
-      // Depois criar a proposta
+      // Criar proposta diretamente associada à empresa, sem diagnóstico
       const { error } = await supabase
         .from('propostas')
         .insert({
-          diagnostico_id: diagnostico.id,
+          empresa_id: data.empresa_id,
+          diagnostico_id: null,
           objetivo: data.objetivo,
           valor: data.valor ? parseFloat(data.valor) : null,
           prazo: data.prazo,

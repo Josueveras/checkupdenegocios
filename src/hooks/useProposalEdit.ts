@@ -15,7 +15,8 @@ export const useProposalEdit = (proposalId: string | null, planoId: string | nul
             diagnosticos!propostas_diagnostico_id_fkey (
               *,
               empresas!diagnosticos_empresa_id_fkey (*)
-            )
+            ),
+            empresas!propostas_empresa_id_fkey (*)
           `)
           .eq('id', proposalId)
           .single();
