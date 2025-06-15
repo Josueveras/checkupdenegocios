@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -23,9 +22,14 @@ export const useDiagnosticos = () => {
       }
       
       console.log('✅ Diagnósticos encontrados:', data?.length || 0);
-      // Log para verificar se scores_por_categoria está sendo retornado
+      // Log para verificar as 4 colunas de score existentes
       if (data && data.length > 0) {
-        console.log('📊 Primeiro diagnóstico - scores_por_categoria:', data[0].scores_por_categoria);
+        console.log('📊 Primeiro diagnóstico - scores:', {
+          marketing: data[0].score_marketing,
+          vendas: data[0].score_vendas,
+          estrategia: data[0].score_estrategia,
+          gestao: data[0].score_gestao
+        });
       }
       
       return data;
@@ -110,22 +114,40 @@ export const useSaveDiagnostico = () => {
   return useMutation({
     mutationFn: async (diagnosticoData: any) => {
       console.log('💾 Salvando diagnóstico:', diagnosticoData);
-      console.log('📊 Verificando scores_por_categoria:', diagnosticoData.scores_por_categoria);
+      
+      // Garantir que apenas as 4 colunas existentes sejam enviadas
+      const cleanedData = {
+        empresa_id: diagnosticoData.empresa_id,
+        score_total: diagnosticoData.score_total,
+        score_marketing: diagnosticoData.score_marketing,
+        score_vendas: diagnosticoData.score_vendas,
+        score_estrategia: diagnosticoData.score_estrategia,
+        score_gestao: diagnosticoData.score_gestao,
+        nivel: diagnosticoData.nivel,
+        pontos_fortes: diagnosticoData.pontos_fortes,
+        pontos_atencao: diagnosticoData.pontos_atencao,
+        recomendacoes: diagnosticoData.recomendacoes,
+        planos: diagnosticoData.planos,
+        valores: diagnosticoData.valores,
+        observacoes: diagnosticoData.observacoes,
+        status: diagnosticoData.status
+      };
+      
+      console.log('💾 Dados limpos para salvar:', cleanedData);
       
       const { data, error } = await supabase
         .from('diagnosticos')
-        .insert(diagnosticoData)
+        .insert(cleanedData)
         .select()
         .single();
       
       if (error) {
         console.error('❌ Erro ao salvar diagnóstico:', error);
-        console.error('📊 Dados que causaram erro:', diagnosticoData);
+        console.error('📊 Dados que causaram erro:', cleanedData);
         throw error;
       }
       
       console.log('✅ Diagnóstico salvo:', data);
-      console.log('📊 Verificando se scores_por_categoria foi salvo:', data.scores_por_categoria);
       
       return data;
     },

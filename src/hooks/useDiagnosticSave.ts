@@ -1,4 +1,3 @@
-
 import { toast } from '@/hooks/use-toast';
 import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
 import { detectBot, addSpamProtectionDelay } from '@/utils/botProtection';
@@ -13,6 +12,23 @@ interface SaveDiagnosticProps {
   isEditing: boolean;
   onSuccess: () => void;
 }
+
+// Função para mapear categorias dinâmicas para as 4 colunas fixas
+const mapCategoryToColumn = (category: string): string => {
+  const categoryLower = category.toLowerCase();
+  
+  // Mapeamento inteligente de categorias para as 4 colunas existentes
+  if (categoryLower.includes('marketing') || categoryLower.includes('comunicação')) {
+    return 'marketing';
+  } else if (categoryLower.includes('vendas') || categoryLower.includes('comercial')) {
+    return 'vendas';
+  } else if (categoryLower.includes('estratégia') || categoryLower.includes('planejamento') || categoryLower.includes('financeiro')) {
+    return 'estrategia';
+  } else {
+    // Tecnologia, RH, Gestão, etc. -> gestão
+    return 'gestao';
+  }
+};
 
 export const useDiagnosticSave = () => {
   const saveEmpresaMutation = useSaveEmpresa();
@@ -81,17 +97,34 @@ export const useDiagnosticSave = () => {
       const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
       console.log('✅ Empresa salva:', empresa);
 
-      // Preparar dados do diagnóstico com scores dinâmicos
+      // Mapear categorias dinâmicas para as 4 colunas fixas
+      const mappedScores = {
+        marketing: 0,
+        vendas: 0,
+        estrategia: 0,
+        gestao: 0
+      };
+
+      // Distribuir scores das categorias dinâmicas nas 4 colunas fixas
+      Object.entries(results.categoryScores).forEach(([category, score]) => {
+        const columnKey = mapCategoryToColumn(category);
+        // Se várias categorias mapeiam para a mesma coluna, usar a maior pontuação
+        mappedScores[columnKey as keyof typeof mappedScores] = Math.max(
+          mappedScores[columnKey as keyof typeof mappedScores], 
+          score as number
+        );
+      });
+
+      console.log('🗂️ Mapeamento de categorias:', results.categoryScores, '→', mappedScores);
+
+      // Preparar dados do diagnóstico usando apenas as 4 colunas existentes
       const diagnosticoData = {
         empresa_id: empresa.id,
         score_total: results.overallScore,
-        // Manter as 4 colunas principais para compatibilidade com dados antigos
-        score_marketing: results.categoryScores.Marketing || results.categoryScores.marketing || 0,
-        score_vendas: results.categoryScores.Vendas || results.categoryScores.vendas || 0,
-        score_estrategia: results.categoryScores.Estratégia || results.categoryScores.estrategia || 0,
-        score_gestao: results.categoryScores.Gestão || results.categoryScores.gestao || 0,
-        // IMPORTANTE: Salvar todos os scores em formato JSON para suportar categorias dinâmicas
-        scores_por_categoria: results.categoryScores,
+        score_marketing: mappedScores.marketing,
+        score_vendas: mappedScores.vendas,
+        score_estrategia: mappedScores.estrategia,
+        score_gestao: mappedScores.gestao,
         nivel: results.level,
         pontos_fortes: results.strongPoints,
         pontos_atencao: results.attentionPoints,
@@ -103,7 +136,6 @@ export const useDiagnosticSave = () => {
       };
 
       console.log('💾 Dados do diagnóstico para salvar:', diagnosticoData);
-      console.log('📊 Scores por categoria (JSON):', diagnosticoData.scores_por_categoria);
 
       const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
       console.log('✅ Diagnóstico salvo:', diagnostico);

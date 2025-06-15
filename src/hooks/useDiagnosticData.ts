@@ -43,7 +43,6 @@ export const useDiagnosticData = (editId: string | null) => {
 
       console.log('🏢 Dados da empresa:', empresa);
       console.log('📊 Diagnóstico completo:', diagnostic);
-      console.log('📊 Scores por categoria do banco:', diagnostic.scores_por_categoria);
 
       // Preencher dados da empresa
       setCompanyData({
@@ -72,9 +71,9 @@ export const useDiagnosticData = (editId: string | null) => {
         observacoes: diagnostic.observacoes || ''
       });
 
-      // Calcular resultados baseado nas respostas
+      // Calcular resultados baseado nas respostas (dinâmico)
       if (Object.keys(answersMap).length > 0 && questions.length > 0) {
-        console.log('🔄 Recalculando resultados...');
+        console.log('🔄 Recalculando resultados dinamicamente...');
         const calculatedResults = calculateResults(answersMap, questions);
         console.log('📊 Resultados recalculados:', calculatedResults);
         setResults(calculatedResults);
