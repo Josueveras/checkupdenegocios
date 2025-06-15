@@ -4,14 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Building2, HelpCircle, Target, Settings, Users, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useSupabase } from '@/hooks/useSupabase';
+import { useEmpresas, useDiagnosticos, usePropostas } from '@/hooks/useSupabase';
 import { usePlanos } from '@/hooks/usePlanos';
 
 const Admin = () => {
   const navigate = useNavigate();
-  const { data: diagnosticos = [] } = useSupabase();
-  const { data: empresas = [] } = useSupabase();
-  const { data: propostas = [] } = useSupabase();
+  const { data: diagnosticos = [] } = useDiagnosticos();
+  const { data: empresas = [] } = useEmpresas();
+  const { data: propostas = [] } = usePropostas();
   const { data: planos = [] } = usePlanos();
 
   const adminSections = [
