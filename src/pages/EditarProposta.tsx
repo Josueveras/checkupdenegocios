@@ -1,4 +1,3 @@
-
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useProposalEdit } from '@/hooks/useProposalEdit';
 import { useProposalForm } from '@/hooks/useProposalForm';
@@ -38,19 +37,18 @@ const EditarProposta = () => {
   const proposta = proposalData?.type === 'existing' ? proposalData.data : null;
   const plano = proposalData?.type === 'plan' ? proposalData.data : null;
 
-  // Detectar tipo da proposta usando type guards adequados
+  // Detectar tipo da proposta usando plano_id
   const proposalType = (() => {
     // Se é nova proposta de plano
     if (isNewProposal || tipo === 'plano') return 'plano';
     
-    // Se é proposta existente, verificar se tem diagnóstico_id
+    // Se é proposta existente, verificar se tem plano_id
     if (proposta && proposalData?.type === 'existing') {
-      // Type guard para garantir que temos uma proposta existente
       const existingProposal = proposta as any;
-      // Se não tem diagnostico_id mas tem empresa_id, é proposta de plano
-      if (!existingProposal.diagnostico_id && existingProposal.empresa_id) return 'plano';
-      // Se tem diagnostico_id, é proposta de diagnóstico
-      if (existingProposal.diagnostico_id) return 'diagnostico';
+      // Se tem plano_id, é proposta de plano
+      if (existingProposal.plano_id) return 'plano';
+      // Senão, é proposta de diagnóstico
+      return 'diagnostico';
     }
     
     // Default para diagnóstico
@@ -62,7 +60,7 @@ const EditarProposta = () => {
   console.log('From plan page:', isFromPlanPage);
 
   const { formData, updateFormData, validateForm } = useProposalForm(proposta, plano);
-  const { handleSave, isSaving } = useProposalMutations(proposalId, isNewProposal, proposalType);
+  const { handleSave, isSaving } = useProposalMutations(proposalId, isNewProposal, proposalType, planoId);
 
   const handleCancel = () => {
     const targetRoute = proposalType === 'plano' ? '/propostas-planos' : cancelRoute;
@@ -85,8 +83,8 @@ const EditarProposta = () => {
     return <ProposalNotFoundState isNewProposal={isNewProposal} />;
   }
 
-  // Buscar empresa: pode vir do diagnóstico ou diretamente da proposta
-  const empresa = (proposta as any)?.diagnosticos?.empresas || (proposta as any)?.empresas || null;
+  // Buscar empresa: sempre vem via diagnóstico
+  const empresa = proposta?.diagnosticos?.empresas || null;
   const empresaNome = isNewProposal && (plano as any)?.nome ? (plano as any).nome : empresa?.nome;
 
   return (
@@ -109,8 +107,8 @@ const EditarProposta = () => {
 
             {isNewProposal && (
               <EmpresaSelector
-                selectedEmpresaId={formData.empresa_id || ''}
-                onChange={(empresaId) => updateFormData({ empresa_id: empresaId })}
+                selectedEmpresaId={formData.diagnostico_id || ''}
+                onChange={(diagnosticoId) => updateFormData({ diagnostico_id: diagnosticoId })}
               />
             )}
           </div>

@@ -2,37 +2,30 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-// Hook para propostas de planos (empresa_id não nulo e diagnostico_id nulo)
+// Hook para propostas de planos (plano_id não nulo)
 export const usePropostasPlanos = () => {
   return useQuery({
     queryKey: ['propostas-planos'],
     queryFn: async () => {
-      // Primeiro buscar as propostas de planos
+      // Buscar propostas que têm plano_id (propostas baseadas em planos)
       const { data: propostas, error: propostasError } = await supabase
         .from('propostas')
-        .select('*')
-        .is('diagnostico_id', null)
-        .not('empresa_id', 'is', null)
+        .select(`
+          *,
+          diagnosticos!propostas_diagnostico_id_fkey (
+            *,
+            empresas!diagnosticos_empresa_id_fkey (*)
+          )
+        `)
+        .not('plano_id', 'is', null)
         .order('created_at', { ascending: false });
       
       if (propostasError) throw propostasError;
       if (!propostas || propostas.length === 0) return [];
 
-      // Buscar todas as empresas relacionadas
-      const empresaIds = propostas.map(p => (p as any).empresa_id).filter(Boolean);
-      
-      if (empresaIds.length === 0) return propostas;
-
-      const { data: empresas, error: empresasError } = await supabase
-        .from('empresas')
-        .select('id, nome, cliente_nome, cliente_email, cliente_telefone')
-        .in('id', empresaIds);
-      
-      if (empresasError) throw empresasError;
-
-      // Combinar propostas com empresas
+      // As empresas já vêm via diagnosticos, então só precisamos mapear
       const propostasComEmpresas = propostas.map(proposta => {
-        const empresa = empresas?.find(e => e.id === (proposta as any).empresa_id);
+        const empresa = proposta.diagnosticos?.empresas;
         return {
           ...proposta,
           empresas: empresa || null

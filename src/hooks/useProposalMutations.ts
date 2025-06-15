@@ -11,6 +11,8 @@ interface ProposalFormData {
   status: string;
   acoes_sugeridas: string[];
   empresa_id?: string;
+  diagnostico_id?: string;
+  plano_id?: string;
 }
 
 type ProposalType = 'diagnostico' | 'plano';
@@ -18,7 +20,8 @@ type ProposalType = 'diagnostico' | 'plano';
 export const useProposalMutations = (
   proposalId: string | null, 
   isNewProposal: boolean,
-  proposalType: ProposalType = 'diagnostico'
+  proposalType: ProposalType = 'diagnostico',
+  planoId?: string | null
 ) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -67,22 +70,28 @@ export const useProposalMutations = (
 
   const createProposalMutation = useMutation({
     mutationFn: async (data: ProposalFormData) => {
-      if (!data.empresa_id) {
-        throw new Error('Empresa deve ser selecionada');
+      if (!data.diagnostico_id) {
+        throw new Error('Diagnóstico deve ser selecionado');
       }
 
-      // Criar proposta diretamente associada à empresa, sem diagnóstico
+      // Criar proposta com diagnostico_id obrigatório e plano_id opcional
+      const proposalData: any = {
+        diagnostico_id: data.diagnostico_id,
+        objetivo: data.objetivo,
+        valor: data.valor ? parseFloat(data.valor) : null,
+        prazo: data.prazo,
+        status: data.status,
+        acoes_sugeridas: data.acoes_sugeridas
+      };
+
+      // Se é proposta de plano, incluir plano_id
+      if (proposalType === 'plano' && planoId) {
+        proposalData.plano_id = planoId;
+      }
+
       const { error } = await supabase
         .from('propostas')
-        .insert({
-          empresa_id: data.empresa_id,
-          diagnostico_id: null,
-          objetivo: data.objetivo,
-          valor: data.valor ? parseFloat(data.valor) : null,
-          prazo: data.prazo,
-          status: data.status,
-          acoes_sugeridas: data.acoes_sugeridas
-        });
+        .insert(proposalData);
       
       if (error) throw error;
     },
@@ -114,10 +123,10 @@ export const useProposalMutations = (
     if (!validateForm()) return;
     
     if (isNewProposal) {
-      if (!formData.empresa_id) {
+      if (!formData.diagnostico_id) {
         toast({
-          title: "Empresa obrigatória",
-          description: "Selecione uma empresa para continuar.",
+          title: "Diagnóstico obrigatório",
+          description: "Selecione um diagnóstico para continuar.",
           variant: "destructive"
         });
         return;
