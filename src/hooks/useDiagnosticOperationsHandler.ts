@@ -25,8 +25,8 @@ export const useDiagnosticOperationsHandler = ({
 }: DiagnosticOperationsHandlerProps) => {
   const navigate = useNavigate();
   const { saveDiagnostic, isSaving } = useDiagnosticSave(editId);
-  const { generatePDF } = useDiagnosticPDF();
-  const { shareWhatsApp } = useDiagnosticSharing();
+  const { handleGenerateAndDownloadPDF } = useDiagnosticPDF();
+  const { handleSendWhatsApp } = useDiagnosticSharing();
 
   const handleSaveDiagnostic = async () => {
     await saveDiagnostic({
@@ -49,18 +49,43 @@ export const useDiagnosticOperationsHandler = ({
   };
 
   const handleDownloadPDF = () => {
-    generatePDF({
-      companyData,
-      results,
-      diagnosticData
-    });
+    // Create a temporary diagnostic object for PDF generation
+    const tempDiagnostic = {
+      empresas: {
+        nome: companyData.companyName,
+        cliente_nome: companyData.clientName,
+        cliente_email: companyData.email,
+        cliente_telefone: companyData.phone
+      },
+      score_total: results.overallScore,
+      score_marketing: results.categoryScores?.Marketing || 0,
+      score_vendas: results.categoryScores?.Vendas || 0,
+      score_estrategia: results.categoryScores?.Estratégia || 0,
+      score_gestao: results.categoryScores?.Gestão || 0,
+      nivel: results.level,
+      pontos_fortes: results.strongPoints,
+      pontos_atencao: results.attentionPoints,
+      recomendacoes: results.recommendations,
+      observacoes: diagnosticData.observacoes,
+      created_at: new Date().toISOString()
+    };
+
+    handleGenerateAndDownloadPDF(tempDiagnostic);
   };
 
   const handleShareWhatsApp = () => {
-    shareWhatsApp({
-      companyData,
-      results
-    });
+    // Create a temporary diagnostic object for WhatsApp sharing
+    const tempDiagnostic = {
+      empresas: {
+        nome: companyData.companyName,
+        cliente_nome: companyData.clientName,
+        cliente_telefone: companyData.phone
+      },
+      score_total: results.overallScore,
+      nivel: results.level
+    };
+
+    handleSendWhatsApp(tempDiagnostic);
   };
 
   return {
