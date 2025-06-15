@@ -136,7 +136,10 @@ const NovoDiagnostico = () => {
       )}
       {currentStep === 3 && results && (
         <div className="space-y-6">
-          <ResultsStep results={results} />
+          <ResultsStep 
+            results={results} 
+            companyData={companyData}
+          />
           
           {/* Botão Concluir Diagnóstico */}
           <div className="flex justify-center pt-6">

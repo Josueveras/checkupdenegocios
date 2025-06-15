@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { AIRecommendationsSection } from './AIRecommendationsSection';
 
 interface DiagnosticResults {
   overallScore: number;
@@ -13,9 +14,28 @@ interface DiagnosticResults {
 
 interface ResultsStepProps {
   results: DiagnosticResults;
+  companyData?: {
+    companyName: string;
+    sector: string;
+    employees: string;
+    revenue: string;
+  };
 }
 
-export const ResultsStep = ({ results }: ResultsStepProps) => {
+export const ResultsStep = ({ results, companyData }: ResultsStepProps) => {
+  // Preparar dados para as recomendações IA
+  const diagnosticDataForAI = companyData ? {
+    companyName: companyData.companyName,
+    sector: companyData.sector,
+    employees: companyData.employees,
+    revenue: companyData.revenue,
+    overallScore: results.overallScore,
+    level: results.level,
+    categoryScores: results.categoryScores,
+    strongPoints: results.strongPoints || [],
+    attentionPoints: results.attentionPoints || []
+  } : null;
+
   return (
     <div className="space-y-6">
       {/* Score Geral */}
@@ -54,6 +74,11 @@ export const ResultsStep = ({ results }: ResultsStepProps) => {
         </CardContent>
       </Card>
 
+      {/* Recomendações IA */}
+      {diagnosticDataForAI && (
+        <AIRecommendationsSection diagnosticData={diagnosticDataForAI} />
+      )}
+
       {/* Pontos Fortes e de Atenção */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="border-green-200">
@@ -91,11 +116,11 @@ export const ResultsStep = ({ results }: ResultsStepProps) => {
         </Card>
       </div>
 
-      {/* Recomendações */}
+      {/* Recomendações Padrão */}
       {results.recommendations && Object.keys(results.recommendations).length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>💡 Recomendações</CardTitle>
+            <CardTitle>💡 Recomendações Padrão</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {Object.entries(results.recommendations).map(([category, recs]) => (
