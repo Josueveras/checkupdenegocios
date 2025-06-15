@@ -79,68 +79,137 @@ export const useDiagnosticCalculations = () => {
     const recommendations: {[key: string]: string[]} = {};
     
     Object.entries(scores).forEach(([category, score]) => {
-      if (score < 40) {
+      if (score < 70) { // Mudado de 40 para 70 para incluir mais categorias
+        let categoryRecommendations: string[] = [];
+        
         // Recomendações específicas para categorias conhecidas
         switch (category.toLowerCase()) {
           case "marketing":
-            recommendations[category] = [
-              "Desenvolver estratégia de marketing digital",
-              "Implementar presença nas redes sociais",
-              "Criar conteúdo relevante para o público-alvo"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Desenvolver estratégia de marketing digital",
+                "Implementar presença nas redes sociais",
+                "Criar conteúdo relevante para o público-alvo"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Otimizar campanhas de marketing existentes",
+                "Implementar métricas de performance",
+                "Diversificar canais de comunicação"
+              ];
+            }
             break;
           case "vendas":
-            recommendations[category] = [
-              "Estruturar processo de vendas",
-              "Implementar CRM para gestão de leads",
-              "Treinar equipe comercial"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Estruturar processo de vendas",
+                "Implementar CRM para gestão de leads",
+                "Treinar equipe comercial"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Otimizar funil de vendas",
+                "Implementar automação de vendas",
+                "Melhorar follow-up com clientes"
+              ];
+            }
             break;
           case "estratégia":
-            recommendations[category] = [
-              "Elaborar planejamento estratégico",
-              "Definir metas e indicadores",
-              "Realizar análise de mercado"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Elaborar planejamento estratégico",
+                "Definir metas e indicadores",
+                "Realizar análise de mercado"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Revisar e ajustar estratégias existentes",
+                "Implementar análise de concorrência",
+                "Desenvolver cenários futuros"
+              ];
+            }
             break;
           case "gestão":
-            recommendations[category] = [
-              "Implementar indicadores de desempenho",
-              "Criar rotinas de monitoramento",
-              "Estabelecer processos organizacionais"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Implementar indicadores de desempenho",
+                "Criar rotinas de monitoramento",
+                "Estabelecer processos organizacionais"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Otimizar processos existentes",
+                "Implementar gestão por resultados",
+                "Desenvolver liderança da equipe"
+              ];
+            }
             break;
           case "tecnologia":
-            recommendations[category] = [
-              "Implementar ferramentas digitais básicas",
-              "Automatizar processos repetitivos",
-              "Investir em segurança da informação"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Implementar ferramentas digitais básicas",
+                "Automatizar processos repetitivos",
+                "Investir em segurança da informação"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Otimizar infraestrutura tecnológica",
+                "Implementar soluções de business intelligence",
+                "Avaliar novas tecnologias emergentes"
+              ];
+            }
             break;
           case "financeiro":
-            recommendations[category] = [
-              "Organizar controle financeiro",
-              "Implementar fluxo de caixa",
-              "Definir orçamento e metas financeiras"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Organizar controle financeiro",
+                "Implementar fluxo de caixa",
+                "Definir orçamento e metas financeiras"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Otimizar gestão de custos",
+                "Implementar análise de rentabilidade",
+                "Desenvolver planejamento financeiro estratégico"
+              ];
+            }
             break;
           case "recursos humanos":
-            recommendations[category] = [
-              "Estruturar processos de RH",
-              "Implementar plano de cargos e salários",
-              "Criar programa de treinamento"
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                "Estruturar processos de RH",
+                "Implementar plano de cargos e salários",
+                "Criar programa de treinamento"
+              ];
+            } else {
+              categoryRecommendations = [
+                "Desenvolver programa de retenção de talentos",
+                "Implementar avaliação de desempenho",
+                "Criar cultura organizacional forte"
+              ];
+            }
             break;
           default:
             // Recomendações genéricas para categorias não mapeadas
-            recommendations[category] = [
-              `Desenvolver estratégia específica para ${category}`,
-              `Implementar processos estruturados em ${category}`,
-              `Definir indicadores de performance para ${category}`,
-              `Buscar capacitação na área de ${category}`
-            ];
+            if (score < 40) {
+              categoryRecommendations = [
+                `Desenvolver estratégia específica para ${category}`,
+                `Implementar processos estruturados em ${category}`,
+                `Definir indicadores de performance para ${category}`,
+                `Buscar capacitação na área de ${category}`
+              ];
+            } else {
+              categoryRecommendations = [
+                `Otimizar processos existentes em ${category}`,
+                `Implementar melhorias contínuas em ${category}`,
+                `Desenvolver expertise avançada em ${category}`,
+                `Buscar inovações na área de ${category}`
+              ];
+            }
             break;
         }
+        
+        recommendations[category] = categoryRecommendations;
       }
     });
 
