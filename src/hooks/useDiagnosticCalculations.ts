@@ -1,4 +1,5 @@
 
+
 interface Question {
   id: string;
   question: string;
@@ -12,10 +13,11 @@ interface Question {
 
 export const useDiagnosticCalculations = () => {
   const calculateResults = (answers: {[key: string]: number}, questions: Question[]) => {
-    const categories = ["Marketing", "Vendas", "Estratégia", "Gestão"];
+    // Extrair categorias dinamicamente das perguntas
+    const categories = [...new Set(questions.map(q => q.category))];
     const categoryScores: {[key: string]: {total: number, max: number}} = {};
     
-    // Inicializar categorias predefinidas
+    // Inicializar categorias baseadas nas perguntas carregadas
     categories.forEach(cat => {
       categoryScores[cat] = { total: 0, max: 0 };
     });
@@ -78,33 +80,64 @@ export const useDiagnosticCalculations = () => {
     
     Object.entries(scores).forEach(([category, score]) => {
       if (score < 40) {
-        switch (category) {
-          case "Marketing":
+        // Recomendações específicas para categorias conhecidas
+        switch (category.toLowerCase()) {
+          case "marketing":
             recommendations[category] = [
               "Desenvolver estratégia de marketing digital",
               "Implementar presença nas redes sociais",
               "Criar conteúdo relevante para o público-alvo"
             ];
             break;
-          case "Vendas":
+          case "vendas":
             recommendations[category] = [
               "Estruturar processo de vendas",
               "Implementar CRM para gestão de leads",
               "Treinar equipe comercial"
             ];
             break;
-          case "Estratégia":
+          case "estratégia":
             recommendations[category] = [
               "Elaborar planejamento estratégico",
               "Definir metas e indicadores",
               "Realizar análise de mercado"
             ];
             break;
-          case "Gestão":
+          case "gestão":
             recommendations[category] = [
               "Implementar indicadores de desempenho",
               "Criar rotinas de monitoramento",
               "Estabelecer processos organizacionais"
+            ];
+            break;
+          case "tecnologia":
+            recommendations[category] = [
+              "Implementar ferramentas digitais básicas",
+              "Automatizar processos repetitivos",
+              "Investir em segurança da informação"
+            ];
+            break;
+          case "financeiro":
+            recommendations[category] = [
+              "Organizar controle financeiro",
+              "Implementar fluxo de caixa",
+              "Definir orçamento e metas financeiras"
+            ];
+            break;
+          case "recursos humanos":
+            recommendations[category] = [
+              "Estruturar processos de RH",
+              "Implementar plano de cargos e salários",
+              "Criar programa de treinamento"
+            ];
+            break;
+          default:
+            // Recomendações genéricas para categorias não mapeadas
+            recommendations[category] = [
+              `Desenvolver estratégia específica para ${category}`,
+              `Implementar processos estruturados em ${category}`,
+              `Definir indicadores de performance para ${category}`,
+              `Buscar capacitação na área de ${category}`
             ];
             break;
         }
@@ -116,3 +149,4 @@ export const useDiagnosticCalculations = () => {
 
   return { calculateResults };
 };
+
