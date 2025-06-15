@@ -16,35 +16,33 @@ export const EditProposalHeader = ({
   isSaving 
 }: EditProposalHeaderProps) => {
   return (
-    <div className="w-full">
-      <div className="flex flex-col gap-2">
+    <div className="w-full overflow-hidden">
+      <div className="flex flex-col gap-3">
         <div className="min-w-0">
-          <h1 className="text-base sm:text-lg lg:text-xl font-bold text-gray-900 truncate">
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">
             Editar Proposta
           </h1>
-          <p className="text-gray-600 text-xs sm:text-sm truncate">
+          <p className="text-gray-600 text-sm truncate">
             {empresaNome || 'Empresa não informada'}
           </p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
           <Button
             variant="outline"
             onClick={onCancel}
             disabled={isSaving}
-            size="sm"
-            className="text-xs"
+            className="w-full sm:w-auto text-sm"
           >
-            <ArrowLeft className="h-3 w-3 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
           <Button
             onClick={onSave}
             disabled={isSaving}
-            size="sm"
-            className="bg-petrol hover:bg-petrol/90 text-white text-xs"
+            className="w-full sm:w-auto bg-petrol hover:bg-petrol/90 text-white text-sm"
           >
-            <Save className="h-3 w-3 mr-1" />
+            <Save className="h-4 w-4 mr-2" />
             {isSaving ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>

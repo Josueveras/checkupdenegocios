@@ -50,8 +50,8 @@ const EditarProposta = () => {
   const empresaNome = isNewProposal && plano && 'nome' in plano ? plano.nome : empresa?.nome;
 
   return (
-    <div className="w-full min-h-screen">
-      <div className="max-w-4xl mx-auto px-3 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4">
+    <div className="w-full min-h-screen overflow-hidden">
+      <div className="max-w-2xl mx-auto px-2 sm:px-4 py-2 sm:py-3 space-y-2 sm:space-y-3 overflow-hidden">
         <EditProposalHeader
           empresaNome={empresaNome}
           onCancel={handleCancel}
@@ -59,7 +59,7 @@ const EditarProposta = () => {
           isSaving={isSaving}
         />
 
-        <div className="space-y-3 sm:space-y-4">
+        <div className="space-y-2 sm:space-y-3 overflow-hidden">
           {empresa && (
             <CompanyInfo empresa={empresa} />
           )}

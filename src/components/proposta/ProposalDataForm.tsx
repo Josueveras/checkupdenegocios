@@ -19,13 +19,13 @@ interface ProposalDataFormProps {
 
 export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) => {
   return (
-    <Card>
-      <CardHeader className="p-2 sm:p-4">
+    <Card className="overflow-hidden">
+      <CardHeader className="p-2 sm:p-3">
         <CardTitle className="text-sm sm:text-base truncate">
           Dados da Proposta
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-2 sm:p-4 pt-0 space-y-2 sm:space-y-3">
+      <CardContent className="p-2 sm:p-3 pt-0 space-y-3">
         <div className="min-w-0">
           <Label htmlFor="objetivo" className="text-sm">Objetivo *</Label>
           <Textarea
@@ -38,7 +38,7 @@ export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) 
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <div className="min-w-0">
             <Label htmlFor="valor" className="text-sm">Valor (R$) *</Label>
             <Input
@@ -49,7 +49,7 @@ export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) 
               value={formData.valor}
               onChange={(e) => onChange({ valor: e.target.value })}
               placeholder="0.00"
-              className="mt-1 w-full h-8 sm:h-9 text-sm"
+              className="mt-1 w-full h-10 text-sm"
             />
           </div>
           <div className="min-w-0">
@@ -59,7 +59,7 @@ export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) 
               value={formData.prazo}
               onChange={(e) => onChange({ prazo: e.target.value })}
               placeholder="Ex: 3 meses, 6 semanas..."
-              className="mt-1 w-full h-8 sm:h-9 text-sm"
+              className="mt-1 w-full h-10 text-sm"
             />
           </div>
         </div>
@@ -70,7 +70,7 @@ export const ProposalDataForm = ({ formData, onChange }: ProposalDataFormProps) 
             id="status"
             value={formData.status}
             onChange={(e) => onChange({ status: e.target.value })}
-            className="flex h-8 sm:h-9 w-full rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 mt-1"
           >
             <option value="rascunho">Rascunho</option>
             <option value="enviada">Enviada</option>
