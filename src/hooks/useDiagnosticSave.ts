@@ -1,10 +1,11 @@
+
 import { toast } from '@/hooks/use-toast';
 import { useSaveEmpresa, useUpdateEmpresa } from '@/hooks/useEmpresas';
 import { useSaveDiagnostico, useUpdateDiagnostico } from '@/hooks/useDiagnosticos';
 import { useSaveRespostas, useUpdateRespostas } from '@/hooks/useRespostas';
 import { detectBot, addSpamProtectionDelay } from '@/utils/botProtection';
 import { getUserIP } from '@/utils/ipUtils';
-import { supabase } from '@/integrations/supabase/client';
+import { useDiagnosticoById } from '@/hooks/useDiagnosticoById';
 
 interface SaveDiagnosticProps {
   companyData: any;
@@ -34,13 +35,16 @@ const mapCategoryToColumn = (category: string): string => {
   }
 };
 
-export const useDiagnosticSave = () => {
+export const useDiagnosticSave = (editId?: string) => {
   const saveEmpresaMutation = useSaveEmpresa();
   const saveDiagnosticoMutation = useSaveDiagnostico();
   const saveRespostasMutation = useSaveRespostas();
   const updateEmpresaMutation = useUpdateEmpresa();
   const updateDiagnosticoMutation = useUpdateDiagnostico();
   const updateRespostasMutation = useUpdateRespostas();
+  
+  // Hook para buscar diagnóstico atual quando editando
+  const { data: currentDiagnostic } = useDiagnosticoById(editId || null);
 
   const saveDiagnostic = async ({
     companyData,
@@ -104,19 +108,9 @@ export const useDiagnosticSave = () => {
       let empresa: any;
       let diagnostico: any;
 
-      if (isEditing && editId) {
+      if (isEditing && editId && currentDiagnostic) {
         console.log('🔄 Modo de edição ativado para ID:', editId);
-        
-        // Buscar dados do diagnóstico atual para obter empresa_id
-        const { data: currentDiagnostic } = await supabase
-          .from('diagnosticos')
-          .select('empresa_id, empresas(*)')
-          .eq('id', editId)
-          .single();
-
-        if (!currentDiagnostic) {
-          throw new Error('Diagnóstico não encontrado para edição');
-        }
+        console.log('📋 Diagnóstico atual:', currentDiagnostic);
 
         // Atualizar dados da empresa
         const empresaData = {
