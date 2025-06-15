@@ -63,7 +63,7 @@ const Propostas = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto space-y-6 animate-fade-in">
       {/* Header */}
       <div className="px-4 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -138,7 +138,7 @@ const Propostas = () => {
               </p>
               <div className="flex justify-center gap-4 flex-wrap">
                 {propostas.length === 0 ? (
-                  <Button onClick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
+                  <Button onclick={handleCreateNewProposal} className="bg-petrol hover:bg-petrol/90 text-white">
                     <FileText className="mr-2 h-4 w-4" />
                     Criar Primeira Proposta
                   </Button>
