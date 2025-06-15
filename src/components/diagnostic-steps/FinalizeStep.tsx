@@ -64,6 +64,10 @@ export const FinalizeStep = ({
 
     setIsGeneratingPDF(true);
     try {
+      console.log('📄 Preparando PDF para compartilhamento...');
+      console.log('📊 Results para PDF:', results);
+      console.log('📊 Category scores para PDF:', results.categoryScores);
+
       // Criar um objeto diagnóstico temporário para gerar o PDF
       const tempDiagnostic = {
         empresas: {
@@ -73,10 +77,13 @@ export const FinalizeStep = ({
           cliente_telefone: companyData.clientPhone
         },
         score_total: results.overallScore,
-        score_marketing: results.categoryScores?.Marketing || 0,
-        score_vendas: results.categoryScores?.Vendas || 0,
-        score_estrategia: results.categoryScores?.Estratégia || 0,
-        score_gestao: results.categoryScores?.Gestão || 0,
+        // Manter compatibilidade com categorias antigas
+        score_marketing: results.categoryScores?.Marketing || results.categoryScores?.marketing || 0,
+        score_vendas: results.categoryScores?.Vendas || results.categoryScores?.vendas || 0,
+        score_estrategia: results.categoryScores?.Estratégia || results.categoryScores?.estrategia || 0,
+        score_gestao: results.categoryScores?.Gestão || results.categoryScores?.gestao || 0,
+        // IMPORTANTE: Incluir scores dinâmicos
+        scores_por_categoria: results.categoryScores,
         nivel: results.level,
         pontos_fortes: results.strengths || [],
         pontos_atencao: results.improvements || [],
@@ -85,10 +92,13 @@ export const FinalizeStep = ({
         created_at: new Date().toISOString()
       };
 
+      console.log('📄 Diagnóstico temporário criado:', tempDiagnostic);
+
       const result = await generatePDFForSharing(tempDiagnostic);
       setPdfData(result);
       return result;
     } catch (error) {
+      console.error('❌ Erro ao gerar PDF:', error);
       toast({
         title: "Erro",
         description: "Não foi possível gerar o PDF para compartilhamento",

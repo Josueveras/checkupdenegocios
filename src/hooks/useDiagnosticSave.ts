@@ -29,6 +29,9 @@ export const useDiagnosticSave = () => {
     onSuccess
   }: SaveDiagnosticProps) => {
     try {
+      console.log('🔄 Iniciando salvamento do diagnóstico...');
+      console.log('📊 Results recebidos:', results);
+      console.log('📊 Category scores:', results.categoryScores);
 
       // Verificar proteção anti-bot
       const formElement = document.querySelector('form') || document.body;
@@ -74,18 +77,20 @@ export const useDiagnosticSave = () => {
         faturamento: companyData.revenue
       };
 
+      console.log('🏢 Salvando empresa:', empresaData);
       const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
+      console.log('✅ Empresa salva:', empresa);
 
       // Preparar dados do diagnóstico com scores dinâmicos
       const diagnosticoData = {
         empresa_id: empresa.id,
         score_total: results.overallScore,
-        // Manter as 4 colunas principais para compatibilidade
-        score_marketing: results.categoryScores.Marketing || 0,
-        score_vendas: results.categoryScores.Vendas || 0,
-        score_estrategia: results.categoryScores.Estratégia || 0,
-        score_gestao: results.categoryScores.Gestão || 0,
-        // Adicionar todos os scores em formato JSON para flexibilidade
+        // Manter as 4 colunas principais para compatibilidade com dados antigos
+        score_marketing: results.categoryScores.Marketing || results.categoryScores.marketing || 0,
+        score_vendas: results.categoryScores.Vendas || results.categoryScores.vendas || 0,
+        score_estrategia: results.categoryScores.Estratégia || results.categoryScores.estrategia || 0,
+        score_gestao: results.categoryScores.Gestão || results.categoryScores.gestao || 0,
+        // IMPORTANTE: Salvar todos os scores em formato JSON para suportar categorias dinâmicas
         scores_por_categoria: results.categoryScores,
         nivel: results.level,
         pontos_fortes: results.strongPoints,
@@ -97,7 +102,11 @@ export const useDiagnosticSave = () => {
         status: 'concluido'
       };
 
+      console.log('💾 Dados do diagnóstico para salvar:', diagnosticoData);
+      console.log('📊 Scores por categoria (JSON):', diagnosticoData.scores_por_categoria);
+
       const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);
+      console.log('✅ Diagnóstico salvo:', diagnostico);
 
       // Salvar respostas
       const respostasData = Object.entries(answers).map(([perguntaId, score]) => {
@@ -113,8 +122,12 @@ export const useDiagnosticSave = () => {
       });
 
       if (respostasData.length > 0) {
+        console.log('📝 Salvando respostas:', respostasData.length, 'respostas');
         await saveRespostasMutation.mutateAsync(respostasData);
+        console.log('✅ Respostas salvas');
       }
+
+      console.log('🎉 Diagnóstico completo salvo com sucesso!');
 
       toast({
         title: "Diagnóstico salvo",
@@ -124,7 +137,8 @@ export const useDiagnosticSave = () => {
       onSuccess();
 
     } catch (error: any) {
-      console.error('Erro detalhado ao salvar diagnóstico:', error);
+      console.error('❌ Erro detalhado ao salvar diagnóstico:', error);
+      console.error('📊 Results que causaram erro:', results);
       toast({
         title: "Erro ao salvar",
         description: `Ocorreu um erro ao salvar o diagnóstico: ${error?.message || 'Erro desconhecido'}`,

@@ -36,8 +36,14 @@ export const useDiagnosticData = (editId: string | null) => {
   // Carregar dados quando estiver editando
   useEffect(() => {
     if (isEditing && editData && !dataLoadedRef.current) {
+      console.log('📝 Carregando dados para edição:', editData);
+      
       const { diagnostic, respostas } = editData;
       const empresa = diagnostic.empresas;
+
+      console.log('🏢 Dados da empresa:', empresa);
+      console.log('📊 Diagnóstico completo:', diagnostic);
+      console.log('📊 Scores por categoria do banco:', diagnostic.scores_por_categoria);
 
       // Preencher dados da empresa
       setCompanyData({
@@ -57,6 +63,7 @@ export const useDiagnosticData = (editId: string | null) => {
         answersMap[resposta.pergunta_id] = resposta.score;
       });
       setAnswers(answersMap);
+      console.log('✅ Respostas carregadas:', Object.keys(answersMap).length, 'respostas');
 
       // Preencher dados do diagnóstico
       setDiagnosticData({
@@ -67,7 +74,9 @@ export const useDiagnosticData = (editId: string | null) => {
 
       // Calcular resultados baseado nas respostas
       if (Object.keys(answersMap).length > 0 && questions.length > 0) {
+        console.log('🔄 Recalculando resultados...');
         const calculatedResults = calculateResults(answersMap, questions);
+        console.log('📊 Resultados recalculados:', calculatedResults);
         setResults(calculatedResults);
       }
 
@@ -82,10 +91,18 @@ export const useDiagnosticData = (editId: string | null) => {
 
   const calculateResultsFromAnswers = () => {
     if (Object.keys(answers).length > 0 && questions.length > 0) {
+      console.log('🔄 Calculando resultados a partir das respostas...');
+      console.log('📝 Respostas:', answers);
+      console.log('❓ Perguntas:', questions.length, 'perguntas');
+      
       const calculatedResults = calculateResults(answers, questions);
+      console.log('📊 Resultados calculados:', calculatedResults);
+      console.log('📊 Category scores calculados:', calculatedResults?.categoryScores);
+      
       setResults(calculatedResults);
       return calculatedResults;
     }
+    console.log('⚠️ Não foi possível calcular resultados - respostas ou perguntas faltando');
     return null;
   };
 
