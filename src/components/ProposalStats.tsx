@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
+import { formatCurrency } from '@/utils/formatters';
 
 interface ProposalStatsProps {
   propostas: any[];
@@ -49,7 +50,7 @@ export const ProposalStats = ({ propostas }: ProposalStatsProps) => {
         </CardHeader>
         <CardContent>
           <div className="text-xl lg:text-2xl font-bold text-gray-900">
-            {totalValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            {formatCurrency(totalValue)}
           </div>
         </CardContent>
       </Card>
@@ -63,7 +64,7 @@ export const ProposalStats = ({ propostas }: ProposalStatsProps) => {
         </CardHeader>
         <CardContent>
           <div className="text-xl lg:text-2xl font-bold text-gray-900">
-            {approvedValue.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            {formatCurrency(approvedValue)}
           </div>
         </CardContent>
       </Card>

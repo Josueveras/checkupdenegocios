@@ -7,6 +7,7 @@ import { ArrowLeft, FileText, Check, ChevronDown, ChevronUp } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { usePlanos } from '@/hooks/usePlanos';
+import { formatCurrency } from '@/utils/formatters';
 
 const NovaPropostaPlano = () => {
   const navigate = useNavigate();
@@ -105,7 +106,7 @@ const NovaPropostaPlano = () => {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-2xl font-bold text-petrol">
-                    {plano.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    {formatCurrency(plano.valor)}
                   </div>
                   <div className="space-y-2">
                     <p className="font-medium text-gray-900">Tarefas incluídas:</p>

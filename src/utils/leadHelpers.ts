@@ -1,5 +1,6 @@
 
 import { Lead } from '@/types/lead';
+import { formatCurrency } from './formatters';
 
 export const calculateLeadScore = (lead: Partial<Lead>): number => {
   let score = 0;
@@ -65,12 +66,8 @@ export const getUrgenciaColor = (urgencia: Lead['urgencia']): string => {
   }
 };
 
-export const formatCurrency = (value: number): string => {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
-};
+// Exporta a função centralizada
+export { formatCurrency };
 
 export const getLeadQualificationLevel = (score: number): { level: string; color: string } => {
   if (score >= 8) return { level: 'Quente', color: 'text-red-600' };

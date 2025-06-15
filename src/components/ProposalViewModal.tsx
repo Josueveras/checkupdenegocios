@@ -2,6 +2,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { formatCurrency } from '@/utils/formatters';
 
 interface ProposalViewModalProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export const ProposalViewModal = ({ isOpen, onOpenChange, proposta, onEdit }: Pr
             <div>
               <h5 className="font-medium text-gray-900">Valor</h5>
               <p className="text-gray-700 font-semibold text-green-600">
-                {(proposta.valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                {formatCurrency(proposta.valor || 0)}
               </p>
             </div>
             <div>

@@ -1,5 +1,6 @@
 
 import jsPDF from 'jspdf';
+import { formatCurrency } from '@/utils/formatters';
 
 export const generateProposalPDF = (proposalData: any) => {
   const doc = new jsPDF();
@@ -18,7 +19,7 @@ export const generateProposalPDF = (proposalData: any) => {
   
   // Proposta
   doc.setFontSize(16);
-  doc.text(`Valor: ${proposalData.valor?.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`, 20, 120);
+  doc.text(`Valor: ${formatCurrency(proposalData.valor)}`, 20, 120);
   doc.text(`Prazo: ${proposalData.prazo || 'A definir'}`, 20, 135);
   
   // Objetivo
