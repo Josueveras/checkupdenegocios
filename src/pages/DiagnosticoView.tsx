@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,11 +19,13 @@ const DiagnosticoView = () => {
 
   if (!diagnostic) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-600">Diagnóstico não encontrado.</p>
-        <Button onClick={() => navigate('/diagnosticos')} className="mt-4">
-          Voltar aos Diagnósticos
-        </Button>
+      <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in overflow-hidden">
+        <div className="text-center py-12">
+          <p className="text-gray-600">Diagnóstico não encontrado.</p>
+          <Button onClick={() => navigate('/diagnosticos')} className="mt-4">
+            Voltar aos Diagnósticos
+          </Button>
+        </div>
       </div>
     );
   }
@@ -67,40 +70,43 @@ const DiagnosticoView = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate('/diagnosticos')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Voltar
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Diagnóstico</h1>
-            <p className="text-gray-600">{empresa?.nome || 'Empresa não informada'}</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate('/diagnosticos')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Diagnóstico</h1>
+              <p className="text-gray-600">{empresa?.nome || 'Empresa não informada'}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Baixar PDF
-          </Button>
-          <Button
-            onClick={() => navigate(`/novo-diagnostico?edit=${diagnostic.id}`)}
-            className="bg-petrol hover:bg-petrol/90 text-white flex items-center gap-2"
-          >
-            <Edit className="h-4 w-4" />
-            Editar
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
+              className="flex items-center gap-2 text-sm"
+            >
+              <Download className="h-4 w-4" />
+              <span className="hidden sm:inline">Baixar PDF</span>
+              <span className="sm:hidden">PDF</span>
+            </Button>
+            <Button
+              onClick={() => navigate(`/novo-diagnostico?edit=${diagnostic.id}`)}
+              className="bg-petrol hover:bg-petrol/90 text-white flex items-center gap-2 text-sm"
+            >
+              <Edit className="h-4 w-4" />
+              Editar
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -110,7 +116,7 @@ const DiagnosticoView = () => {
           <CardTitle>Informações da Empresa</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-gray-600">Nome da Empresa</p>
               <p className="text-lg">{empresa?.nome || 'N/A'}</p>
@@ -121,7 +127,7 @@ const DiagnosticoView = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">E-mail</p>
-              <p className="text-lg">{empresa?.cliente_email || 'N/A'}</p>
+              <p className="text-lg break-all">{empresa?.cliente_email || 'N/A'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Telefone</p>
@@ -149,11 +155,11 @@ const DiagnosticoView = () => {
             <CardTitle>Score Geral</CardTitle>
           </CardHeader>
           <CardContent className="text-center">
-            <div className={`text-6xl font-bold p-6 rounded-lg ${getScoreColor(diagnostic.score_total)}`}>
+            <div className={`text-4xl sm:text-6xl font-bold p-6 rounded-lg ${getScoreColor(diagnostic.score_total)}`}>
               {diagnostic.score_total}%
             </div>
             <div className="mt-4">
-              <Badge className={`${getLevelBadge(diagnostic.nivel)} text-lg px-4 py-2`}>
+              <Badge className={`${getLevelBadge(diagnostic.nivel)} text-base sm:text-lg px-4 py-2`}>
                 {diagnostic.nivel}
               </Badge>
             </div>
@@ -169,25 +175,25 @@ const DiagnosticoView = () => {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="font-medium">Marketing</span>
-                <div className={`px-3 py-1 rounded-lg ${getScoreColor(diagnostic.score_marketing)}`}>
+                <div className={`px-3 py-1 rounded-lg text-sm ${getScoreColor(diagnostic.score_marketing)}`}>
                   {diagnostic.score_marketing}%
                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">Vendas</span>
-                <div className={`px-3 py-1 rounded-lg ${getScoreColor(diagnostic.score_vendas)}`}>
+                <div className={`px-3 py-1 rounded-lg text-sm ${getScoreColor(diagnostic.score_vendas)}`}>
                   {diagnostic.score_vendas}%
                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">Estratégia</span>
-                <div className={`px-3 py-1 rounded-lg ${getScoreColor(diagnostic.score_estrategia)}`}>
+                <div className={`px-3 py-1 rounded-lg text-sm ${getScoreColor(diagnostic.score_estrategia)}`}>
                   {diagnostic.score_estrategia}%
                 </div>
               </div>
               <div className="flex justify-between items-center">
                 <span className="font-medium">Gestão</span>
-                <div className={`px-3 py-1 rounded-lg ${getScoreColor(diagnostic.score_gestao)}`}>
+                <div className={`px-3 py-1 rounded-lg text-sm ${getScoreColor(diagnostic.score_gestao)}`}>
                   {diagnostic.score_gestao}%
                 </div>
               </div>
@@ -208,8 +214,8 @@ const DiagnosticoView = () => {
               <ul className="space-y-2">
                 {diagnostic.pontos_fortes.map((ponto: string, index: number) => (
                   <li key={index} className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    {ponto}
+                    <span className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></span>
+                    <span className="text-sm">{ponto}</span>
                   </li>
                 ))}
               </ul>
@@ -227,8 +233,8 @@ const DiagnosticoView = () => {
               <ul className="space-y-2">
                 {diagnostic.pontos_atencao.map((ponto: string, index: number) => (
                   <li key={index} className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                    {ponto}
+                    <span className="w-2 h-2 bg-orange-500 rounded-full flex-shrink-0"></span>
+                    <span className="text-sm">{ponto}</span>
                   </li>
                 ))}
               </ul>
@@ -244,14 +250,14 @@ const DiagnosticoView = () => {
             <CardTitle>Recomendações</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {Object.entries(diagnostic.recomendacoes).map(([categoria, recomendacoes]: [string, any]) => (
                 <div key={categoria}>
                   <h4 className="font-semibold text-lg mb-3 text-petrol">{categoria}</h4>
                   <ul className="space-y-2">
                     {recomendacoes.map((recomendacao: string, index: number) => (
                       <li key={index} className="flex items-start gap-2">
-                        <span className="w-2 h-2 bg-blue-500 rounded-full mt-2"></span>
+                        <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></span>
                         <span className="text-sm">{recomendacao}</span>
                       </li>
                     ))}
@@ -270,7 +276,7 @@ const DiagnosticoView = () => {
             <CardTitle>Observações</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-700">{diagnostic.observacoes}</p>
+            <p className="text-gray-700 text-sm sm:text-base">{diagnostic.observacoes}</p>
           </CardContent>
         </Card>
       )}
@@ -294,28 +300,34 @@ const DiagnosticoView = () => {
                 onClick={handlePrepareShare}
                 disabled={isGeneratingPDF}
                 variant="outline"
-                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+                className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 text-sm"
               >
                 {isGeneratingPDF ? 'Preparando...' : '📤 Compartilhar PDF'}
               </Button>
             )}
             <Button
               onClick={() => handleScheduleCalendar(diagnostic)}
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2 text-sm"
             >
               <Calendar className="h-4 w-4" />
-              Agendar Reunião
+              <span className="hidden sm:inline">Agendar Reunião</span>
+              <span className="sm:hidden">Agendar</span>
             </Button>
             <Button
               onClick={() => handleGenerateAndDownloadPDF(diagnostic)}
               variant="outline"
+              className="text-sm"
             >
               <Download className="h-4 w-4 mr-2" />
-              Baixar PDF
+              <span className="hidden sm:inline">Baixar PDF</span>
+              <span className="sm:hidden">PDF</span>
             </Button>
           </div>
         </CardContent>
       </Card>
+      
+      {/* Espaçamento para o menu mobile flutuante */}
+      <div className="h-20 md:h-0"></div>
     </div>
   );
 };
