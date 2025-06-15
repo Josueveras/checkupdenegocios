@@ -38,60 +38,150 @@ const NovaPropostaPersonalizada = () => {
     acoes_sugeridas: ['']
   });
 
+  // Validação dos dados
+  const validateData = (): boolean => {
+    // Validar empresa selecionada ou dados do novo cliente
+    if (!isNewClient && !selectedEmpresaId) {
+      toast({
+        title: "Empresa obrigatória",
+        description: "Selecione uma empresa para continuar.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (isNewClient) {
+      if (!newClientData.empresaNome.trim() || !newClientData.clienteNome.trim()) {
+        toast({
+          title: "Dados do cliente obrigatórios",
+          description: "Preencha o nome da empresa e do cliente.",
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+
+    // Validar dados da proposta
+    if (!proposalData.objetivo.trim()) {
+      toast({
+        title: "Objetivo obrigatório",
+        description: "Descreva o objetivo da proposta.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    if (!proposalData.valor.trim() || parseFloat(proposalData.valor) <= 0) {
+      toast({
+        title: "Valor inválido",
+        description: "Informe um valor válido para a proposta.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    // Validar ações sugeridas (pelo menos uma não vazia)
+    const acoesValidas = proposalData.acoes_sugeridas.filter(acao => acao.trim());
+    if (acoesValidas.length === 0) {
+      toast({
+        title: "Ações obrigatórias",
+        description: "Adicione pelo menos uma ação sugerida.",
+        variant: "destructive"
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const createProposalMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log('Iniciando criação de proposta personalizada:', data);
+      
       let empresaId = selectedEmpresaId;
       
       // Se é um novo cliente, criar empresa primeiro
       if (isNewClient) {
+        console.log('Criando nova empresa:', newClientData);
         const { data: newEmpresa, error: empresaError } = await supabase
           .from('empresas')
           .insert({
             nome: newClientData.empresaNome,
             cliente_nome: newClientData.clienteNome,
-            cliente_email: newClientData.clienteEmail,
-            cliente_telefone: newClientData.clienteTelefone,
-            setor: newClientData.setor
+            cliente_email: newClientData.clienteEmail || null,
+            cliente_telefone: newClientData.clienteTelefone || null,
+            setor: newClientData.setor || null
           })
           .select()
           .single();
         
-        if (empresaError) throw empresaError;
+        if (empresaError) {
+          console.error('Erro ao criar empresa:', empresaError);
+          throw empresaError;
+        }
+        
+        console.log('Empresa criada com sucesso:', newEmpresa);
         empresaId = newEmpresa.id;
       }
 
-      // Criar diagnóstico mínimo para vincular a proposta
+      // Criar diagnóstico com scores obrigatórios
+      const diagnosticoData = {
+        empresa_id: empresaId,
+        score_estrategia: 50, // Valor padrão para proposta personalizada
+        score_marketing: 50,
+        score_vendas: 50,
+        score_total: 50, // Média dos scores
+        nivel: 'Personalizada',
+        pontos_fortes: ['Proposta personalizada'],
+        pontos_atencao: ['Avaliar implementação'],
+        recomendacoes: {
+          estrategia: ['Implementar ações sugeridas'],
+          marketing: ['Avaliar estratégias de marketing'],
+          vendas: ['Otimizar processo de vendas']
+        },
+        status: 'concluido'
+      };
+
+      console.log('Criando diagnóstico:', diagnosticoData);
       const { data: diagnostico, error: diagnosticoError } = await supabase
         .from('diagnosticos')
-        .insert({
-          empresa_id: empresaId,
-          score_total: 0,
-          nivel: 'Personalizada',
-          pontos_fortes: [],
-          pontos_atencao: [],
-          recomendacoes: {}
-        })
+        .insert(diagnosticoData)
         .select()
         .single();
       
-      if (diagnosticoError) throw diagnosticoError;
+      if (diagnosticoError) {
+        console.error('Erro ao criar diagnóstico:', diagnosticoError);
+        throw diagnosticoError;
+      }
+
+      console.log('Diagnóstico criado com sucesso:', diagnostico);
 
       // Criar proposta
+      const acoesLimpas = data.acoes_sugeridas.filter((acao: string) => acao.trim());
+      const valorNumerico = parseFloat(data.valor) || 0;
+
+      const propostaData = {
+        diagnostico_id: diagnostico.id,
+        objetivo: data.objetivo,
+        valor: valorNumerico,
+        prazo: data.prazo || null,
+        acoes_sugeridas: acoesLimpas,
+        status: 'rascunho'
+      };
+
+      console.log('Criando proposta:', propostaData);
       const { data: proposta, error: propostaError } = await supabase
         .from('propostas')
-        .insert({
-          diagnostico_id: diagnostico.id,
-          objetivo: data.objetivo,
-          valor: data.valor ? parseFloat(data.valor) : null,
-          prazo: data.prazo,
-          acoes_sugeridas: data.acoes_sugeridas.filter(acao => acao.trim()),
-          status: 'rascunho',
-          tipo: 'personalizada'
-        })
+        .insert(propostaData)
         .select()
         .single();
       
-      if (propostaError) throw propostaError;
+      if (propostaError) {
+        console.error('Erro ao criar proposta:', propostaError);
+        throw propostaError;
+      }
+
+      console.log('Proposta criada com sucesso:', proposta);
       return proposta;
     },
     onSuccess: () => {
@@ -103,10 +193,10 @@ const NovaPropostaPersonalizada = () => {
       navigate('/propostas');
     },
     onError: (error) => {
-      console.error('Erro ao criar proposta:', error);
+      console.error('Erro detalhado ao criar proposta:', error);
       toast({
-        title: "Erro",
-        description: "Não foi possível criar a proposta.",
+        title: "Erro ao criar proposta",
+        description: "Não foi possível criar a proposta. Verifique os dados e tente novamente.",
         variant: "destructive"
       });
     }
@@ -120,10 +210,12 @@ const NovaPropostaPersonalizada = () => {
   };
 
   const handleRemoveAction = (index: number) => {
-    setProposalData(prev => ({
-      ...prev,
-      acoes_sugeridas: prev.acoes_sugeridas.filter((_, i) => i !== index)
-    }));
+    if (proposalData.acoes_sugeridas.length > 1) {
+      setProposalData(prev => ({
+        ...prev,
+        acoes_sugeridas: prev.acoes_sugeridas.filter((_, i) => i !== index)
+      }));
+    }
   };
 
   const handleActionChange = (index: number, value: string) => {
@@ -136,6 +228,7 @@ const NovaPropostaPersonalizada = () => {
   };
 
   const handleSave = () => {
+    if (!validateData()) return;
     createProposalMutation.mutate(proposalData);
   };
 
@@ -143,11 +236,13 @@ const NovaPropostaPersonalizada = () => {
     navigate('/propostas');
   };
 
+  const isLoading = createProposalMutation.isPending;
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={handleBack}>
+        <Button variant="outline" onClick={handleBack} disabled={isLoading}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
         </Button>
@@ -169,6 +264,7 @@ const NovaPropostaPersonalizada = () => {
                 variant={!isNewClient ? "default" : "outline"}
                 onClick={() => setIsNewClient(false)}
                 className="flex-1"
+                disabled={isLoading}
               >
                 Cliente Existente
               </Button>
@@ -176,6 +272,7 @@ const NovaPropostaPersonalizada = () => {
                 variant={isNewClient ? "default" : "outline"}
                 onClick={() => setIsNewClient(true)}
                 className="flex-1"
+                disabled={isLoading}
               >
                 Novo Cliente
               </Button>
@@ -183,8 +280,8 @@ const NovaPropostaPersonalizada = () => {
 
             {!isNewClient ? (
               <div className="space-y-2">
-                <Label>Selecionar Empresa</Label>
-                <Select value={selectedEmpresaId} onValueChange={setSelectedEmpresaId}>
+                <Label>Selecionar Empresa *</Label>
+                <Select value={selectedEmpresaId} onValueChange={setSelectedEmpresaId} disabled={isLoading}>
                   <SelectTrigger>
                     <SelectValue placeholder="Escolha uma empresa" />
                   </SelectTrigger>
@@ -200,19 +297,21 @@ const NovaPropostaPersonalizada = () => {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Nome da Empresa</Label>
+                  <Label>Nome da Empresa *</Label>
                   <Input
                     value={newClientData.empresaNome}
                     onChange={(e) => setNewClientData(prev => ({ ...prev, empresaNome: e.target.value }))}
                     placeholder="Digite o nome da empresa"
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Nome do Cliente</Label>
+                  <Label>Nome do Cliente *</Label>
                   <Input
                     value={newClientData.clienteNome}
                     onChange={(e) => setNewClientData(prev => ({ ...prev, clienteNome: e.target.value }))}
                     placeholder="Digite o nome do cliente"
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -222,6 +321,7 @@ const NovaPropostaPersonalizada = () => {
                     value={newClientData.clienteEmail}
                     onChange={(e) => setNewClientData(prev => ({ ...prev, clienteEmail: e.target.value }))}
                     placeholder="email@exemplo.com"
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -230,6 +330,7 @@ const NovaPropostaPersonalizada = () => {
                     value={newClientData.clienteTelefone}
                     onChange={(e) => setNewClientData(prev => ({ ...prev, clienteTelefone: e.target.value }))}
                     placeholder="(11) 99999-9999"
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -238,6 +339,7 @@ const NovaPropostaPersonalizada = () => {
                     value={newClientData.setor}
                     onChange={(e) => setNewClientData(prev => ({ ...prev, setor: e.target.value }))}
                     placeholder="Ex: Tecnologia, Varejo, Serviços"
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -252,22 +354,26 @@ const NovaPropostaPersonalizada = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label>Objetivo</Label>
+              <Label>Objetivo *</Label>
               <Textarea
                 value={proposalData.objetivo}
                 onChange={(e) => setProposalData(prev => ({ ...prev, objetivo: e.target.value }))}
                 placeholder="Descreva o objetivo da proposta..."
                 className="min-h-[100px]"
+                disabled={isLoading}
               />
             </div>
             
             <div className="space-y-2">
-              <Label>Valor (R$)</Label>
+              <Label>Valor (R$) *</Label>
               <Input
                 type="number"
+                step="0.01"
+                min="0"
                 value={proposalData.valor}
                 onChange={(e) => setProposalData(prev => ({ ...prev, valor: e.target.value }))}
                 placeholder="0.00"
+                disabled={isLoading}
               />
             </div>
             
@@ -277,13 +383,20 @@ const NovaPropostaPersonalizada = () => {
                 value={proposalData.prazo}
                 onChange={(e) => setProposalData(prev => ({ ...prev, prazo: e.target.value }))}
                 placeholder="Ex: 30 dias, 3 meses"
+                disabled={isLoading}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label>Ações Sugeridas</Label>
-                <Button type="button" variant="outline" size="sm" onClick={handleAddAction}>
+                <Label>Ações Sugeridas *</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleAddAction}
+                  disabled={isLoading}
+                >
                   <Plus className="w-4 h-4 mr-1" />
                   Adicionar
                 </Button>
@@ -295,6 +408,7 @@ const NovaPropostaPersonalizada = () => {
                       value={acao}
                       onChange={(e) => handleActionChange(index, e.target.value)}
                       placeholder={`Ação ${index + 1}`}
+                      disabled={isLoading}
                     />
                     {proposalData.acoes_sugeridas.length > 1 && (
                       <Button
@@ -302,6 +416,7 @@ const NovaPropostaPersonalizada = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleRemoveAction(index)}
+                        disabled={isLoading}
                       >
                         ×
                       </Button>
@@ -318,11 +433,11 @@ const NovaPropostaPersonalizada = () => {
       <div className="flex justify-end">
         <Button 
           onClick={handleSave}
-          disabled={createProposalMutation.isPending}
+          disabled={isLoading}
           className="bg-petrol hover:bg-petrol/90 text-white"
         >
           <Save className="mr-2 h-4 w-4" />
-          {createProposalMutation.isPending ? 'Criando...' : 'Criar Proposta'}
+          {isLoading ? 'Criando...' : 'Criar Proposta'}
         </Button>
       </div>
     </div>
