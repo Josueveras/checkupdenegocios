@@ -33,10 +33,30 @@ export const useDiagnosticNavigation = ({
     }
 
     if (currentStep === 2) {
+      console.log('🔍 DEBUG: Validando perguntas obrigatórias...');
+      console.log('📝 Total de perguntas:', questions.length);
+      console.log('📋 Respostas atuais:', answers);
+      
       // Validar perguntas obrigatórias
-      const requiredQuestions = questions.filter(q => q.required);
+      const requiredQuestions = questions.filter(q => {
+        console.log(`❓ Pergunta ${q.id}: required=${q.required}, obrigatoria=${q.obrigatoria}`);
+        return q.required === true || q.obrigatoria === true;
+      });
+      
+      console.log('⚠️ Perguntas obrigatórias encontradas:', requiredQuestions.length);
+      
       for (const question of requiredQuestions) {
-        if (!(question.id in answers)) {
+        const hasAnswer = question.id in answers;
+        const answerValue = answers[question.id];
+        
+        console.log(`🔎 Verificando pergunta ${question.id}:`, {
+          hasAnswer,
+          answerValue,
+          isValid: hasAnswer && answerValue !== undefined && answerValue !== null
+        });
+        
+        if (!hasAnswer || answerValue === undefined || answerValue === null) {
+          console.log('❌ Pergunta obrigatória não respondida:', question.question);
           toast({
             title: "Pergunta obrigatória",
             description: `Por favor, responda: ${question.question}`,
@@ -45,6 +65,8 @@ export const useDiagnosticNavigation = ({
           return;
         }
       }
+      
+      console.log('✅ Todas as perguntas obrigatórias foram respondidas');
       
       // Calcular resultados
       onCalculateResults();

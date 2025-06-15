@@ -15,9 +15,17 @@ interface Question {
 export const useDiagnosticQuestions = () => {
   const { data: perguntasSupabase, isLoading, error } = usePerguntas();
 
+  console.log('🔍 DEBUG: Dados brutos do Supabase:', perguntasSupabase);
 
   // Transformar dados do Supabase para o formato esperado
   const questions: Question[] = perguntasSupabase?.map((pergunta: any) => {
+    console.log('🔄 Processando pergunta:', {
+      id: pergunta.id,
+      pergunta: pergunta.pergunta,
+      categoria: pergunta.categoria,
+      obrigatoria: pergunta.obrigatoria,
+      opcoes: pergunta.opcoes
+    });
     
     let options = [];
     
@@ -37,15 +45,20 @@ export const useDiagnosticQuestions = () => {
       ];
     }
 
-    return {
+    const processedQuestion = {
       id: pergunta.id,
       question: pergunta.pergunta,
       category: pergunta.categoria,
       options: options,
-      required: pergunta.obrigatoria || false
+      required: pergunta.obrigatoria === true || pergunta.obrigatoria === 1 // Garantir conversão correta
     };
+
+    console.log('✅ Pergunta processada:', processedQuestion);
+    return processedQuestion;
   }) || [];
 
+  console.log('📊 Total de perguntas processadas:', questions.length);
+  console.log('⚠️ Perguntas obrigatórias:', questions.filter(q => q.required).length);
 
   return { 
     questions, 
