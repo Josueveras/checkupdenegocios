@@ -38,17 +38,19 @@ const EditarProposta = () => {
   const proposta = proposalData?.type === 'existing' ? proposalData.data : null;
   const plano = proposalData?.type === 'plan' ? proposalData.data : null;
 
-  // Detectar tipo da proposta
+  // Detectar tipo da proposta usando type guards adequados
   const proposalType = (() => {
     // Se é nova proposta de plano
     if (isNewProposal || tipo === 'plano') return 'plano';
     
     // Se é proposta existente, verificar se tem diagnóstico_id
-    if (proposta) {
+    if (proposta && proposalData?.type === 'existing') {
+      // Type guard para garantir que temos uma proposta existente
+      const existingProposal = proposta as any;
       // Se não tem diagnostico_id mas tem empresa_id, é proposta de plano
-      if (!proposta.diagnostico_id && (proposta as any).empresa_id) return 'plano';
+      if (!existingProposal.diagnostico_id && existingProposal.empresa_id) return 'plano';
       // Se tem diagnostico_id, é proposta de diagnóstico
-      if (proposta.diagnostico_id) return 'diagnostico';
+      if (existingProposal.diagnostico_id) return 'diagnostico';
     }
     
     // Default para diagnóstico
