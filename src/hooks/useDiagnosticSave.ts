@@ -1,3 +1,4 @@
+
 import { toast } from '@/hooks/use-toast';
 import { useSaveEmpresa, useSaveDiagnostico, useSaveRespostas } from '@/hooks/useSupabase';
 import { detectBot, addSpamProtectionDelay } from '@/utils/botProtection';
@@ -75,14 +76,17 @@ export const useDiagnosticSave = () => {
 
       const empresa = await saveEmpresaMutation.mutateAsync(empresaData);
 
-      // Preparar dados do diagnóstico (incluindo IP para controle)
+      // Preparar dados do diagnóstico com scores dinâmicos
       const diagnosticoData = {
         empresa_id: empresa.id,
         score_total: results.overallScore,
+        // Manter as 4 colunas principais para compatibilidade
         score_marketing: results.categoryScores.Marketing || 0,
         score_vendas: results.categoryScores.Vendas || 0,
         score_estrategia: results.categoryScores.Estratégia || 0,
         score_gestao: results.categoryScores.Gestão || 0,
+        // Adicionar todos os scores em formato JSON para flexibilidade
+        scores_por_categoria: results.categoryScores,
         nivel: results.level,
         pontos_fortes: results.strongPoints,
         pontos_atencao: results.attentionPoints,
@@ -90,9 +94,7 @@ export const useDiagnosticSave = () => {
         planos: finalDiagnosticData.planos,
         valores: parseFloat(finalDiagnosticData.valores),
         observacoes: finalDiagnosticData.observacoes,
-        status: 'concluido',
-        // Nota: IP seria adicionado aqui se a coluna existisse na tabela
-        // ip: userIP
+        status: 'concluido'
       };
 
       const diagnostico = await saveDiagnosticoMutation.mutateAsync(diagnosticoData);

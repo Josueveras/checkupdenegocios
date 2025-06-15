@@ -47,23 +47,36 @@ export const createSectionGenerators = (doc: jsPDF, helpers: any) => {
     addText(`Nível de Maturidade: ${diagnosticData.nivel}`, margin, currentY, true);
     currentY += PDF_STYLES.layout.sectionSpacing;
     
-    // Scores por categoria
+    // Scores por categoria - DINÂMICO
     addText('Pontuação por Categoria:', margin, currentY, true);
     currentY += PDF_STYLES.layout.lineHeight;
     
-    const categories = [
-      ['Marketing:', diagnosticData.score_marketing],
-      ['Vendas:', diagnosticData.score_vendas],  
-      ['Estratégia:', diagnosticData.score_estrategia],
-      ['Gestão:', diagnosticData.score_gestao]
-    ];
+    // Extrair scores dinâmicos
+    const categoryScores = getDynamicCategoryScores(diagnosticData);
     
-    categories.forEach(([category, score]) => {
-      addText(`• ${category} ${score}%`, margin + 10, currentY);
+    Object.entries(categoryScores).forEach(([category, score]) => {
+      addText(`• ${category}: ${score}%`, margin + 10, currentY);
       currentY += PDF_STYLES.layout.lineHeight;
     });
     
     return currentY + PDF_STYLES.layout.sectionSpacing;
+  };
+
+  // Função auxiliar para extrair scores dinâmicos
+  const getDynamicCategoryScores = (diagnosticData: any) => {
+    // Primeiro, tentar usar scores_por_categoria se existir
+    if (diagnosticData.scores_por_categoria && typeof diagnosticData.scores_por_categoria === 'object') {
+      return diagnosticData.scores_por_categoria;
+    }
+    
+    // Fallback para as categorias hardcoded
+    const scores: {[key: string]: number} = {};
+    if (diagnosticData.score_marketing !== undefined) scores['Marketing'] = diagnosticData.score_marketing;
+    if (diagnosticData.score_vendas !== undefined) scores['Vendas'] = diagnosticData.score_vendas;
+    if (diagnosticData.score_estrategia !== undefined) scores['Estratégia'] = diagnosticData.score_estrategia;
+    if (diagnosticData.score_gestao !== undefined) scores['Gestão'] = diagnosticData.score_gestao;
+    
+    return scores;
   };
 
   const generatePointsSection = (diagnosticData: any, yPosition: number) => {
