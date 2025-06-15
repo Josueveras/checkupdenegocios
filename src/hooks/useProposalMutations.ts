@@ -13,7 +13,13 @@ interface ProposalFormData {
   empresa_id?: string;
 }
 
-export const useProposalMutations = (proposalId: string | null, isNewProposal: boolean) => {
+type ProposalType = 'diagnostico' | 'plano';
+
+export const useProposalMutations = (
+  proposalId: string | null, 
+  isNewProposal: boolean,
+  proposalType: ProposalType = 'diagnostico'
+) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -35,13 +41,19 @@ export const useProposalMutations = (proposalId: string | null, isNewProposal: b
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidar ambas as queries sempre para garantir sincronização
       queryClient.invalidateQueries({ queryKey: ['propostas'] });
+      queryClient.invalidateQueries({ queryKey: ['propostas-planos'] });
       queryClient.invalidateQueries({ queryKey: ['proposal', proposalId] });
+      
       toast({
         title: "Proposta atualizada",
         description: "A proposta foi atualizada com sucesso."
       });
-      navigate('/propostas');
+      
+      // Navegar para a página correta baseado no tipo
+      const targetRoute = proposalType === 'plano' ? '/propostas-planos' : '/propostas';
+      navigate(targetRoute);
     },
     onError: (error) => {
       console.error('Erro ao atualizar proposta:', error);
@@ -75,12 +87,18 @@ export const useProposalMutations = (proposalId: string | null, isNewProposal: b
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidar ambas as queries sempre para garantir sincronização
       queryClient.invalidateQueries({ queryKey: ['propostas'] });
+      queryClient.invalidateQueries({ queryKey: ['propostas-planos'] });
+      
       toast({
         title: "Proposta criada",
         description: "A proposta foi criada com sucesso."
       });
-      navigate('/propostas');
+      
+      // Navegar para a página correta baseado no tipo
+      const targetRoute = proposalType === 'plano' ? '/propostas-planos' : '/propostas';
+      navigate(targetRoute);
     },
     onError: (error) => {
       console.error('Erro ao criar proposta:', error);

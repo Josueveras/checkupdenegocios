@@ -23,7 +23,9 @@ const EditarProposta = () => {
   // Detectar origem da navegação
   const fromRoute = location.state?.from || '/propostas';
   const isFromPlanPage = fromRoute.includes('/nova-proposta-plano') || 
-                        document.referrer.includes('/nova-proposta-plano');
+                        document.referrer.includes('/nova-proposta-plano') ||
+                        location.pathname.includes('nova-proposta-plano') ||
+                        tipo === 'plano';
   
   const shouldShowBackButton = isFromPlanPage;
   const cancelRoute = isFromPlanPage ? '/nova-proposta-plano' : '/propostas';
@@ -36,11 +38,33 @@ const EditarProposta = () => {
   const proposta = proposalData?.type === 'existing' ? proposalData.data : null;
   const plano = proposalData?.type === 'plan' ? proposalData.data : null;
 
+  // Detectar tipo da proposta
+  const proposalType = (() => {
+    // Se é nova proposta de plano
+    if (isNewProposal || tipo === 'plano') return 'plano';
+    
+    // Se é proposta existente, verificar se tem diagnóstico_id
+    if (proposta) {
+      // Se não tem diagnostico_id mas tem empresa_id, é proposta de plano
+      if (!proposta.diagnostico_id && (proposta as any).empresa_id) return 'plano';
+      // Se tem diagnostico_id, é proposta de diagnóstico
+      if (proposta.diagnostico_id) return 'diagnostico';
+    }
+    
+    // Default para diagnóstico
+    return 'diagnostico';
+  })();
+
+  console.log('Proposal type detected:', proposalType);
+  console.log('Is new proposal:', isNewProposal);
+  console.log('From plan page:', isFromPlanPage);
+
   const { formData, updateFormData, validateForm } = useProposalForm(proposta, plano);
-  const { handleSave, isSaving } = useProposalMutations(proposalId, isNewProposal);
+  const { handleSave, isSaving } = useProposalMutations(proposalId, isNewProposal, proposalType);
 
   const handleCancel = () => {
-    navigate(cancelRoute);
+    const targetRoute = proposalType === 'plano' ? '/propostas-planos' : cancelRoute;
+    navigate(targetRoute);
   };
 
   const handleBack = () => {

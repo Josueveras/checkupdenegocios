@@ -22,7 +22,9 @@ export const useProposalOperations = () => {
       if (error) throw error;
     },
     onSuccess: () => {
+      // Invalidar ambas as queries sempre
       queryClient.invalidateQueries({ queryKey: ['propostas'] });
+      queryClient.invalidateQueries({ queryKey: ['propostas-planos'] });
       toast({
         title: "Proposta excluída",
         description: "A proposta foi excluída com sucesso."
@@ -122,7 +124,9 @@ export const useProposalOperations = () => {
       return data;
     },
     onSuccess: (data) => {
+      // Invalidar ambas as queries sempre
       queryClient.invalidateQueries({ queryKey: ['propostas'] });
+      queryClient.invalidateQueries({ queryKey: ['propostas-planos'] });
       const empresaNome = data?.diagnosticos?.empresas?.nome;
       if (empresaNome) {
         notifyProposalGenerated(empresaNome, data.id);
