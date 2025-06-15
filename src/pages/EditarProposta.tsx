@@ -1,3 +1,4 @@
+
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useProposalEdit } from '@/hooks/useProposalEdit';
 import { useProposalForm } from '@/hooks/useProposalForm';
@@ -83,8 +84,10 @@ const EditarProposta = () => {
     return <ProposalNotFoundState isNewProposal={isNewProposal} />;
   }
 
-  // Buscar empresa: sempre vem via diagnóstico
-  const empresa = proposta?.diagnosticos?.empresas || null;
+  // Buscar empresa: sempre vem via diagnóstico com type guards
+  const empresa = proposta && proposalData?.type === 'existing' && 'diagnosticos' in proposta 
+    ? proposta.diagnosticos?.empresas 
+    : null;
   const empresaNome = isNewProposal && (plano as any)?.nome ? (plano as any).nome : empresa?.nome;
 
   return (

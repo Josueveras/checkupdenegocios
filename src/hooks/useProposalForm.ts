@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -9,6 +8,7 @@ interface ProposalFormData {
   status: string;
   acoes_sugeridas: string[];
   empresa_id?: string;
+  diagnostico_id?: string;
 }
 
 interface ProposalData {
@@ -33,7 +33,8 @@ export const useProposalForm = (proposta: ProposalData | null, plano: PlanData |
     prazo: '',
     status: 'rascunho',
     acoes_sugeridas: [],
-    empresa_id: ''
+    empresa_id: '',
+    diagnostico_id: ''
   });
 
   const getAcoesSugeridas = (acoes: any): string[] => {
@@ -77,7 +78,8 @@ export const useProposalForm = (proposta: ProposalData | null, plano: PlanData |
         prazo: proposta.prazo || '',
         status: proposta.status || 'rascunho',
         acoes_sugeridas: getAcoesSugeridas(proposta.acoes_sugeridas),
-        empresa_id: ''
+        empresa_id: '',
+        diagnostico_id: ''
       });
     } else if (plano) {
       // Carregar dados do plano para nova proposta
@@ -89,7 +91,8 @@ export const useProposalForm = (proposta: ProposalData | null, plano: PlanData |
         prazo: '',
         status: 'rascunho',
         acoes_sugeridas: tarefasArray,
-        empresa_id: ''
+        empresa_id: '',
+        diagnostico_id: ''
       });
     }
   }, [proposta, plano]);
